@@ -1,0 +1,156 @@
+.studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  color: #092f32;
+}
+.editor,
+.output {
+  padding: clamp(18px, 2.4vw, 32px);
+  border-radius: 14px;
+  min-width: 0;
+}
+.editor {
+  background: white;
+  border: 1px solid #cfdfd9;
+}
+.output {
+  background: #093637;
+  color: #eff8f4;
+  position: sticky;
+  top: 16px;
+}
+.studio h2 {
+  font-size: 26px;
+  letter-spacing: -0.05em;
+}
+.studio fieldset {
+  margin: 22px 0 0;
+  padding: 14px;
+  border: 1px solid #cbded6;
+  border-radius: 9px;
+  min-width: 0;
+}
+.studio legend {
+  padding: 0 5px;
+  color: #167273;
+  font-weight: 680;
+  font-size: 14px;
+}
+.field {
+  margin: 8px 0 13px;
+}
+.field label {
+  display: block;
+  font-weight: 640;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.field input,
+.field textarea,
+.field select {
+  background: white;
+  border: 1px solid #bccfc7;
+  border-radius: 6px;
+  width: 100%;
+  padding: 9px;
+  font: inherit;
+  font-size: 14px;
+}
+.field textarea {
+  resize: vertical;
+}
+.actions,
+.itemHead,
+.ready,
+.output a,
+.studio button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.actions {
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.studio button {
+  padding: 8px 12px;
+  border: 1px solid #b9d2c7;
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  color: #104d45;
+}
+.studio button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.output button[aria-pressed="true"] {
+  background: #b8f3d9;
+}
+.item {
+  padding: 13px;
+  margin-bottom: 12px;
+  background: #f0f6f3;
+  border-radius: 8px;
+}
+.itemHead {
+  justify-content: space-between;
+}
+.itemHead strong {
+  font-size: 13px;
+}
+.ready {
+  font-size: 12px;
+  color: #b8f3d9;
+}
+.output pre {
+  background: #062729;
+  color: #d7f0e3;
+  max-height: 44vh;
+  overflow: auto;
+  font-size: 13px;
+  padding: 15px;
+  border: 1px solid #33645c;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.output p,
+.output a,
+.output small {
+  font-size: 13px;
+  line-height: 1.55;
+}
+.output a {
+  margin: 9px 0;
+  color: #b8f3d9;
+  text-decoration: underline;
+}
+.output .issue,
+.output .warn {
+  padding: 12px;
+  border: 1px solid #668d81;
+  border-radius: 6px;
+  margin: 12px 0;
+}
+.output .warn {
+  color: #ffe1ac;
+}
+.output small {
+  display: block;
+}
+@media (max-width: 780px) {
+  .studio {
+    grid-template-columns: 1fr;
+  }
+  .output {
+    position: static;
+  }
+  .output pre {
+    max-height: 340px;
+  }
+}

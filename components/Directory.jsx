@@ -10,7 +10,6 @@ import {
   FileCode2,
   Coins,
   CalendarRange,
-  Split,
   ScanEye,
   MessagesSquare,
   SearchCheck,
@@ -29,7 +28,6 @@ const icons = [
   FileCode2,
   Coins,
   CalendarRange,
-  Split,
   ScanEye,
   MessagesSquare,
   SearchCheck,
@@ -111,7 +109,7 @@ export default function Directory() {
   return (
     <Layout
       title="Free SEO & Content Tools for B2B SaaS | GrowUp"
-      description="Explore 12 free tools for B2B SaaS teams. Plan organic pipeline, prioritise content updates, measure AI visibility and generate SEO files without signing up."
+      description="Explore free tools for B2B SaaS teams. Plan organic pipeline, prioritise content updates, measure AI visibility and generate SEO files without signing up."
       path="/tools/"
     >
       <section className="hero">

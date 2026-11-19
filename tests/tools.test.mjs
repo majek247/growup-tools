@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { tools } from "../lib/catalog.mjs";
+import { workbenchTools as tools } from "../lib/catalog.mjs";
 import { run } from "../lib/run.mjs";
 
 const examples = [
@@ -9,7 +9,6 @@ const examples = [
   /## Documentation/,
   /92%/,
   /Articles this cycle: 12/,
-  /75%/,
   /ChatGPT,2,1,50%/,
   /Workday/,
   /Employee Benefits Software/,
@@ -30,7 +29,7 @@ test("Invalid probability and zero divisor", () => {
   assert.throws(() => run(tool, { arr: 1000, acv: 100, win: 0, convert: 1 }));
 });
 test("Quoted FAQ values round-trip", () => {
-  const result = run(tools[9], {
+  const result = run(tools.find((tool) => tool.slug === "faq-schema-generator"), {
     csv: 'question,answer\n"Is it free, really?","Yes, always."',
   });
   assert.equal(
@@ -39,7 +38,7 @@ test("Quoted FAQ values round-trip", () => {
   );
 });
 test("Campaign URL preserves existing query and fragment", () => {
-  const result = run(tools[10], {
+  const result = run(tools.find((tool) => tool.slug === "campaign-url-builder"), {
     url: "https://example.com/?a=1&utm_content=old#part",
     source: "x",
     medium: "social",
