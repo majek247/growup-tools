@@ -1,3 +1,4 @@
+import { contentOpsComponents } from "../../components/tools/contentOps/registry";
 import { hiringComponents } from "../../components/tools/hiring/registry";
 import { schemaComponents } from "../../components/tools/schemaRegistry";
 import Link from "next/link";
@@ -24,6 +25,7 @@ import AeoPromptGenerator, {
 } from "../../components/tools/AeoPromptGenerator";
 
 const toolComponents = {
+  ...contentOpsComponents,
   ...hiringComponents,
   "buyer-prompt-generator": {
     Component: AeoPromptGenerator,

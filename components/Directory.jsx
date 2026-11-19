@@ -1,3 +1,4 @@
+import { contentOpsIcons } from "./tools/contentOps/icons";
 import { Columns3, ClipboardCheck, FilePenLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -42,7 +43,7 @@ const hiringIcons = {
   "seo-agency-brief-builder": FilePenLine,
 };
 export function ToolIcon({ slug, size = 22 }) {
-  const Icon = hiringIcons[slug] || icons[workbenchTools.findIndex((t) => t.slug === slug)] || Shapes;
+  const Icon = contentOpsIcons[slug] || hiringIcons[slug] || icons[workbenchTools.findIndex((t) => t.slug === slug)] || Shapes;
   return <Icon size={size} strokeWidth={1.8} aria-hidden />;
 }
 function Featured() {
