@@ -1,3 +1,4 @@
+import { Columns3, ClipboardCheck, FilePenLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -20,7 +21,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { tools, topics, types } from "../lib/catalog.mjs";
+import { tools, topics, types, workbenchTools } from "../lib/catalog.mjs";
 import Layout from "./Layout";
 const icons = [
   ChartNoAxesColumnIncreasing,
@@ -35,8 +36,13 @@ const icons = [
   Link2,
   MousePointerClick,
 ];
+const hiringIcons = {
+  "agency-proposal-comparison": Columns3,
+  "content-agency-paid-trial-kit": ClipboardCheck,
+  "seo-agency-brief-builder": FilePenLine,
+};
 export function ToolIcon({ slug, size = 22 }) {
-  const Icon = icons[tools.findIndex((t) => t.slug === slug)] || Shapes;
+  const Icon = hiringIcons[slug] || icons[workbenchTools.findIndex((t) => t.slug === slug)] || Shapes;
   return <Icon size={size} strokeWidth={1.8} aria-hidden />;
 }
 function Featured() {
@@ -109,7 +115,7 @@ export default function Directory() {
   return (
     <Layout
       title="Free SEO & Content Tools for B2B SaaS | GrowUp"
-      description="Explore free tools for B2B SaaS teams. Plan organic pipeline, prioritise content updates, measure AI visibility and generate SEO files without signing up."
+      description="Explore free tools for B2B SaaS teams. Plan organic pipeline, compare agencies, brief writers and generate SEO files without signing up."
       path="/tools/"
     >
       <section className="hero">
@@ -124,8 +130,7 @@ export default function Directory() {
               <em>content tools.</em>
             </h1>
             <p>
-              Work backwards from revenue, find your next content update and
-              measure where buyers see you in AI search.
+              Plan organic revenue, compare agency proposals and prepare a paid content trial for your shortlist.
             </p>
             <div className="heroActions">
               <a href="#directory" className="button">

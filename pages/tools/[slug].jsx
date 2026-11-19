@@ -1,3 +1,4 @@
+import { hiringComponents } from "../../components/tools/hiring/registry";
 import { schemaComponents } from "../../components/tools/schemaRegistry";
 import Link from "next/link";
 import { ChevronLeft, ArrowRight } from "lucide-react";
@@ -13,9 +14,25 @@ import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
 } from "../../components/tools/FaqSchemaGenerator";
 
+import LlmsTxtGenerator, {
+  faqs as llmsTxtFaqs,
+} from "../../components/tools/LlmsTxtGenerator";
 
+
+import AeoPromptGenerator, {
+  faqs as aeoPromptFaqs,
+} from "../../components/tools/AeoPromptGenerator";
 
 const toolComponents = {
+  ...hiringComponents,
+  "buyer-prompt-generator": {
+    Component: AeoPromptGenerator,
+    faqs: aeoPromptFaqs,
+  },
+  "llms-txt-generator": {
+    Component: LlmsTxtGenerator,
+    faqs: llmsTxtFaqs,
+  },
   ...schemaComponents,
   "serp-snippet-preview": {
     Component: SerpSnippetPreview,
@@ -36,7 +53,13 @@ export function getStaticPaths() {
   };
 }
 export function getStaticProps({ params }) {
-  return { props: { tool: tools.find((t) => t.slug === params.slug) } };
+  const tool = tools.find((t) => t.slug === params.slug);
+
+  if (!tool) {
+    return { notFound: true };
+  }
+
+  return { props: { tool } };
 }
 export default function ToolPage({ tool }) {
 

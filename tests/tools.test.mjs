@@ -9,7 +9,6 @@ const examples = [
   /## Documentation/,
   /92%/,
   /Articles this cycle: 12/,
-  /ChatGPT,2,1,50%/,
   /Workday/,
   /Employee Benefits Software/,
   /FAQPage/,

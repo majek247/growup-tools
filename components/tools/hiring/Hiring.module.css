@@ -1,0 +1,201 @@
+.shell {
+  color: #103735;
+  font: inherit;
+}
+.shell h2 {
+  font-size: clamp(21px, 2vw, 29px);
+  letter-spacing: -0.045em;
+}
+.shell h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+}
+.shell p {
+  font-size: 14px;
+  line-height: 1.58;
+  margin: 8px 0;
+  color: #47645e;
+}
+.tabs,
+.actions,
+.head,
+.check {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.tabs {
+  border-bottom: 1px solid #bed6ca;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+}
+.actions {
+  margin: 14px 0 4px;
+}
+.head {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.shell button {
+  border: 1px solid #bad3c8;
+  border-radius: 6px;
+  background: #fff;
+  color: #165c56;
+  padding: 9px 13px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.shell button[aria-pressed="true"],
+.shell .primary {
+  background: #105955;
+  color: white;
+  border-color: #105955;
+}
+.shell button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.panel,
+.side,
+.item {
+  padding: clamp(16px, 2.1vw, 27px);
+  min-width: 0;
+  border: 1px solid #cedfd6;
+  border-radius: 12px;
+  background: white;
+}
+.side {
+  background: #edf5ef;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+  align-items: start;
+}
+.item {
+  padding: 13px;
+  margin: 12px 0;
+  background: #f4f8f5;
+}
+.field {
+  display: block;
+  margin: 13px 0;
+}
+.field span {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 5px;
+}
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  border: 1px solid #b8cbc2;
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+  font-size: 14px;
+  padding: 9px;
+}
+.field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+.shell pre {
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: break-word;
+  white-space: pre-wrap;
+  background: transparent;
+  color: #143f36;
+  padding: 0;
+}
+.scroll {
+  overflow: auto;
+  margin: 12px 0;
+}
+.scroll table {
+  min-width: 550px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.scroll th,
+.scroll td {
+  text-align: left;
+  border: 1px solid #cfdfd6;
+  padding: 10px;
+}
+.scroll thead th {
+  background: #0d4442;
+  color: #fff;
+}
+.scroll tbody th {
+  background: #eff5f1;
+  width: 27%;
+}
+.scroll td button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 5px;
+}
+.scroll td button[aria-pressed="true"] {
+  background: #d7efe1;
+  color: #115a48;
+}
+.scroll td button.missing {
+  color: #88530e;
+}
+.shell blockquote {
+  border-left: 3px solid #62aa98;
+  margin: 10px 0;
+  padding: 7px 12px;
+  background: #f3f8f5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.check {
+  font-size: 13px;
+  padding: 5px 0;
+}
+.error {
+  color: #913612 !important;
+}
+.shell small {
+  color: #41675c;
+}
+.stack {
+  display: grid;
+  gap: 12px;
+}
+.review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.shell button:focus-visible,
+.field :focus-visible {
+  outline: 3px solid #539a84;
+  outline-offset: 2px;
+}
+@media (max-width: 780px) {
+  .grid,
+  .review {
+    grid-template-columns: 1fr;
+  }
+  .shell button {
+    padding: 8px 10px;
+  }
+  .scroll table {
+    min-width: 490px;
+  }
+}
