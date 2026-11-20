@@ -391,10 +391,24 @@ const otherCategories = TOOL_CATEGORIES.filter(
                     </div>
                     <h3>{tool.name}</h3>
                     <p>{tool.description}</p>
-                    <div className="gtc-card-bottom">
-                      <span>{config.label}</span>
-                      <ArrowRight size={18} aria-hidden="true" />
-                    </div>
+<div className="gtc-card-bottom">
+  <span>
+    {(() => {
+      const type = (tool.type || "").toLowerCase();
+
+      if (type.includes("template")) return "View template";
+      if (type.includes("calculat")) return "Open calculator";
+      if (type.includes("generat")) return "Open generator";
+      if (type.includes("check")) return "Run checker";
+      if (type.includes("planner")) return "Open planner";
+
+      return "Explore tool";
+    })()}
+  </span>
+  <ArrowRight size={18} aria-hidden="true" />
+</div>
+
+
                   </Link>
                 );
               })}
