@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 // Standalone component. No Workspace dependency or third-party packages.
 const TEAL = "#167273";
+
+const STORAGE_KEY = "growup-content-delivery-planner-v1";
 
 const blankItem = () => ({
   id: `${Date.now()}-${Math.random()}`,
@@ -18,21 +20,21 @@ const blankItem = () => ({
 });
 
 const EXAMPLE = {
-  project: "RelayLedger Q1 buyer-intent content sprint",
+  project: "Q1 2027 Invoice Automation Sprint",
   client: "RelayLedger",
   provider: "Northstar Content Studio",
-  contact: "Amelia Grant, Head of Demand Generation",
+  contact: "Amelia Grant, Head of Demand Gen",
   approver: "Amelia Grant",
   purpose:
-    "Help UK finance teams evaluating invoice automation understand integration requirements, total cost and alternatives before booking a demo.",
+    "Generate 20 qualified demos within six months by attracting UK finance teams searching for invoice automation software.",
   audience:
-    "Finance Directors and AP Managers at UK companies with 100–1,000 employees",
+    "Finance Directors, Heads of Accounts Payable and Financial Controllers at UK businesses with 100–1,000 employees, using Sage Intacct, NetSuite or Microsoft Dynamics 365.",
   success:
-    "Each piece answers the assigned buyer question, supports claims with approved evidence and directs relevant readers to a product demo.",
+    "Two articles delivered and approved by 27 January 2027, with accurate product information, relevant buyer comparisons, supporting visuals, SEO metadata and clear demo CTAs. Includes two revision rounds.",
   items: [
     {
       id: "ex1",
-      title: "RelayLedger vs. manual invoice processing",
+      title: "RelayLedger vs. Manual Invoice Processing",
       quantity: 1,
       type: "Comparison page",
       words: "1,400–1,800",
@@ -40,11 +42,11 @@ const EXAMPLE = {
       draft: "12 Jan 2027",
       final: "19 Jan 2027",
       details:
-        "Include implementation effort, 3 use cases, a comparison table and approved product screenshots.",
+        "Explain how manual invoice processing compares with RelayLedger on processing time, approval workflows, implementation and costs. Include three finance-team use cases, a comparison table and product screenshots.",
     },
     {
       id: "ex2",
-      title: "Best invoice automation software for UK mid-market teams",
+      title: "Best Invoice Automation Software for UK Mid-Market Teams",
       quantity: 1,
       type: "Buyer guide",
       words: "1,800–2,200",
@@ -52,7 +54,7 @@ const EXAMPLE = {
       draft: "19 Jan 2027",
       final: "27 Jan 2027",
       details:
-        "Evaluate 6 vendors using consistent criteria. Separate verified product facts from editorial assessments.",
+        "Compare six invoice automation platforms on integrations, pricing, approval workflows, implementation and reporting. Include a comparison table, source links for vendor claims and guidance on which businesses each platform suits.",
     },
   ],
   included: [
@@ -63,27 +65,29 @@ const EXAMPLE = {
     "Two consolidated revision rounds",
   ],
   customIncluded:
-    "One 30-minute product interview; one comparison table per article; up to two annotated screenshots using assets supplied by RelayLedger.",
+    "One 30-minute product interview and up to two screenshots per article using assets supplied by RelayLedger.",
   excluded:
-    "New product photography, custom illustrations, original survey research, CMS publishing and changes to the approved angle after outline sign-off.",
+    "Custom illustrations, CMS publishing or major changes to an approved outline.",
   clientInputs:
-    "Demo account, approved integrations list, current pricing sheet, brand voice guide, 3 customer proof points and named SME.",
+    "RelayLedger demo access, approved integrations and pricing, brand guidelines, three customer examples and a product expert available for a 30-minute interview.",
   inputsDue: "8 Jan 2027",
   interviewOwner: "RelayLedger Product Marketing",
   handoff:
     "Google Docs with suggestion access; final copy plus metadata in the same document",
   dependencies:
-    "Draft dates move by the number of working days that required product access, SME time or consolidated feedback is delayed.",
+    "Northstar will flag any delays to Amelia Grant. Affected delivery dates move by the number of working days lost, with revised dates confirmed in writing.",
+  
+  
   revisionRounds: "2",
-  feedbackDays: "3",
-  feedbackRules:
-    "One consolidated document of comments per round. Feedback must reference the approved brief; conflicting stakeholder notes are resolved by the final approver.",
-  acceptance:
-    "All mandatory sections are present; factual claims have sources; product statements match approved documentation; links and metadata are supplied; comments from included review rounds are resolved.",
-  changePolicy:
-    "Changes to the topic, target audience, format or approved outline are quoted separately. No extra work starts without written approval of fee and revised date.",
-  payment:
-    "50% on kickoff; 50% within 14 days of final delivery. Additional approved work billed separately.",
+feedbackDays: "3",
+feedbackRules:
+  "Amelia Grant will collect feedback from RelayLedger’s team and leave one set of comments in Google Docs within three working days of each draft.",
+acceptance:
+  "Both articles must cover the agreed requirements, use verified product information and include SEO metadata, comparison tables and screenshots. Amelia Grant gives final approval.",
+changePolicy:
+  "New topics, additional articles or major changes to approved outlines require a separate quote. RelayLedger must approve any extra fees and deadlines before work begins.",
+payment:
+  "50% upfront and the remaining 50% within 14 days of final delivery. Additional work is billed separately after approval.",
   currency: "GBP",
 };
 
@@ -134,24 +138,24 @@ const SERVICES = [
 const STEPS = [
   {
     short: "Project",
-    heading: "Set the commission",
-    sub: "Give the supplier enough commercial and buyer context to understand the work.",
+    heading: "Define Your Content Project",
+    sub: "Set the project objectives, assign responsibilities, and agree on what success looks like.",
   },
   {
     short: "Deliverables",
-    heading: "Define exactly what's included",
-    sub: "Add each asset, its price and deadlines. Make extras explicit before work starts.",
+    heading: "Define Your Content Deliverables",
+    sub: "List each piece of content, its cost, delivery dates and requirements.",
   },
   {
     short: "Handoff",
-    heading: "Remove the delivery bottlenecks",
-    sub: "Record what the client provides, how files are delivered and what happens when inputs are late.",
+    heading: "Agree on Inputs and Delivery",
+    sub: "Confirm what the client must provide, who’s responsible and how work will be delivered.",
   },
-  {
-    short: "Approval",
-    heading: "Agree how the work gets signed off",
-    sub: "Set review boundaries, acceptance criteria, payment terms and change control.",
-  },
+{
+  short: "Approval",
+  heading: "Agree on Reviews and Approval",
+  sub: "Set revision limits, approval requirements and payment terms before work starts.",
+},
 ];
 
 const money = (n, currency) =>
@@ -174,11 +178,79 @@ const escapeHtml = (s) =>
     .replaceAll(">", "&gt;");
 
 export default function ContentDeliveryPlanner() {
-  const [data, setData] = useState(() => structuredClone(EXAMPLE));
-  const [step, setStep] = useState(0);
+
+const [data, setData] = useState(() => structuredClone(EXAMPLE));
+const [step, setStep] = useState(0);
+const [draftLoaded, setDraftLoaded] = useState(false);
+const [draftSavedAt, setDraftSavedAt] = useState(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [previewMode, setPreviewMode] = useState("document");
+
+  // Restore saved work when the planner opens
+useEffect(() => {
+  try {
+    const savedDraft = localStorage.getItem(STORAGE_KEY);
+
+    if (savedDraft) {
+      const parsed = JSON.parse(savedDraft);
+
+      if (
+        parsed &&
+        parsed.data &&
+        typeof parsed.data === "object" &&
+        !Array.isArray(parsed.data) &&
+        Array.isArray(parsed.data.items)
+      ) {
+        setData({
+          ...structuredClone(EMPTY),
+          ...parsed.data,
+        });
+
+        const savedStep = Number(parsed.step);
+
+        setStep(
+          Number.isInteger(savedStep)
+            ? Math.max(0, Math.min(3, savedStep))
+            : 0
+        );
+
+        setDraftSavedAt(parsed.savedAt || null);
+      }
+    }
+  } catch (error) {
+    console.error("Could not restore saved planner:", error);
+  } finally {
+    setDraftLoaded(true);
+  }
+}, []);
+
+
+// Automatically save whenever the user changes anything
+useEffect(() => {
+  if (!draftLoaded) return;
+
+  try {
+    const savedAt = new Date().toISOString();
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        data,
+        step,
+        savedAt,
+      })
+    );
+
+    setDraftSavedAt(savedAt);
+  } catch (error) {
+    console.error("Could not save planner draft:", error);
+  }
+}, [data, step, draftLoaded]);
+
+
+const [converting, setConverting] = useState(false);
+const [exchangeInfo, setExchangeInfo] = useState(null);
 
   const set = (key, value) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -210,6 +282,70 @@ export default function ContentDeliveryPlanner() {
         : [...d.included, item],
     }));
   };
+
+const changeCurrency = async (newCurrency) => {
+  if (newCurrency === data.currency || converting) return;
+
+  const fromCurrency = data.currency;
+
+  setConverting(true);
+  setError("");
+
+  try {
+    const response = await fetch(
+      `https://open.er-api.com/v6/latest/${fromCurrency}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Exchange rate unavailable");
+    }
+
+    const result = await response.json();
+
+    const rate = result.rates?.[newCurrency];
+
+    if (
+      result.result !== "success" ||
+      !Number.isFinite(rate) ||
+      rate <= 0
+    ) {
+      throw new Error("Invalid exchange rate");
+    }
+
+    const convertAmount = (amount) => {
+      if (amount === "" || amount === null) return amount;
+
+      const value = Number(amount);
+
+      if (!Number.isFinite(value)) return amount;
+
+      return String(Math.round(value * rate * 100) / 100);
+    };
+
+    setData((current) => ({
+      ...current,
+      currency: newCurrency,
+      items: current.items.map((item) => ({
+        ...item,
+        rate: convertAmount(item.rate),
+      })),
+    }));
+
+    setExchangeInfo({
+      from: fromCurrency,
+      to: newCurrency,
+      rate,
+      date: result.time_last_update_utc || "",
+    });
+
+  } catch (error) {
+    setError(
+      "Couldn't retrieve the exchange rate. Your existing prices have not been changed. Please try again."
+    );
+  } finally {
+    setConverting(false);
+  }
+};
 
   const total = useMemo(
     () =>
@@ -367,11 +503,8 @@ export default function ContentDeliveryPlanner() {
       <div className="cdp-topbar">
         <div>
           <span className="cdp-eyebrow">GROWUP / CONTENT OPERATIONS</span>
-          <h2>Content delivery, without the guesswork.</h2>
-          <p>
-            Build a clear brief for your writer or agency—deliverables, fees,
-            responsibilities, reviews and sign-off in one place.
-          </p>
+          <h2>Define Your Content Delivery Scope.</h2>
+   
         </div>
         <div className="cdp-top-actions">
           <button
@@ -420,44 +553,60 @@ export default function ContentDeliveryPlanner() {
               </div>
             </div>
 
-            {/* STEP 0: PROJECT */}
-            {step === 0 && (
-              <div className="cdp-form-grid">
-                {field("project", "Project name", {
-                  wide: true,
-                  placeholder: "e.g. Q1 buyer-intent content sprint",
-                })}
-                {field("client", "Client / commissioning company", {
-                  required: true,
-                })}
-                {field("provider", "Writer / agency delivering the work", {
-                  required: true,
-                })}
-                {field("contact", "Project contact")}
-                {field("approver", "Who gives final approval?", {
-                  required: true,
-                })}
-                {field("purpose", "Why are you commissioning this content?", {
-                  wide: true,
-                  multiline: true,
-                  help: "Connect the work to a buyer problem or measurable commercial objective.",
-                })}
-                {field("audience", "Who is the content for?", {
-                  wide: true,
-                  multiline: true,
-                })}
-                {field(
-                  "success",
-                  "What does a successful delivery look like?",
-                  {
-                    wide: true,
-                    multiline: true,
-                    placeholder:
-                      "e.g. Accurate product claims, covered buyer objections, clear CTA...",
-                  }
-                )}
-              </div>
-            )}
+
+
+       {/* STEP 0: PROJECT */}
+{step === 0 && (
+  <div className="cdp-form-grid">
+    {field("project", "Project name", {
+      wide: true,
+      placeholder: "e.g. Q1 2027 Invoice Automation Content Sprint",
+    })}
+
+    {field("client", "Commissioning company", {
+      required: true,
+      placeholder: "e.g. RelayLedger",
+    })}
+
+    {field("provider", "Writer / agency", {
+      required: true,
+      placeholder: "e.g. Northstar Content Studio",
+    })}
+
+    {field("contact", "Project owner", {
+      placeholder: "e.g. Amelia Grant, Head of Demand Generation",
+    })}
+
+    {field("approver", "Final approver", {
+      required: true,
+      placeholder: "e.g. Amelia Grant",
+    })}
+
+    {field("purpose", "What is the business objective?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+      placeholder:
+        "e.g. Generate 20 qualified demos within six months by attracting UK finance teams searching for invoice automation software.",
+    })}
+
+    {field("audience", "Who are we targeting?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+      placeholder:
+        "e.g. Finance Directors, Heads of Accounts Payable and Financial Controllers at UK businesses with 100–1,000 employees, using Sage Intacct, NetSuite or Microsoft Dynamics 365.",
+    })}
+
+    {field("success", "What does successful delivery look like?", {
+      wide: true,
+      multiline: true,
+      rows: 4,
+      placeholder:
+        "e.g. Two articles delivered and approved by 27 January 2027, with accurate product information, relevant buyer comparisons, supporting visuals, SEO metadata and clear demo CTAs. Includes two revision rounds.",
+    })}
+  </div>
+)}
 
             {/* STEP 1: DELIVERABLES */}
             {step === 1 && (
@@ -604,21 +753,49 @@ export default function ContentDeliveryPlanner() {
                     <span>Estimated project fee</span>
                     <strong>{money(total, data.currency)}</strong>
                   </div>
-                  <label>
-                    Currency{" "}
-                    <select
-                      value={data.currency}
-                      onChange={(e) => set("currency", e.target.value)}
-                    >
-                      <option value="GBP">GBP</option>
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="NGN">NGN</option>
-                    </select>
-                  </label>
+
+<label>
+  {converting ? "Converting..." : "Currency"}
+  <select
+    value={data.currency}
+    onChange={(e) => changeCurrency(e.target.value)}
+    disabled={converting}
+    aria-label="Convert project currency"
+  >
+    <option value="GBP">GBP</option>
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+    <option value="NGN">NGN</option>
+  </select>
+</label>
                 </div>
-                <div className="cdp-section-label">
-                  <strong>Services included in the fee</strong>
+
+
+          {exchangeInfo && (
+  <p className="cdp-exchange-note">
+    Converted from {exchangeInfo.from} to {exchangeInfo.to}
+    {" "}at 1 {exchangeInfo.from} ={" "}
+    {exchangeInfo.rate.toLocaleString("en-GB", {
+      maximumFractionDigits: 4,
+    })}{" "}
+    {exchangeInfo.to}.
+    {exchangeInfo.date && (
+      <> Rate updated: {exchangeInfo.date}.</>
+    )}
+    {" "}
+    <a
+      href="https://www.exchangerate-api.com"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Rates by Exchange Rate API
+    </a>
+  </p>
+)}
+
+<div className="cdp-section-label">
+  <strong>Services included in the fee</strong>
+
                   <span>Select all that apply</span>
                 </div>
                 <div className="cdp-check-grid">
@@ -637,73 +814,81 @@ export default function ContentDeliveryPlanner() {
                   ))}
                 </div>
                 <div className="cdp-form-grid cdp-spaced">
-                  {field("customIncluded", "Other work included", {
+                  {field("customIncluded", "Additional work included", {
                     wide: true,
                     multiline: true,
                   })}
-                  {field("excluded", "Explicitly out of scope", {
-                    wide: true,
-                    multiline: true,
-                    help: "This is where you prevent surprise extras and competing assumptions.",
-                  })}
+
+             {field("excluded", "Explicitly out of scope", {
+  wide: true,
+  multiline: true,
+})}
                 </div>
               </>
             )}
 
-            {/* STEP 2: HANDOFF */}
-            {step === 2 && (
-              <div className="cdp-form-grid">
-                {field("clientInputs", "What must the client supply?", {
-                  wide: true,
-                  multiline: true,
-                  help: "Think CMS access, approved facts, SMEs, brand guidelines and past performance data.",
-                })}
-                {field("inputsDue", "When are those inputs due?")}
-                {field("interviewOwner", "Who coordinates SMEs and access?")}
-                {field(
-                  "handoff",
-                  "Where and how is the finished work delivered?",
-                  {
-                    wide: true,
-                    multiline: true,
-                    placeholder:
-                      "Google Docs, Figma, CMS draft, shared drive...",
-                  }
-                )}
-                {field(
-                  "dependencies",
-                  "What happens if feedback or access is late?",
-                  { wide: true, multiline: true }
-                )}
-              </div>
-            )}
 
-            {/* STEP 3: APPROVAL */}
-            {step === 3 && (
-              <div className="cdp-form-grid">
-                {field("revisionRounds", "Included revision rounds")}
-                {field("feedbackDays", "Feedback turnaround (working days)")}
-                {field("feedbackRules", "How should feedback be submitted?", {
-                  wide: true,
-                  multiline: true,
-                  help: "Consolidated notes from one approver usually avoid conflicting edit requests.",
-                })}
-                {field(
-                  "acceptance",
-                  "What counts as completed and approved?",
-                  { wide: true, multiline: true }
-                )}
-                {field("changePolicy", "What happens if the brief changes?", {
-                  wide: true,
-                  multiline: true,
-                })}
-                {field("payment", "Payment terms", {
-                  wide: true,
-                  multiline: true,
-                  required: true,
-                })}
-              </div>
-            )}
+{/* STEP 2: HANDOFF */}
+{step === 2 && (
+  <div className="cdp-form-grid">
+    {field("clientInputs", "What must the client provide?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+
+    {field("inputsDue", "When are the inputs due?")}
+
+    {field("interviewOwner", "Who coordinates access and interviews?")}
+
+    {field("handoff", "How will the finished content be delivered?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+
+    {field("dependencies", "What happens if inputs or feedback are late?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+  </div>
+)}
+
+
+{/* STEP 3: APPROVAL */}
+{step === 3 && (
+  <div className="cdp-form-grid">
+    {field("revisionRounds", "Included revision rounds")}
+
+    {field("feedbackDays", "Feedback deadline (working days)")}
+
+    {field("feedbackRules", "How should feedback be submitted?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+
+    {field("acceptance", "What must be completed for final approval?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+
+    {field("changePolicy", "What happens if the scope changes?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+    })}
+
+    {field("payment", "What are the payment terms?", {
+      wide: true,
+      multiline: true,
+      rows: 3,
+      required: true,
+    })}
+  </div>
+)}
 
             {error && (
               <div className="cdp-error" role="alert">
@@ -824,25 +1009,27 @@ export default function ContentDeliveryPlanner() {
                 </div>
 
                 <div className="cdp-paper-section">
-                  <span className="cdp-paper-num">01 / CONTEXT</span>
-                  <h3>What we're producing and why</h3>
+              <span className="cdp-paper-num">01 / PROJECT</span>
+<h3>Project Objectives & Audience</h3>
                   <div className="cdp-def">
-                    <b>Commercial objective</b>
+                    <b>Business objective</b>
                     <p>{value(data.purpose)}</p>
                   </div>
                   <div className="cdp-def">
-                    <b>Intended audience</b>
+                    <b>Target audience</b>
                     <p>{value(data.audience)}</p>
                   </div>
                   <div className="cdp-def">
-                    <b>Success looks like</b>
+                    <b>Delivery requirements</b>
                     <p>{value(data.success)}</p>
                   </div>
                 </div>
 
                 <div className="cdp-paper-section">
-                  <span className="cdp-paper-num">02 / COMMISSION</span>
-                  <h3>Deliverables & investment</h3>
+
+          <span className="cdp-paper-num">02 / DELIVERABLES</span>
+<h3>Content Deliverables & Investment</h3>
+
                   {data.items.map((i, idx) => (
                     <div className="cdp-preview-item" key={i.id}>
                       <div className="cdp-preview-item-title">
@@ -875,10 +1062,10 @@ export default function ContentDeliveryPlanner() {
                 </div>
 
                 <div className="cdp-paper-section">
-                  <span className="cdp-paper-num">03 / BOUNDARIES</span>
-                  <h3>Included vs. excluded</h3>
+           <span className="cdp-paper-num">03 / SCOPE</span>
+<h3>What’s Included in the Fee</h3>
                   <div className="cdp-included">
-                    <b>Included in the fee</b>
+                    <b>Included services</b>
                     <ul>
                       {data.included.map((x) => (
                         <li key={x}>{x}</li>
@@ -898,15 +1085,16 @@ export default function ContentDeliveryPlanner() {
                 </div>
 
                 <div className="cdp-paper-section">
-                  <span className="cdp-paper-num">04 / DELIVERY</span>
-                  <h3>Inputs & handoff</h3>
-                  {[
-                    ["Client supplies", data.clientInputs],
-                    ["Inputs required by", data.inputsDue],
-                    ["SME / access owner", data.interviewOwner],
-                    ["Delivery format", data.handoff],
-                    ["If inputs or feedback are delayed", data.dependencies],
-                  ].map(([label, val]) => (
+                <span className="cdp-paper-num">04 / DELIVERY</span>
+<h3>Client Requirements & Delivery</h3>
+
+          {[
+  ["Client-provided materials", data.clientInputs],
+  ["Materials due", data.inputsDue],
+  ["Access & interview owner", data.interviewOwner],
+  ["Final delivery format", data.handoff],
+  ["Delays & revised deadlines", data.dependencies],
+].map(([label, val]) => (
                     <div className="cdp-def" key={label}>
                       <b>{label}</b>
                       <p>{value(val)}</p>
@@ -915,8 +1103,8 @@ export default function ContentDeliveryPlanner() {
                 </div>
 
                 <div className="cdp-paper-section">
-                  <span className="cdp-paper-num">05 / APPROVAL</span>
-                  <h3>Review, changes & payment</h3>
+            <span className="cdp-paper-num">05 / APPROVAL</span>
+<h3>Revisions, Approval & Payment</h3>
                   <div className="cdp-rule-stats">
                     <div>
                       <b>{value(data.revisionRounds, "TBD")}</b>
@@ -927,12 +1115,14 @@ export default function ContentDeliveryPlanner() {
                       <small>Working days for feedback</small>
                     </div>
                   </div>
-                  {[
-                    ["How feedback works", data.feedbackRules],
-                    ["Acceptance criteria", data.acceptance],
-                    ["Changes outside this plan", data.changePolicy],
-                    ["Payment terms", data.payment],
-                  ].map(([label, val]) => (
+
+        {[
+  ["Feedback process", data.feedbackRules],
+  ["Final approval requirements", data.acceptance],
+  ["Additional work & scope changes", data.changePolicy],
+  ["Payment terms", data.payment],
+].map(([label, val]) => (
+
                     <div className="cdp-def" key={label}>
                       <b>{label}</b>
                       <p>{value(val)}</p>
@@ -944,7 +1134,7 @@ export default function ContentDeliveryPlanner() {
                       <span>________________________</span>
                     </div>
                     <div>
-                      Content partner{" "}
+                      Agency / writer sign-off{" "}
                       <span>________________________</span>
                     </div>
                   </div>
@@ -993,31 +1183,77 @@ export default function ContentDeliveryPlanner() {
         </aside>
       </div>
 
-      <div className="cdp-bottom-note">
-        No account required. Your entries remain in this page while it's open.
-        Printing uses your browser's “Save as PDF” option.
-      </div>
+<div className="cdp-bottom-note">
+  {draftLoaded && draftSavedAt ? (
+    <>
+      ✓ Progress saved automatically in this browser.
+      Your work will be restored when you return.
+    </>
+  ) : (
+    <>
+      Your work is saved in this browser as you type.
+    </>
+  )}
+
+  {" "}No account required.
+  Printing uses your browser's “Save as PDF” option.
+</div>
+
     </div>
   );
 }
 
+
 export const faqs = [
   {
-    question: "Can I use this with an agency or a freelancer?",
+    question: "What should be included in a content scope of work?",
     answer:
-      "Yes. List any external writer, specialist or content agency as the delivery partner, then specify the assets, fee, dependencies and approval owner.",
+      "Your content scope of work should answer three questions: what’s being delivered, what’s included in the price and when is the work considered complete? Document the agreed deliverables, deadlines, review process and final approver. Also clarify what happens when the client requests work that wasn’t part of the original agreement.",
   },
   {
-    question: "What counts as a revision?",
+    question:
+      "How do I create a content delivery plan for freelance writers or agencies?",
     answer:
-      "Agree the number of consolidated feedback rounds in advance. A new audience, format or approved angle should be handled as a change request, not automatically treated as a revision.",
+      "Start by defining what your freelance writer or agency needs to deliver, including the content formats, fees and deadlines. Then document what your team will provide, who reviews each draft and how many revisions are included. Agree on the approval process and payment terms before sharing the final plan.",
   },
   {
-    question: "How do I share the plan?",
+    question:
+      "What’s the difference between a content brief and a content scope of work?",
     answer:
-      "Use Copy plan to paste the full text into an email or document, or Print / Save PDF to produce a clean version using your browser's print dialog.",
+      "A content brief explains what an individual piece should cover, including its audience, angle, structure, sources and product messaging. A content scope of work sets the commercial and delivery terms: which assets are commissioned, fees, deadlines, responsibilities, revisions and approvals. Use both so the writer understands the assignment and the agreement.",
+  },
+  {
+    question:
+      "What should I agree on before commissioning content from an agency?",
+    answer:
+      "Before commissioning content from an agency, agree on what they’re producing, how much you’re paying and when each piece is due. Also establish who approves the work and how additional requests or missed deadlines will be handled.",
+  },
+  {
+    question:
+      "Who should be responsible for product accuracy when outsourcing B2B SaaS content?",
+    answer:
+      "Product accuracy should be a shared responsibility, with your internal team having the final say. Your team provides verified information about features, pricing and integrations, while the agency checks that every claim reflects the product accurately. Any uncertainties should be resolved with Product Marketing before the content is submitted for final approval.",
+  },
+  {
+    question:
+      "What happens if an agency misses a content delivery deadline?",
+    answer:
+      "If an agency misses a content delivery deadline, ask for an explanation and a confirmed replacement date. Check whether the delay affects other deliverables and agree on how the agency will recover lost time. If deadlines are repeatedly missed, review your agreement and decide whether to continue working together.",
+  },
+  {
+    question:
+      "How should I define final approval criteria for outsourced content?",
+    answer:
+      "Final approval criteria should be based on what was agreed before writing started. Check that the content covers the required topics, uses accurate product information and includes any agreed visuals, links and SEO metadata. Assign one person to approve the finished work and confirm how outstanding corrections should be handled.",
+  },
+  {
+    question:
+      "Can I use a content delivery plan instead of a formal content writing contract?",
+    answer:
+      "No. A content delivery plan helps you agree on deliverables, costs, deadlines and approval requirements, but it shouldn’t replace a formal contract. Your contract should also cover content ownership, confidentiality, termination and payment obligations. Use both documents together so the agency understands what it’s delivering and the legal terms governing the engagement.",
   },
 ];
+
 
 const styles = `
 .cdp-root {
@@ -1027,14 +1263,28 @@ const styles = `
   --cdp-light: #eef4f3;
   --cdp-border: #d5e4e1;
   --cdp-muted: #587373;
-  font-family: Montserrat, Inter, system-ui, -apple-system, sans-serif;
+  font-family: "Montserrat Variable", Montserrat, Arial, sans-serif;
   color: var(--cdp-dark);
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 28px 20px 50px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 28px 0 50px;
   box-sizing: border-box;
 }
-.cdp-root * { box-sizing: border-box; }
+
+
+
+.cdp-root * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.cdp-root button,
+.cdp-root input,
+.cdp-root select,
+.cdp-root textarea {
+  font-family: inherit;
+}
 .cdp-root button, .cdp-root input, .cdp-root select, .cdp-root textarea { font: inherit; }
 .cdp-root button { cursor: pointer; }
 .cdp-root button:disabled { opacity: .35; cursor: not-allowed; }
@@ -1091,6 +1341,32 @@ const styles = `
 .cdp-check-grid label.checked { background: #eff8f5; border-color: #b5d8cf; }
 .cdp-check-grid input { accent-color: var(--cdp); margin-top: 1px; flex-shrink: 0; }
 .cdp-spaced { margin-top: 18px; }
+
+.cdp-exchange-note {
+  margin: -12px 0 20px;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #66817d;
+}
+
+.cdp-exchange-note a {
+  color: #167273;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cdp-exchange-note {
+  margin: -12px 0 20px;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #66817d;
+}
+
+.cdp-exchange-note a {
+  color: #167273;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .cdp-preview-wrap { position: sticky; top: 16px; border: 1px solid #d5e4e1; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 10px 40px rgba(1, 40, 42, .045); }
 .cdp-preview-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 19px; background: #073b3d; color: #fff; }
 .cdp-preview-tools .cdp-eyebrow { color: #90d3c7; font-size: 9px; }
@@ -1157,7 +1433,7 @@ const styles = `
   .cdp-paper { max-height: 720px; }
 }
 @media (max-width: 600px) {
-  .cdp-root { padding: 18px 12px 35px; }
+  .cdp-root { padding: 18px 0 35px; }
   .cdp-topbar { display: block; }
   .cdp-top-actions { margin-top: 15px; }
   .cdp-top-actions button { flex: 1; }

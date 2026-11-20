@@ -152,6 +152,54 @@ header {
   position: relative;
   overflow: hidden;
 }
+
+/* Match individual tool headers to category page hero */
+
+.detailHead {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(2, 47, 49, 0.6),
+      rgba(2, 47, 49, 0.6)
+    ),
+    linear-gradient(
+      180deg,
+      #0a2e2e 0%,
+      #041b1c 100%
+    );
+}
+
+/* Subtle grid pattern on the right */
+
+.detailHead::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 56%;
+  background-image:
+    linear-gradient(
+      rgba(193, 255, 232, 0.028) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(193, 255, 232, 0.028) 1px,
+      transparent 1px
+    );
+  background-size: 30px 30px;
+  pointer-events: none;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 48%
+  );
+}
+
+/* Keep breadcrumbs and headings above the grid */
+
+.detailHead .wrap {
+  position: relative;
+  z-index: 1;
+}
 .hero:after {
   content: "";
   position: absolute;
@@ -934,5 +982,299 @@ header .brandLogo {
   .foot {
     flex-wrap: wrap;
     gap: 12px;
+  }
+}
+
+
+/* =========================================
+   INDIVIDUAL TOOL — SERVICE CTA
+========================================= */
+
+.tool-service {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 42px;
+
+  margin-top: 72px;
+  padding: clamp(30px, 4vw, 52px);
+
+  border: 1px solid rgba(134, 220, 199, 0.2);
+  border-radius: 16px;
+
+  background: linear-gradient(
+    125deg,
+    #073432 0%,
+    #082929 62%,
+    #062021 100%
+  );
+
+  color: #f2fbf9;
+}
+
+.tool-service::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 52%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+
+  background:
+    linear-gradient(
+      rgba(134, 220, 199, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(134, 220, 199, 0.07) 1px,
+      transparent 1px
+    );
+
+  background-size: 29px 29px;
+  mask-image: linear-gradient(90deg, transparent, black);
+}
+
+.tool-service-copy {
+  max-width: 690px;
+}
+
+.tool-service-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 16px;
+
+  color: #a3e1d0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.tool-service-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+
+  background: #86dcc7;
+  box-shadow: 0 0 0 3px rgba(134, 220, 199, 0.08);
+}
+
+.tool-service h2 {
+  margin: 0 0 14px;
+
+  font-size: clamp(27px, 3.2vw, 41px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+
+  color: #f2fbf9;
+  white-space: pre-line;
+}
+
+.tool-service p {
+  margin: 0;
+  max-width: 690px;
+
+  color: #c6dfd9;
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.65;
+}
+
+.tool-service-link {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 7px 7px 7px 19px;
+  border-radius: 9px;
+
+  background: #f2fbf9;
+  color: #073432;
+
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+
+  transition: transform 0.2s, background 0.2s;
+}
+
+.tool-service-link:hover {
+  background: #dff7ed;
+  transform: translateY(-2px);
+}
+
+.tool-service-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+
+  background: #86dcc7;
+  color: #04201f;
+}
+
+/* =========================================
+   INDIVIDUAL TOOL — FAQS
+========================================= */
+
+.tool-faq {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.75fr)
+    minmax(0, 1.25fr);
+
+  gap: clamp(24px, 5vw, 80px);
+
+  padding-top: 94px;
+  padding-bottom: 15px;
+}
+
+.tool-faq-intro {
+  align-self: start;
+}
+
+.tool-faq-kicker {
+  color: #167273;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tool-faq h2 {
+  margin: 15px 0;
+
+  max-width: 370px;
+  color: #063736;
+
+  font-size: clamp(31px, 3.8vw, 49px);
+  line-height: 1.08;
+  letter-spacing: -0.052em;
+  font-weight: 800;
+}
+
+.tool-faq h2 span {
+  color: #67c4ab;
+}
+
+.tool-faq-intro > p {
+  max-width: 330px;
+  margin: 0;
+
+  color: #57736e;
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.tool-faq-items {
+  min-width: 0;
+  border-top: 1px solid #d5e4df;
+}
+
+.tool-faq-item {
+  padding: 0;
+  border-bottom: 1px solid #d5e4df;
+}
+
+.tool-faq-item summary {
+  list-style: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+
+  padding: 24px 4px;
+
+  color: #063736;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.tool-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-faq-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  color: #167273;
+  transition: transform 0.2s;
+}
+
+.tool-faq-item[open] .tool-faq-chevron {
+  transform: rotate(180deg);
+}
+
+.tool-faq-item summary:hover {
+  color: #167273;
+}
+
+.tool-faq-answer p {
+  max-width: 620px;
+  padding: 0 32px 22px 4px;
+  margin: 0;
+
+  color: #506b69;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 800px) {
+  .tool-service {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .tool-faq {
+    grid-template-columns: 1fr;
+    padding-top: 65px;
+    gap: 30px;
+  }
+
+  .tool-faq h2 {
+    max-width: 550px;
+  }
+}
+
+@media (max-width: 540px) {
+  .tool-service {
+    margin-top: 48px;
+    padding: 28px 22px;
+  }
+
+  .tool-service-link {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tool-faq {
+    padding-top: 55px;
+  }
+
+  .tool-faq-item summary {
+    padding: 20px 2px;
+    font-size: 14px;
   }
 }

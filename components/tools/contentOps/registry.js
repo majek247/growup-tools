@@ -1,4 +1,6 @@
-import ContentScopeOfWork from "./ContentScopeOfWork";
+import ContentScopeOfWork, {
+  faqs as ContentScopeOfWorkFaqs
+} from "./ContentScopeOfWork";
 import CostPerPublishedPiece from "./CostPerPublishedPiece";
 import BrandVoiceOnePager from "./BrandVoiceOnePager";
 
@@ -21,10 +23,10 @@ import AiAssistedWritingPolicy, {
 } from "./AiAssistedWritingPolicy";
 
 export const contentOpsComponents = {
-  "content-delivery-planner": {
-    Component: ContentScopeOfWork,
-    faqs: []
-  },
+"content-delivery-planner": {
+  Component: ContentScopeOfWork,
+  faqs: ContentScopeOfWorkFaqs
+},
 
   "content-cost-calculator": {
     Component: CostPerPublishedPiece,
