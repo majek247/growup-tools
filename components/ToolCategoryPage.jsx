@@ -149,6 +149,8 @@ export default function ToolCategoryPage({ category, tools = [] }) {
 
   const hasFilters = query || selectedType !== "All types";
 
+  const headingMain = config.title.replace(/\s+tools$/i, "");
+
   return (
     <Layout
       title={`${config.title} | Free GrowUp Tools`}
@@ -170,43 +172,37 @@ export default function ToolCategoryPage({ category, tools = [] }) {
                   <span className="gtc-dot" /> GROWUP TOOLKIT /{" "}
                   {config.eyebrow}
                 </div>
-                <h1>{config.title}</h1>
-                <p>{config.intro}</p>
-                <div className="gtc-hero-meta">
-                  <span>
-                    <Check size={15} /> {categoryTools.length} free{" "}
-                    {categoryTools.length === 1 ? "tool" : "tools"}
-                  </span>
-                  <span>
-                    <Check size={15} /> No signup
-                  </span>
-                </div>
-                <a className="gtc-hero-button" href="#category-tools">
-                  Browse {config.label.toLowerCase()} tools{" "}
-                  <ArrowRight size={17} />
-                </a>
+                <h1>
+                  {headingMain}
+                  <br />
+                  <span className="gtc-headline-highlight">tools.</span>
+                </h1>
+
+
+
+<div className="gtc-hero-rule" aria-hidden="true" />
+
+<div className="gtc-hero-bottom">
+  <p className="gtc-hero-description">
+    {config.intro}
+  </p>
+
+  <a
+    className="gtc-hero-button"
+    href="#category-tools"
+  >
+    Explore tools
+    <ArrowRight size={17} />
+  </a>
+</div>
+
+
+
               </div>
 
-              {featured && (
-                <Link
-                  className="gtc-feature"
-                  href={`/tools/${featured.slug}/`}
-                >
-                  <div className="gtc-feature-kicker">
-                    <span className="gtc-dot" /> START HERE{" "}
-                    <ArrowUpRight size={18} />
-                  </div>
-                  <div className="gtc-feature-label">FEATURED TOOL</div>
-                  <h2>{featured.name}</h2>
-                  <p>{featured.description}</p>
-                  <div className="gtc-feature-footer">
-                    <span>{featured.type}</span>
-                    <span>
-                      Open tool <ArrowRight size={16} />
-                    </span>
-                  </div>
-                </Link>
-              )}
+
+
+
             </div>
           </div>
         </section>
@@ -345,9 +341,9 @@ export default function ToolCategoryPage({ category, tools = [] }) {
       <style jsx global>{`
         .gtc-root {
           --gtc-ink: #063736;
-          --gtc-dark: #073b39;
+          --gtc-dark: #0a2e2e;
           --gtc-teal: #167273;
-          --gtc-mint: #a9eed6;
+          --gtc-mint: #86dcc7;
           --gtc-line: #d5e4df;
           --gtc-muted: #506b69;
           font-family: inherit;
@@ -355,32 +351,37 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           color: var(--gtc-ink);
         }
         .gtc-root * { box-sizing: border-box }
+        .gtc-wrap {
+          margin-left: auto;
+          margin-right: auto;
+        }
         .gtc-hero {
-          color: #fff;
-          background: radial-gradient(
-              circle at 83% 35%,
-              rgba(37, 131, 119, .19),
-              transparent 35%
+          color: #f2fbf9;
+          background: linear-gradient(
+              145deg,
+              rgba(2, 47, 49, .6),
+              rgba(2, 47, 49, .6)
             ),
-            linear-gradient(125deg, #073532, #063a38 60%, #04312f);
+            linear-gradient(180deg, #0a2e2e 0%, #041b1c 100%);
           position: relative;
           overflow: hidden;
         }
         .gtc-hero:before {
           content: "";
           position: absolute;
-          inset: 0 0 0 52%;
+          inset: 0 0 0 56%;
           background-image: linear-gradient(
-              rgba(193, 255, 232, .035) 1px,
+              rgba(193, 255, 232, .028) 1px,
               transparent 1px
             ),
             linear-gradient(
               90deg,
-              rgba(193, 255, 232, .035) 1px,
+              rgba(193, 255, 232, .028) 1px,
               transparent 1px
             );
-          background-size: 28px 28px;
+          background-size: 30px 30px;
           pointer-events: none;
+          mask-image: linear-gradient(90deg, transparent, #000 48%);
         }
         .gtc-crumbs {
           display: flex;
@@ -388,7 +389,7 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           gap: 10px;
           padding-top: 28px;
           font-size: 13px;
-          color: #bfdbd3;
+          color: #bfded8;
           position: relative;
         }
         .gtc-crumbs a {
@@ -396,89 +397,151 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           color: #d4f4e6;
         }
         .gtc-crumbs a:hover { text-decoration: underline }
-        .gtc-hero-grid {
-          position: relative;
-          display: grid;
-          grid-template-columns: minmax(0, 1.3fr) minmax(260px, .86fr);
-          gap: 62px;
-          align-items: center;
-          padding: 55px 0 66px;
-        }
+       .gtc-hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  padding: 48px 0 62px;
+}
+
+.gtc-hero-main {
+  width: 100%;
+  max-width: 100%;
+}
         .gtc-eyebrow {
           display: flex;
           align-items: center;
-          gap: 9px;
-          color: #afebdb;
-          letter-spacing: .13em;
+          gap: 12px;
+          color: #7fb8ae;
+          letter-spacing: .17em;
           font-weight: 750;
-          font-size: 10px;
+          font-size: 11px;
           line-height: 1.5;
+          text-transform: uppercase;
         }
         .gtc-dot {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           display: inline-block;
           flex-shrink: 0;
           border-radius: 100%;
-          background: #6bd2b0;
+          background: #86dcc7;
+          box-shadow: 0 0 0 3px rgba(134, 220, 199, .08);
         }
-        .gtc-hero h1 {
-          font-size: clamp(38px, 5vw, 64px);
-          letter-spacing: -.055em;
-          line-height: 1.065;
-          margin: 18px 0;
-          font-weight: 800;
-          max-width: 650px;
+       .gtc-hero h1 {
+  font-size: clamp(44px, 5.1vw, 74px);
+  letter-spacing: -0.052em;
+  line-height: 1.07;
+  margin: 24px 0 26px;
+  font-weight: 800;
+  max-width: 920px;
+  color: #f2fbf9;
+}
+        .gtc-headline-highlight {
+          display: inline-block;
+          background: #86dcc7;
+          color: #04201f;
+          padding: .015em .15em .075em;
+          border-radius: .14em;
+          box-shadow: 0 25px 48px -32px rgba(134, 220, 199, .4);
         }
-        .gtc-hero-main > p {
-          margin: 0;
-          max-width: 590px;
-          color: #e2f3ee;
-          font-size: 16px;
-          line-height: 1.75;
-        }
-        .gtc-hero-meta {
-          display: flex;
-          gap: 22px;
-          flex-wrap: wrap;
-          margin-top: 22px;
-          color: #c4e4da;
-          font-size: 12px;
-          font-weight: 650;
-        }
-        .gtc-hero-meta span {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .gtc-hero-button {
-          margin-top: 26px;
-          display: inline-flex;
-          gap: 18px;
-          align-items: center;
-          justify-content: center;
-          background: #b2f0d9;
-          color: #073d39;
-          text-decoration: none;
-          padding: 13px 17px;
-          border-radius: 7px;
-          font-size: 13px;
-          font-weight: 800;
-          transition: background .2s, transform .2s;
-        }
-        .gtc-hero-button:hover {
-          background: #d0fae9;
-          transform: translateY(-2px);
-        }
+
+.gtc-hero-rule {
+  width: 100%;
+  height: 1px;
+  max-width: none;
+  background: linear-gradient(
+    90deg,
+    rgba(205, 238, 232, 0.25),
+    rgba(205, 238, 232, 0.06)
+  );
+  margin-bottom: 30px;
+}
+
+
+
+
+
+/* Description + CTA on one row */
+
+.gtc-hero-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  width: 100%;
+}
+
+.gtc-hero-description {
+  flex: 1;
+  max-width: 780px;
+  margin: 0;
+  color: #fafafa;
+  font-size: clamp(17px, 1.55vw, 21px);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+}
+
+/* Transparent portfolio-style CTA */
+
+.gtc-hero-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  flex-shrink: 0;
+  margin: 0;
+  padding: 18px 28px;
+
+  border: 1px solid rgba(205, 238, 232, 0.28);
+  border-radius: 100px;
+
+  background: transparent;
+  color: #cdeee8;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.gtc-hero-button:hover {
+  background: #f2fbf9;
+  color: #04201f;
+  border-color: #f2fbf9;
+  transform: translateY(-2px);
+}
+
+.gtc-hero-button:focus-visible {
+  outline: 2px solid #86dcc7;
+  outline-offset: 4px;
+}
+
+
+
+
         .gtc-feature {
           display: flex;
           flex-direction: column;
-          min-height: 270px;
-          background: #f2faf4;
-          color: #073a38;
-          border-radius: 12px;
-          box-shadow: 9px 10px 0 rgba(104, 215, 166, .26);
-          padding: 26px;
+          min-height: 280px;
+          background: #f2fbf9;
+          color: #04201f;
+          border-radius: 14px;
+          box-shadow: 9px 10px 0 rgba(134, 220, 199, .22);
+          padding: 28px;
           text-decoration: none;
           transition: transform .2s;
         }
@@ -824,8 +887,9 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           }
         }
         @media (max-width: 540px) {
-          .gtc-wrap { width: min(100% - 30px, 1020px) }
-          .gtc-hero h1 { font-size: 41px }
+          .gtc-hero h1 {
+            font-size: clamp(38px, 10vw, 53px);
+          }
           .gtc-hero-grid { padding-top: 38px }
           .gtc-grid { grid-template-columns: 1fr }
           .gtc-hero-meta { gap: 10px 20px }
@@ -837,6 +901,36 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           }
           .gtc-main { padding-top: 40px }
         }
+
+
+
+        @media (max-width: 800px) {
+  .gtc-hero-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .gtc-hero-description {
+    max-width: 100%;
+  }
+
+  .gtc-hero-button {
+    padding: 15px 24px;
+  }
+}
+
+@media (max-width: 540px) {
+  .gtc-hero-bottom {
+    gap: 22px;
+  }
+
+  .gtc-hero-description {
+    font-size: 17px;
+    line-height: 1.6;
+  }
+}
+  
         @media (prefers-reduced-motion: reduce) {
           .gtc-root * { transition: none !important }
         }
