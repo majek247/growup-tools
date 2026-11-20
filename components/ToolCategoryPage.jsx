@@ -98,7 +98,7 @@ intro:
     eyebrow: "BRIEFS, REVIEWS & EDITORIAL WORKFLOWS",
     title: "Content Production & Workflow Tools",
     directoryTitle: "Everything You Need for Content Production.",
-directoryDescription: "Manage content briefs, production costs, writer guidelines, product information, and approvals in one place.",
+directoryDescription: "Give your team practical tools to simplify everyday content work.",
     metaTitle: "Content Production & Workflow Tools for Marketing Teams",
     intro:
       "Manage content production, standardise agency deliverables, streamline approvals, and reduce the time your marketing team spends reviewing work.",

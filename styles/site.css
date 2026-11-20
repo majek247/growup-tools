@@ -509,7 +509,7 @@ h1 em {
 .foot a {
   font-size: 12px;
 }
-.foot a {
+.foot > a:last-child {
   margin-left: auto;
 }
 footer {
@@ -878,4 +878,61 @@ details p {
 .toolBreadcrumbs [aria-current="page"] {
   color: #f2fbf9;
   font-weight: 600;
+}
+
+
+
+/* Larger GrowUp navigation logo */
+
+header .brandLogo {
+  display: block;
+  width: 105px;
+  height: auto;
+  max-width: none;
+}
+
+
+/* Footer branding */
+
+.footerBrand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.footerBrandLogo {
+  display: block;
+  width: 105px;
+  height: auto;
+  max-width: none;
+}
+
+/* Keep footer branding aligned */
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.foot > a:last-child {
+  margin-left: auto;
+}
+
+/* Mobile adjustments */
+
+@media (max-width: 600px) {
+  header .brandLogo {
+    width: 90px;
+  }
+
+  .footerBrandLogo {
+    width: 90px;
+  }
+
+  .foot {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 }

@@ -44,13 +44,26 @@ export default function Layout({ title, description, path, children }) {
         </div>
       </header>
       <main id="main">{children}</main>
-      <footer>
-        <div className="wrap foot">
-          <b>GrowUp</b>
-          <span>B2B SaaS SEO &amp; content</span>
-          <Link href="/tools/">All tools ↑</Link>
-        </div>
-      </footer>
+
+<footer>
+  <div className="wrap foot">
+    <a
+      className="footerBrand"
+      href="https://www.seo-growup.com/"
+      aria-label="GrowUp homepage"
+    >
+      <img
+        src="/images/growupblacklogotransaprent.png"
+        alt="GrowUp"
+        className="footerBrandLogo"
+      />
+    </a>
+
+    <Link href="/tools/">All tools ↑</Link>
+  </div>
+</footer>
+
+
     </>
   );
 }
