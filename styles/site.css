@@ -841,3 +841,41 @@ details p {
     max-width: 145px;
   }
 }
+
+
+/* Individual tool breadcrumbs */
+
+.toolBreadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-bottom: 24px;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+
+  color: #bfded8;
+}
+
+.toolBreadcrumbs a {
+  color: #d4f4e6;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.toolBreadcrumbs a:hover {
+  color: #86dcc7;
+  text-decoration: underline;
+}
+
+.toolBreadcrumbs span[aria-hidden="true"] {
+  color: #7fb8ae;
+}
+
+.toolBreadcrumbs [aria-current="page"] {
+  color: #f2fbf9;
+  font-weight: 600;
+}

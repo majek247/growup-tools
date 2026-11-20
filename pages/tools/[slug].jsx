@@ -24,6 +24,31 @@ import AeoPromptGenerator, {
   faqs as aeoPromptFaqs,
 } from "../../components/tools/AeoPromptGenerator";
 
+
+const categoryPages = {
+  "Revenue planning": {
+    name: "Revenue Planning",
+    href: "/tools/revenue-planning/",
+  },
+  "AI search": {
+    name: "AI Search",
+    href: "/tools/ai-search/",
+  },
+  "Technical SEO": {
+    name: "Technical SEO",
+    href: "/tools/technical-seo/",
+  },
+  "Agency hiring": {
+    name: "Agency Hiring",
+    href: "/tools/agency-hiring/",
+  },
+  "Content Operations": {
+    name: "Content Operations",
+    href: "/tools/content-operations/",
+  },
+};
+
+
 const toolComponents = {
   ...contentOpsComponents,
   ...hiringComponents,
@@ -65,6 +90,8 @@ export function getStaticProps({ params }) {
 }
 export default function ToolPage({ tool }) {
 
+  const category = categoryPages[tool.topic];
+
     const customTool = toolComponents[tool.slug];
 const ToolComponent = customTool?.Component ?? Workbench;
 
@@ -87,9 +114,33 @@ const pageFaqs = customTool?.faqs ?? [
     >
       <section className="detailHead">
         <div className="wrap">
-          <Link className="back" href="/tools/#directory">
-            <ChevronLeft size={16} /> All tools
-          </Link>
+
+<nav
+  className="toolBreadcrumbs"
+  aria-label="Breadcrumb"
+>
+  <Link href="/tools/">
+    All Tools
+  </Link>
+
+  {category && (
+    <>
+      <span aria-hidden="true">/</span>
+
+      <Link href={category.href}>
+        {category.name}
+      </Link>
+    </>
+  )}
+
+  <span aria-hidden="true">/</span>
+
+  <span aria-current="page">
+    {tool.name}
+  </span>
+</nav>
+
+
           <div className="eyebrow">
             <i />
             {tool.topic} / {tool.type}

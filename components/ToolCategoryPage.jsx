@@ -1,12 +1,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
-  BookOpen,
+    ArrowUpRight,
   Calculator,
-  Check,
   ChevronDown,
   FileText,
   Filter,
@@ -26,9 +23,12 @@ export const TOOL_CATEGORIES = [
     topic: "Revenue planning",
     label: "Revenue planning",
     eyebrow: "FORECAST, BUDGET & MEASURE",
-    title: "Revenue planning tools",
-    intro:
-      "Work backwards from revenue targets, pressure-test your content budget, and see what organic growth needs to deliver.",
+  title: "Revenue planning tools",
+directoryTitle: "Plan Your Organic Revenue.",
+directoryDescription:
+  "Calculate pipeline targets, forecast content returns, and assess the investment needed to reach your goals.",
+intro:
+  "Work backwards from revenue targets, pressure-test your content budget, and see what organic growth needs to deliver.",
     description:
       "Free revenue planning calculators for B2B SaaS marketers. Model organic pipeline, content ROI, and campaign performance with practical inputs.",
     detail:
@@ -40,9 +40,14 @@ export const TOOL_CATEGORIES = [
     topic: "AI search",
     label: "AI search",
     eyebrow: "AI SEARCH & DISCOVERABILITY",
-    title: "AI search tools",
-    intro:
-      "Prepare your website for AI-assisted discovery, build buyer prompts, and give answer engines clearer product information.",
+
+title: "AI search tools",
+directoryTitle: "Tools for AI Search Visibility.",
+directoryDescription:
+  "Prepare product information, build buyer prompts, and improve how your brand appears in AI search.",
+intro:
+  "Prepare your website for AI-assisted discovery, build buyer prompts, and give answer engines clearer product information.",
+
     description:
       "Free AI search tools for B2B SaaS. Generate buyer evaluation prompts and prepare useful AI-facing content resources.",
     detail:
@@ -54,9 +59,13 @@ export const TOOL_CATEGORIES = [
     topic: "Technical SEO",
     label: "Technical SEO",
     eyebrow: "MARKUP, SNIPPETS & SITE HEALTH",
-    title: "Technical SEO tools",
-    intro:
-      "Create structured data, check search snippets, and handle routine technical SEO tasks without starting from a blank file.",
+ title: "Technical SEO tools",
+directoryTitle: "Handle Technical SEO Tasks.",
+directoryDescription:
+  "Generate schema markup, review search snippets, and prepare technical elements for your website pages.",
+intro:
+  "Create structured data, check search snippets, and handle routine technical SEO tasks without starting from a blank file.",
+
     description:
       "Free technical SEO tools for creating schema markup, checking SERP snippets, and preparing search-ready page metadata.",
     detail: "Small technical tasks, made much less fiddly.",
@@ -67,9 +76,15 @@ export const TOOL_CATEGORIES = [
     topic: "Agency hiring",
     label: "Agency hiring",
     eyebrow: "BRIEFS, PROPOSALS & SHORTLISTS",
-    title: "Agency hiring tools",
-    intro:
-      "Write better agency briefs, compare proposals on the same terms, and run paid trials that actually help you choose.",
+
+title: "Agency hiring tools",
+directoryTitle: "Make Better Agency Decisions.",
+directoryDescription:
+  "Compare agency proposals, define project requirements, and assess potential partners before committing your budget.",
+intro:
+  "Write better agency briefs, compare proposals on the same terms, and run paid trials that actually help you choose.",
+
+
     description:
       "Free agency hiring tools for B2B SaaS teams. Build SEO and content briefs, compare agency proposals, and assess paid trials.",
     detail:
@@ -81,16 +96,107 @@ export const TOOL_CATEGORIES = [
     topic: "Content Operations",
     label: "Content operations",
     eyebrow: "BRIEFS, REVIEWS & EDITORIAL WORKFLOWS",
-    title: "Content operations tools",
+    title: "Content Production & Workflow Tools",
+    directoryTitle: "Everything You Need for Content Production.",
+directoryDescription: "Manage content briefs, production costs, writer guidelines, product information, and approvals in one place.",
+    metaTitle: "Content Production & Workflow Tools for Marketing Teams",
     intro:
-      "Spend less time chasing inputs, correcting first drafts, and explaining the same writing rules to every new contributor.",
+      "Manage content production, standardise agency deliverables, streamline approvals, and reduce the time your marketing team spends reviewing work.",
     description:
-      "Free content operations templates and calculators for B2B SaaS marketers. Manage briefs, writing guidelines, product facts, and editorial workflows.",
+      "Free content production and workflow tools for marketing teams. Brief writers, control costs, manage agencies and speed up content reviews and approvals.",
     detail:
       "Give writers what they need before the first draft lands.",
     featured: "content-brief-template",
   },
 ];
+
+
+// These questions are specific to each toolkit. Keep answers factual and
+// avoid promising rankings, traffic, pipeline or publication results.
+const CATEGORY_EXTRAS = {
+  "content-operations": {
+    ctaLabel: "CONTENT MARKETING SUPPORT",
+    ctaTitle: "Need content production\noff your plate?",
+    ctaCopy: "GrowUp helps B2B SaaS teams plan, write and improve content, with clear briefs, senior editorial oversight and a focus on qualified pipeline.",
+    ctaButton: "Explore our content services",
+ faqs: [
+  {
+    q: "Are these content production and workflow tools free to use?",
+    a: "Yes. Every tool in this directory is free to use. Whether you’re managing content in-house or working with freelancers and agencies, you can use the tools without paying for a subscription or purchasing a template.",
+  },
+  {
+    q: "Do I need to create an account to use these tools?",
+    a: "No. You don’t need to create an account or sign up for anything. Just choose the tool you want to use, enter the relevant information, and get started.",
+  },
+  {
+    q: "How do I choose the right content production tools for my team?",
+    a: "Start with the task taking up the most time. Use the content delivery planner to define deliverables, the cost calculator to compare production options, or the content brief template to prepare writing assignments. Each tool handles a specific part of content production, so you don’t need to use everything.",
+  },
+  {
+    q: "What information do I need before using these content production tools?",
+    a: "It depends on the tool. You might need your content budget, planned deliverables, writer rates, product information, brand guidelines, or approval requirements. Each tool is designed around a specific task, so you can start with the information you already have and complete the relevant fields.",
+  },
+  {
+    q: "Can I use these tools to manage an entire content production workflow?",
+    a: "You can use several tools together to support your content workflow, from planning deliverables and preparing briefs to documenting product facts and reviewing writing standards. They help organise the work, but they don’t replace your project management system, publishing platform, or the people responsible for approvals.",
+  },
+  {
+    q: "Can I download, edit, and share the outputs with my team?",
+    a: "The tools are designed to create practical working resources for your marketing team. Available export and sharing options depend on the individual tool. Where supported, you can save or copy the output, make changes, and share it with internal writers, freelancers, or agencies.",
+  },
+  {
+    q: "Do I need technical knowledge to use these content production tools?",
+    a: "No coding or technical SEO knowledge is required. The tools are built for marketers, founders, content managers, and people coordinating writers or agencies. You’ll mainly be entering business information, selecting options, and reviewing the resulting templates, calculations, or documents.",
+  },
+],
+  },
+  "revenue-planning": {
+    ctaLabel: "CONTENT-LED GROWTH",
+    ctaTitle: "Turn your content budget into a plan.",
+    ctaCopy: "Work with GrowUp to prioritise buyer-intent content and connect SEO investment to qualified opportunities, pipeline and revenue.",
+    ctaButton: "Explore our content services",
+    faqs: [
+      { q: "What can I calculate with these revenue planning tools?", a: "Use the calculators to explore planning scenarios around organic visits, opportunities, conversion rates, content costs and potential returns. Results depend on the assumptions you enter." },
+      { q: "Do these tools predict actual SEO revenue?", a: "No. Forecasts are planning scenarios, not guarantees. Validate inputs with your analytics and CRM data and revise them as real performance becomes available." },
+      { q: "Who should use revenue planning calculators?", a: "Marketing leaders, founders and teams preparing SEO budgets, investment cases or performance targets can use them to make assumptions visible and easier to discuss." },
+    ],
+  },
+  "ai-search": {
+    ctaLabel: "AI SEARCH & CONTENT",
+    ctaTitle: "Make your product easier to evaluate.",
+    ctaCopy: "GrowUp develops buyer-focused content and product comparisons that help prospects understand what your software does and where it fits.",
+    ctaButton: "Explore our content services",
+    faqs: [
+      { q: "What are AI search tools used for?", a: "These tools help teams prepare structured information and buyer-oriented content for an environment where prospects use AI assistants as well as traditional search engines." },
+      { q: "Can a tool guarantee a ChatGPT recommendation?", a: "No. AI recommendations depend on the model, prompt and available sources. These tools support research and content preparation; they cannot guarantee inclusion or ranking." },
+      { q: "How should I measure AI search visibility?", a: "Track a consistent set of relevant buyer prompts, record sources and brand mentions, and compare observations over time. Use business outcomes alongside visibility measurements." },
+    ],
+  },
+  "technical-seo": {
+    ctaLabel: "SEO CONTENT SUPPORT",
+    ctaTitle: "Need the content to match the technical work?",
+    ctaCopy: "GrowUp combines buyer research, search-led content and product expertise to support the pages that matter most to your pipeline.",
+    ctaButton: "Explore our content services",
+    faqs: [
+      { q: "What do these technical SEO tools help with?", a: "They assist with common tasks such as preparing structured data, previewing snippets and generating search-related files. Check each output before adding it to a live website." },
+      { q: "Does valid schema markup improve rankings automatically?", a: "No. Structured data can help search engines interpret eligible page content, but it does not guarantee a rich result or a ranking increase." },
+      { q: "Should developers review generated code?", a: "Yes. Validate generated markup and files against your site, current search engine guidance and publishing environment before deployment." },
+    ],
+  },
+  "agency-hiring": {
+    ctaLabel: "WORK WITH GROWUP",
+    ctaTitle: "Want an agency that owns the content work?",
+    ctaCopy: "See how GrowUp approaches B2B SaaS content strategy, production and measurement before you make your next agency decision.",
+    ctaButton: "Explore our content services",
+    faqs: [
+      { q: "How can I compare SEO or content agency proposals fairly?", a: "Ask each agency to respond to the same brief. Compare scope, deliverables, team ownership, review time, reporting and commercial terms rather than headline price alone." },
+      { q: "What should an agency trial include?", a: "Set a defined deliverable, a shared briefing process, named reviewers, a budget and clear acceptance criteria. Evaluate both the output and how the agency works with your team." },
+      { q: "Can these tools choose an agency for me?", a: "No. They structure the information needed for a better decision. Check references, capabilities and fit directly with shortlisted agencies before committing." },
+    ],
+  },
+};
+
+const SERVICE_URL = "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
 
 const getTypeIcon = (type) => {
   const t = (type || "").toLowerCase();
@@ -139,44 +245,38 @@ export default function ToolCategoryPage({ category, tools = [] }) {
 
   if (!config) return null;
 
-  const featured =
-    categoryTools.find((t) => t.slug === config.featured) ||
-    categoryTools[0];
-
-  const otherCategories = TOOL_CATEGORIES.filter(
+const otherCategories = TOOL_CATEGORIES.filter(
     (c) => c.slug !== category
   );
 
+  const extras = CATEGORY_EXTRAS[category];
   const hasFilters = query || selectedType !== "All types";
 
-  const headingMain = config.title.replace(/\s+tools$/i, "");
+  const headingMain = config.title;
 
   return (
     <Layout
-      title={`${config.title} | Free GrowUp Tools`}
+      title={config.metaTitle || `${config.title} | GrowUp`}
       description={config.description}
       path={`/tools/${category}/`}
     >
       <div className="gtc-root">
         <section className="gtc-hero">
           <div className="wrap gtc-wrap">
-            <nav className="gtc-crumbs" aria-label="Breadcrumb">
-              <Link href="/tools/">All tools</Link>
-              <span aria-hidden="true">/</span>
-              <span>{config.label}</span>
-            </nav>
+
+      <nav className="gtc-crumbs" aria-label="Breadcrumb">
+  <Link href="/tools/">All Tools</Link>
+  <span aria-hidden="true">/</span>
+  <span>
+    {config.label.replace(/\b\w/g, (char) => char.toUpperCase())}
+  </span>
+</nav>
 
             <div className="gtc-hero-grid">
               <div className="gtc-hero-main">
-                <div className="gtc-eyebrow">
-                  <span className="gtc-dot" /> GROWUP TOOLKIT /{" "}
-                  {config.eyebrow}
-                </div>
-                <h1>
-                  {headingMain}
-                  <br />
-                  <span className="gtc-headline-highlight">tools.</span>
-                </h1>
+
+<h1>{headingMain}</h1>
+
 
 
 
@@ -213,14 +313,20 @@ export default function ToolCategoryPage({ category, tools = [] }) {
         >
           <div className="gtc-section-heading">
             <div>
-              <div className="gtc-eyebrow gtc-eyebrow-light">
-                <span className="gtc-dot" /> TOOL DIRECTORY
-              </div>
-              <h2>
-                Explore {config.label.toLowerCase()} tools
-                <span>.</span>
-              </h2>
-              <p>{config.detail}</p>
+
+
+       <div className="gtc-eyebrow gtc-eyebrow-light">
+  <span className="gtc-dot" /> TOOL DIRECTORY
+</div>
+
+<h2>
+  {config.directoryTitle || `Explore ${config.label.toLowerCase()} tools.`}
+</h2>
+
+<p>{config.directoryDescription || config.detail}</p>
+
+
+
             </div>
 
             <div className="gtc-search" role="search">
@@ -309,32 +415,59 @@ export default function ToolCategoryPage({ category, tools = [] }) {
             </div>
           )}
 
-          <section
-            className="gtc-explore"
-            aria-labelledby="gtc-explore-heading"
-          >
-            <div className="gtc-explore-heading">
-              <div>
-                <span className="gtc-small-label">
-                  MORE FROM GROWUP
-                </span>
-                <h2 id="gtc-explore-heading">
-                  Explore other toolkits
-                </h2>
-              </div>
-              <Link href="/tools/#directory">
-                View all tools <ArrowRight size={16} />
-              </Link>
-            </div>
-            <div className="gtc-other-grid">
-              {otherCategories.map((c) => (
-                <Link href={`/tools/${c.slug}/`} key={c.slug}>
-                  <span>{c.label}</span>
-                  <ArrowUpRight size={18} />
-                </Link>
-              ))}
-            </div>
-          </section>
+          {extras && (
+            <>
+              <section className="gtc-service" aria-labelledby="gtc-service-title">
+                <div className="gtc-service-copy">
+                  <div className="gtc-service-kicker">
+                    <span className="gtc-dot" aria-hidden="true" />
+                    {extras.ctaLabel}
+                  </div>
+                  <h2 id="gtc-service-title">{extras.ctaTitle}</h2>
+                  <p>{extras.ctaCopy}</p>
+                </div>
+                <a
+                  className="gtc-service-link"
+                  href={SERVICE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${extras.ctaButton} (opens in a new tab)`}
+                >
+                  <span>{extras.ctaButton}</span>
+                  <span className="gtc-service-arrow" aria-hidden="true">
+                    <ArrowUpRight size={19} strokeWidth={2} />
+                  </span>
+                </a>
+              </section>
+
+              <section className="gtc-faq" aria-labelledby="gtc-faq-heading">
+                <div className="gtc-faq-intro">
+                  <span className="gtc-faq-kicker">HOW IT WORKS</span>
+                  <h2 id="gtc-faq-heading">Frequently asked questions<span>.</span></h2>
+                  <p>Answers to the questions teams ask before using these tools.</p>
+                </div>
+
+
+<div className="gtc-faq-items">
+  {extras.faqs.map((faq) => (
+    <details
+      className="gtc-faq-item"
+      key={faq.q}
+      name="growup-category-faq"
+    >
+                      <summary>
+                        <span>{faq.q}</span>
+                        <span className="gtc-faq-chevron" aria-hidden="true">
+                          <ChevronDown size={19} strokeWidth={1.8} />
+                        </span>
+                      </summary>
+                      <div className="gtc-faq-answer"><p>{faq.a}</p></div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </main>
       </div>
 
@@ -433,19 +566,11 @@ export default function ToolCategoryPage({ category, tools = [] }) {
   font-size: clamp(44px, 5.1vw, 74px);
   letter-spacing: -0.052em;
   line-height: 1.07;
-  margin: 24px 0 26px;
+  margin: 0 0 26px;
   font-weight: 800;
-  max-width: 920px;
+  max-width: 1100px;
   color: #f2fbf9;
 }
-        .gtc-headline-highlight {
-          display: inline-block;
-          background: #86dcc7;
-          color: #04201f;
-          padding: .015em .15em .075em;
-          border-radius: .14em;
-          box-shadow: 0 25px 48px -32px rgba(134, 220, 199, .4);
-        }
 
 .gtc-hero-rule {
   width: 100%;
@@ -475,7 +600,7 @@ export default function ToolCategoryPage({ category, tools = [] }) {
 
 .gtc-hero-description {
   flex: 1;
-  max-width: 780px;
+  max-width: 900px;
   margin: 0;
   color: #fafafa;
   font-size: clamp(17px, 1.55vw, 21px);
@@ -533,65 +658,6 @@ export default function ToolCategoryPage({ category, tools = [] }) {
 
 
 
-        .gtc-feature {
-          display: flex;
-          flex-direction: column;
-          min-height: 280px;
-          background: #f2fbf9;
-          color: #04201f;
-          border-radius: 14px;
-          box-shadow: 9px 10px 0 rgba(134, 220, 199, .22);
-          padding: 28px;
-          text-decoration: none;
-          transition: transform .2s;
-        }
-        .gtc-feature:hover { transform: translateY(-3px) }
-        .gtc-feature-kicker {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 10px;
-          letter-spacing: .11em;
-          font-weight: 800;
-          color: #116d67;
-        }
-        .gtc-feature-kicker svg { margin-left: auto }
-        .gtc-feature-label {
-          font-size: 10px;
-          letter-spacing: .08em;
-          color: #63837b;
-          font-weight: 750;
-          margin-top: 25px;
-        }
-        .gtc-feature h2 {
-          font-size: 25px;
-          letter-spacing: -.035em;
-          line-height: 1.2;
-          margin: 8px 0 10px;
-          font-weight: 800;
-        }
-        .gtc-feature p {
-          color: #486662;
-          font-size: 13px;
-          line-height: 1.65;
-          margin: 0 0 24px;
-          flex: 1;
-        }
-        .gtc-feature-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-top: 1px solid #cfdfd8;
-          padding-top: 17px;
-          font-size: 11px;
-          color: #35746c;
-          font-weight: 700;
-        }
-        .gtc-feature-footer span:last-child {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-        }
         .gtc-main {
           padding-top: 52px;
           padding-bottom: 86px;
@@ -808,61 +874,156 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           font-weight: 700;
           cursor: pointer;
         }
-        .gtc-explore {
-          margin-top: 65px;
-          padding: 29px 0 0;
-          border-top: 1px solid var(--gtc-line);
-        }
-        .gtc-explore-heading {
+        /* Conversion section, shared across all category pages */
+        .gtc-service {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: 15px;
-          margin-bottom: 18px;
+          gap: 42px;
+          margin-top: 72px;
+          padding: clamp(30px, 4vw, 52px);
+          border: 1px solid rgba(134, 220, 199, .2);
+          border-radius: 16px;
+          background: linear-gradient(125deg, #073432 0%, #082929 62%, #062021 100%);
+          color: #f2fbf9;
         }
-        .gtc-small-label {
-          color: #287d73;
-          letter-spacing: .11em;
+        .gtc-service:after {
+          content: "";
+          position: absolute;
+          inset: 0 0 0 52%;
+          z-index: -1;
+          pointer-events: none;
+          opacity: .5;
+          background: linear-gradient(rgba(134,220,199,.07) 1px, transparent 1px),
+                      linear-gradient(90deg,rgba(134,220,199,.07) 1px,transparent 1px);
+          background-size: 29px 29px;
+          mask-image: linear-gradient(90deg, transparent, black);
+        }
+        .gtc-service-copy { max-width: 690px; }
+        .gtc-service-kicker {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+          color: #a3e1d0;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .15em;
+        }
+
+.gtc-service h2 {
+  margin: 0 0 14px;
+  font-size: clamp(27px, 3.2vw, 41px);
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  font-weight: 800;
+  color: #f2fbf9;
+  white-space: pre-line;
+}
+
+        .gtc-service p {
+          margin: 0;
+          max-width: 610px;
+          color: #c6dfd9;
+          font-size: clamp(14px, 1.2vw, 16px);
+          line-height: 1.65;
+        }
+        .gtc-service-link {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 18px;
+          padding: 7px 7px 7px 19px;
+          border-radius: 9px;
+          background: #f2fbf9;
+          color: #073432;
+          font-size: 13px;
+          font-weight: 800;
+          text-decoration: none;
+          transition: transform .2s ease, background .2s ease;
+        }
+        .gtc-service-link:hover { background: #dff7ed; transform: translateY(-2px); }
+        .gtc-service-link:focus-visible { outline: 3px solid #86dcc7; outline-offset: 3px; }
+        .gtc-service-arrow {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 38px;
+          width: 38px;
+          border-radius: 6px;
+          background: #86dcc7;
+          color: #04201f;
+        }
+
+        /* SEO FAQs: native, accessible details rather than JS accordion state */
+        .gtc-faq {
+          display: grid;
+          grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+          gap: clamp(24px, 5vw, 80px);
+          padding-top: 94px;
+          padding-bottom: 15px;
+        }
+        .gtc-faq-intro { align-self: start; }
+        .gtc-faq-kicker {
+          color: #167273;
+          letter-spacing: .14em;
           font-size: 10px;
           font-weight: 800;
         }
-        .gtc-explore h2 {
-          font-size: 23px;
-          letter-spacing: -.03em;
-          margin: 7px 0 0;
+        .gtc-faq h2 {
+          margin: 15px 0 15px;
+          max-width: 370px;
+          color: #063736;
+          font-size: clamp(31px, 3.8vw, 49px);
+          line-height: 1.08;
+          letter-spacing: -.052em;
+          font-weight: 800;
         }
-        .gtc-explore-heading > a {
-          display: inline-flex;
-          gap: 8px;
-          align-items: center;
-          color: #126b66;
-          font-weight: 750;
-          text-decoration: none;
-          font-size: 12px;
+        .gtc-faq h2 span { color: #67c4ab; }
+        .gtc-faq-intro > p {
+          max-width: 330px;
+          margin: 0;
+          color: #57736e;
+          line-height: 1.65;
+          font-size: 14px;
         }
-        .gtc-other-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 10px;
-        }
-        .gtc-other-grid a {
+        .gtc-faq-items { min-width: 0; border-top: 1px solid #d5e4df; }
+        .gtc-faq-item { border-bottom: 1px solid #d5e4df; }
+        .gtc-faq-item summary {
+          list-style: none;
+          cursor: pointer;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: 9px;
-          border: 1px solid #cfe1da;
-          background: #f6faf7;
-          padding: 17px 14px;
-          border-radius: 8px;
-          text-decoration: none;
-          font-size: 12px;
+          gap: 25px;
+          padding: 24px 4px;
+          color: #063736;
+          font-size: 15px;
+          line-height: 1.45;
           font-weight: 750;
-          color: #0b5550;
-          transition: background .2s, border-color .2s;
         }
-        .gtc-other-grid a:hover {
-          background: #e4f3ec;
-          border-color: #91cbb5;
+        .gtc-faq-item summary::-webkit-details-marker { display: none; }
+        .gtc-faq-chevron {
+          display: inline-flex;
+          flex-shrink: 0;
+          justify-content: center;
+          align-items: center;
+          color: #167273;
+          transition: transform .2s ease;
+        }
+        .gtc-faq-item[open] .gtc-faq-chevron { transform: rotate(180deg); }
+        .gtc-faq-item summary:hover { color: #167273; }
+        .gtc-faq-item summary:focus-visible { outline: 2px solid #167273; outline-offset: -2px; }
+        .gtc-faq-answer p {
+          max-width: 620px;
+          padding: 0 32px 22px 4px;
+          margin: 0;
+          color: #506b69;
+          font-size: 14px;
+          line-height: 1.75;
         }
         @media (max-width: 800px) {
           .gtc-hero-grid {
@@ -870,13 +1031,12 @@ export default function ToolCategoryPage({ category, tools = [] }) {
             gap: 26px;
             padding: 42px 0 48px;
           }
-          .gtc-feature { min-height: 230px }
           .gtc-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
-          .gtc-other-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
+          .gtc-service { flex-direction: column; align-items: flex-start; gap: 28px; }
+          .gtc-faq { grid-template-columns: 1fr; padding-top: 65px; gap: 30px; }
+          .gtc-faq h2 { max-width: 550px; }
           .gtc-section-heading {
             align-items: stretch;
             flex-direction: column;
@@ -892,13 +1052,11 @@ export default function ToolCategoryPage({ category, tools = [] }) {
           }
           .gtc-hero-grid { padding-top: 38px }
           .gtc-grid { grid-template-columns: 1fr }
+          .gtc-service { margin-top: 48px; padding: 28px 22px; }
+          .gtc-service-link { width: 100%; justify-content: space-between; }
+          .gtc-faq { padding-top: 55px; }
+          .gtc-faq-item summary { padding: 20px 2px; font-size: 14px; }
           .gtc-hero-meta { gap: 10px 20px }
-          .gtc-other-grid { grid-template-columns: 1fr 1fr }
-          .gtc-other-grid a { padding: 14px 11px }
-          .gtc-explore-heading {
-            align-items: flex-start;
-            flex-direction: column;
-          }
           .gtc-main { padding-top: 40px }
         }
 
@@ -930,7 +1088,7 @@ export default function ToolCategoryPage({ category, tools = [] }) {
     line-height: 1.6;
   }
 }
-  
+
         @media (prefers-reduced-motion: reduce) {
           .gtc-root * { transition: none !important }
         }
