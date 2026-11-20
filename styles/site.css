@@ -824,3 +824,20 @@ details p {
     transition: none !important;
   }
 }
+
+
+
+.brandLogo {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  .brandLogo {
+    height: 28px;
+    max-width: 145px;
+  }
+}

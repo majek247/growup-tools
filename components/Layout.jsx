@@ -5,8 +5,11 @@ import { absolute } from "../lib/site.mjs";
 export default function Layout({ title, description, path, children }) {
   return (
     <>
-      <Head>
-        <title>{title}</title>
+  <Head>
+  <title>{title}</title>
+ <link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="description" content={description} />
         <link rel="canonical" href={absolute(path)} />
         <meta property="og:title" content={title} />
@@ -20,10 +23,17 @@ export default function Layout({ title, description, path, children }) {
       </a>
       <header>
         <div className="wrap nav">
-          <a className="brand" href="https://www.seo-growup.com/">
-            <span className="mark" aria-hidden="true" />
-            GrowUp
-          </a>
+      <a
+  className="brand"
+  href="https://www.seo-growup.com/"
+  aria-label="GrowUp homepage"
+>
+  <img
+    src="/images/growupblacklogotransaprent.png"
+    alt="GrowUp"
+    className="brandLogo"
+  />
+</a>
           <span className="navDivider" />
           <Link className="toolkit" href="/tools/">
             <Layers3 size={16} /> Toolkit
