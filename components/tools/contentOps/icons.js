@@ -5,8 +5,6 @@ export const contentOpsIcons = {
   "brand-voice-one-pager": MessageSquare,
   "product-fact-sheet": BookOpen,
   "content-brief-template": PenLine,
-  "stakeholder-content-request-form": Inbox,
   "sme-interview-kit": Mic,
-  "writer-self-qa-checklist": ListChecks,
   "ai-assisted-writing-policy": ShieldCheck,
 };
