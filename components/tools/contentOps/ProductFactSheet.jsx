@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 /**
  * GrowUp Product Reference Guide — standalone client-side React component.
@@ -59,7 +59,8 @@ const css = `
 .prg-root textarea::placeholder { color: #96aaa7 }
 
 .prg-wrap {
-  max-width: 1120px;
+  width: 100%;
+  max-width: 1320px;
   margin: 0 auto;
   background: #fff;
   border: 1px solid var(--edge);
@@ -130,11 +131,14 @@ const css = `
   transition: width .2s;
 }
 
-.prg-body { padding: 25px 22px 30px }
+.prg-body {
+  padding: 28px;
+}
+
 .prg-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(310px, .82fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 24px;
   align-items: start;
 }
 .prg-editor,
@@ -356,22 +360,33 @@ const css = `
   border-bottom: 1px solid var(--edge);
 }
 .prg-tabs button {
+  flex: 1;
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
   color: #607979;
   font-size: 11px;
-  font-weight: 800;
-  padding: 11px 15px;
+  font-weight: 750;
+  padding: 13px 10px;
+  text-align: center;
+  transition: color .15s, background .15s;
+}
+
+.prg-tabs button:hover {
+  background: #eef5f3;
+  color: #0c6262;
 }
 .prg-tabs button.active {
   color: #0c6262;
   border-color: var(--teal);
 }
 .prg-preview-content {
-  height: 520px;
-  overflow: auto;
-  padding: 19px;
+  height: 580px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: #c8dcd7 transparent;
 }
 .prg-doc-section {
   padding-bottom: 17px;
@@ -402,15 +417,93 @@ const css = `
   color: #6f8784 !important;
 }
 .prg-doc-fact {
-  padding: 11px 0;
-  border-bottom: 1px solid #edf2f0;
+  padding: 22px 0;
+  border-bottom: 1px solid #e5eeeb;
 }
-.prg-doc-fact:last-child { border: 0 }
-.prg-doc-fact strong {
-  font-size: 12px;
-  display: block;
-  margin-bottom: 3px;
+
+.prg-doc-fact:first-of-type {
+  padding-top: 8px;
+}
+
+.prg-doc-fact:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.prg-fact-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prg-fact-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+
+.prg-fact-claim {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--ink);
+  margin: 0 0 13px;
   overflow-wrap: anywhere;
+}
+
+.prg-fact-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 13px;
+}
+
+.prg-fact-detail {
+  font-size: 10px;
+  color: #52716d;
+  background: #eef5f3;
+  border-radius: 5px;
+  padding: 5px 8px;
+}
+
+.prg-fact-source {
+  background: #f7faf9;
+  border: 1px solid #e5eeeb;
+  border-radius: 8px;
+  padding: 12px 13px;
+  margin-top: 10px;
+}
+
+.prg-fact-source-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 5px;
+}
+
+.prg-fact-source-text {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.prg-fact-caveat {
+  margin-top: 11px;
+  font-size: 11px;
+  line-height: 1.65;
+  color: #657d79;
+}
+
+.prg-fact-caveat strong {
+  color: #375b57;
+  font-weight: 750;
 }
 .prg-preview-foot {
   padding: 13px 17px;
@@ -536,39 +629,156 @@ const css = `
   .prg-preview-head { padding: 17px }
   .prg-review-grid { grid-template-columns: 1fr 1fr }
 }
+
+
+
+
+
 @media print {
-  body * { visibility: hidden !important }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body,
+  html {
+    background: #ffffff !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
   .prg-print-document,
-  .prg-print-document * { visibility: visible !important }
+  .prg-print-document * {
+    visibility: visible !important;
+  }
+
   .prg-print-document {
     display: block !important;
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
-    background: white;
-    color: #111;
-    padding: 20px 28px;
+    background: #ffffff;
+    color: #073738;
     font-family: Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .prg-print-header {
+    background: #073738 !important;
+    color: #ffffff !important;
+    padding: 28px 30px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .prg-print-brand {
+    font-size: 10pt;
+    font-weight: 800;
+    letter-spacing: .06em;
+    margin-bottom: 24px;
+  }
+
+  .prg-print-eyebrow {
+    color: #a5dfd3 !important;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .prg-print-header h1 {
+    font-size: 27pt;
+    line-height: 1.2;
+    margin: 9px 0;
+    color: #ffffff !important;
+    letter-spacing: -.035em;
+  }
+
+  .prg-print-subtitle {
+    color: #d5eeea !important;
+    margin: 0;
     font-size: 11pt;
   }
-  .prg-print-document h1 { font-size: 23pt; color: #063f40 }
+
+  .prg-print-meta {
+    margin: 0 0 28px;
+    padding: 12px 0;
+    border-bottom: 1px solid #d7e5e2;
+    font-size: 9pt;
+    color: #52716d;
+  }
+
   .prg-print-document h2 {
-    font-size: 14pt;
-    color: #063f40;
-    margin-top: 22px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 5px;
+    font-size: 13pt;
+    font-weight: 800;
+    color: #073738;
+    margin: 28px 0 14px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #d7e5e2;
+    break-after: avoid;
   }
-  .prg-print-document h3 { font-size: 11pt; margin-bottom: 5px }
+
+  .prg-print-document h3 {
+    font-size: 11pt;
+    font-weight: 800;
+    color: #073738;
+    margin: 0 0 8px;
+    break-after: avoid;
+  }
+
   .prg-print-document p {
-    white-space: pre-wrap;
+    font-size: 10pt;
+    line-height: 1.65;
+    margin: 7px 0 12px;
     overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    orphans: 3;
+    widows: 3;
   }
-  .prg-print-document section { break-inside: avoid }
-  .prg-print-document .prg-print-meta { font-size: 9pt; color: #555 }
-  .prg-root { border: 0 !important }
+
+  .prg-print-document section {
+    border: 1px solid #dce9e5;
+    border-radius: 7px;
+    padding: 15px 17px;
+    margin: 13px 0;
+    background: #f8fbfa !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .prg-print-document section p {
+    margin-bottom: 0;
+  }
+
+  .prg-print-document strong {
+    font-weight: 700;
+    color: #073738;
+  }
+
+  .prg-print-footer {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 1px solid #d7e5e2;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8pt;
+    color: #637b7b;
+  }
+
+  .prg-root {
+    border: 0 !important;
+  }
 }
+
 `;
 
 const id = () => Math.random().toString(36).slice(2, 10);
@@ -610,139 +820,217 @@ const safeUrl = (url) => {
 
 const trim = (v) => String(v ?? "").trim();
 
+
+
 const example = {
   product: "RelayLedger",
   company: "RelayLedger Ltd",
+
   summary:
-    "A fictional accounts payable platform for UK finance teams that centralises invoice approvals and supplier records.",
+    "RelayLedger helps finance teams manage supplier invoices, route them through approval workflows and track payment status from one platform.",
+
   audience:
-    "Finance directors, AP managers and financial controllers at UK companies with 50–500 employees.",
+    "CFOs, finance directors, financial controllers and accounts payable managers at UK companies with 100–1,000 employees.",
+
   market: "United Kingdom",
-  version: "UK commercial plans · example v2.1",
+
+  version:
+    "Starter, Growth and Enterprise plans. UK customers only.",
+
   owner: "Priya Shah · Product Marketing",
   ownerEmail: "",
-  lastUpdated: "2026-11-10",
+  lastUpdated: "2026-11-21",
   reviewCadence: "30",
+
   claimsPolicy:
-    "Do not describe projected time savings as customer results. Never imply every plan includes API access, unlimited usage, or native accounting integrations. Use the current plan matrix for pricing statements; pricing is not approved for publication in this example.",
+    "Do not promise that RelayLedger eliminates invoice errors, prevents fraud or guarantees time savings. Only mention features and integrations available on the relevant plan. Customer results must come from approved case studies, and pricing must be checked against the latest pricing document before publication.",
+
   approvalProcess:
-    "Product Marketing reviews feature and integration claims. Commercial Operations approves plan descriptions. Legal approves security/compliance language before publication.",
+    "Product Marketing checks product descriptions and feature claims. The Product Manager confirms integrations, technical capabilities and plan restrictions. Commercial Operations approves pricing information. Legal reviews security, compliance and customer claims that require legal approval before publication.",
+
   useCases:
-    "Comparison pages, solution pages, sales one-pagers, product-led blog articles and agency briefs.",
+    "Product pages, feature pages, competitor comparisons, SEO articles, customer case studies and sales materials.",
+
   positioning:
-    "Describe specific accounts payable workflows, not unsubstantiated efficiency gains.",
+    "Position RelayLedger as an accounts payable platform for managing supplier invoices and approvals. Focus on specific capabilities such as invoice tracking, approval routing and accounting system connections. Explain how these support finance workflows without promising unverified savings or results.",
+
   terms: [
     {
       id: "term-1",
-      avoid: "Seamless integration",
-      use: "Connects to [named system] using [verified method]",
-      note: "Name the system and confirm whether the connection is native, API-based or manual.",
+      avoid: "Seamlessly integrates with all accounting software",
+      use: "Connects with supported accounting systems, including Xero",
+      note:
+        "Name only integrations confirmed in the current product documentation. Check which plans support each connection and whether additional setup is required.",
     },
     {
       id: "term-2",
-      avoid: "Unlimited approvals",
-      use: "Approval limits depend on the subscribed plan",
-      note: "Check the plan matrix before claiming a usage allowance.",
+      avoid: "Unlimited invoice approvals for every customer",
+      use: "Manage invoice approvals within the limits of your subscription plan",
+      note:
+        "Check the latest plan comparison before describing approval limits or advanced routing features. Do not imply that Starter customers have Enterprise functionality.",
     },
     {
       id: "term-3",
-      avoid: "Guaranteed time savings",
-      use: "Describe the supported workflow without promising a result",
-      note: "Quantified outcomes require an approved, sourced customer example.",
+      avoid: "Guaranteed to cut invoice processing time by 80%",
+      use: "Reduce manual invoice administration through centralised approval workflows",
+      note:
+        "Only use percentages or time-saving figures when supported by an approved customer case study. Include the customer, measurement period and relevant context.",
     },
   ],
+
   facts: [
     {
       id: "fact-1",
       category: "Feature",
-      title: "Invoice approval queues",
+      title: "Invoice approval workflows",
+
       claim:
-        "Teams can review and assign supplier invoices from a shared approval queue.",
+        "Finance teams can assign supplier invoices to approvers, track their approval status and review outstanding invoices from a shared workspace.",
+
       status: "Approved",
-      sourceTitle: "Example product spec · Invoice workflow §2",
+
+      sourceTitle:
+        "Product documentation · Invoice management and approvals",
+
       sourceUrl: "",
+
       verifiedBy: "Priya Shah, Product Marketing",
-      checked: "2026-11-10",
-      market: "UK",
-      plan: "Starter, Growth, Enterprise",
+      checked: "2026-11-21",
+
+      market: "United Kingdom",
+      plan: "Starter, Growth and Enterprise",
+
       caveat:
-        "Approval routing options vary by plan; avoid saying all customers have custom workflows.",
-      forbidden: "Automatically approves every invoice",
-      nextReview: "2026-12-10",
+        "All plans support basic invoice approvals. Custom approval routing and multi-level approval workflows are available on Enterprise only.",
+
+      forbidden:
+        "Every RelayLedger customer can create unlimited custom approval workflows.",
+
+      nextReview: "2026-12-21",
     },
+
     {
       id: "fact-2",
       category: "Integration",
-      title: "HubSpot record sync",
+      title: "Xero accounting integration",
+
       claim:
-        "The Growth plan supports syncing selected company fields with HubSpot using an API connector.",
+        "RelayLedger supports a Xero integration that allows Growth and Enterprise customers to synchronise supported supplier and invoice information between the two platforms.",
+
       status: "Approved",
-      sourceTitle: "Example integrations matrix · HubSpot row",
+
+      sourceTitle:
+        "Integrations documentation · Xero connection and supported fields",
+
       sourceUrl: "",
+
       verifiedBy: "Elliot Brooks, Product Manager",
-      checked: "2026-11-10",
-      market: "UK",
+      checked: "2026-11-21",
+
+      market: "United Kingdom",
       plan: "Growth and Enterprise",
+
       caveat:
-        "Requires administrator setup and does not sync invoice line items.",
-      forbidden: "One-click, bidirectional sync of every record",
-      nextReview: "2026-12-10",
+        "The integration requires administrator setup and only synchronises supported fields. It is not available on Starter, and not every record or field is synchronised automatically.",
+
+      forbidden:
+        "RelayLedger connects to Xero instantly and automatically synchronises every invoice, payment and accounting record.",
+
+      nextReview: "2026-12-21",
     },
+
     {
       id: "fact-3",
       category: "Pricing",
-      title: "Commercial plan availability",
+      title: "Subscription plans and pricing",
+
       claim:
-        "RelayLedger offers Starter, Growth and Enterprise plans in the UK.",
+        "RelayLedger offers Starter, Growth and Enterprise subscription plans for UK businesses. Features and usage limits vary by plan.",
+
       status: "Needs review",
-      sourceTitle: "Example UK plan matrix · version 2.1",
+
+      sourceTitle:
+        "Commercial pricing document · UK subscription plans",
+
       sourceUrl: "",
+
       verifiedBy: "",
       checked: "",
-      market: "UK",
-      plan: "All",
+
+      market: "United Kingdom",
+      plan: "Starter, Growth and Enterprise",
+
       caveat:
-        "Specific prices and limits must be confirmed by Commercial Operations before publishing.",
-      forbidden: "Starts at £X/month (without an approved price)",
+        "The available plans are documented, but current prices, invoice limits and any additional implementation fees still require confirmation from Commercial Operations before publication.",
+
+      forbidden:
+        "RelayLedger starts at £49 per month with unlimited invoices and no setup fees.",
+
       nextReview: "",
     },
+
     {
       id: "fact-4",
       category: "Limitation",
-      title: "API availability",
-      claim: "API access is not included with the Starter plan.",
+      title: "API access and plan restrictions",
+
+      claim:
+        "API access is available to Growth and Enterprise customers. Starter customers cannot use the API to connect RelayLedger with external systems.",
+
       status: "Approved",
-      sourceTitle: "Example API permissions · access table",
+
+      sourceTitle:
+        "Developer documentation · API access and plan permissions",
+
       sourceUrl: "",
+
       verifiedBy: "Elliot Brooks, Product Manager",
-      checked: "2026-11-10",
-      market: "UK",
-      plan: "Starter restriction",
+      checked: "2026-11-21",
+
+      market: "United Kingdom",
+      plan: "Growth and Enterprise",
+
       caveat:
-        "Do not frame Enterprise-only permissions as universally available.",
-      forbidden: "API access on every plan",
-      nextReview: "2026-12-10",
+        "API access requires administrator configuration. Available endpoints and usage limits may differ between Growth and Enterprise plans. Confirm specific integration requirements before describing API capabilities.",
+
+      forbidden:
+        "All RelayLedger plans include unlimited API access and support integrations with any third-party system.",
+
+      nextReview: "2026-12-21",
     },
+
     {
       id: "fact-5",
       category: "Security",
-      title: "Security certifications",
+      title: "Security and compliance statements",
+
       claim:
-        "No public security certification statement is approved for use in marketing copy yet.",
+        "No public claims about RelayLedger holding SOC 2 or ISO 27001 certification have been approved for publication. Security certifications and compliance statements must be confirmed by Legal before use.",
+
       status: "Restricted",
-      sourceTitle: "Example legal review tracker · SEC-04",
+
+      sourceTitle:
+        "Internal security claims register · Pending legal approval",
+
       sourceUrl: "",
+
       verifiedBy: "",
       checked: "",
-      market: "UK",
-      plan: "All",
+
+      market: "United Kingdom",
+      plan: "Starter, Growth and Enterprise",
+
       caveat:
-        "Escalate requests for SOC 2, ISO 27001, GDPR or data residency claims to Legal.",
-      forbidden: "SOC 2 certified; fully GDPR compliant",
+        "Do not claim SOC 2 or ISO 27001 certification, guaranteed fraud prevention, complete GDPR compliance or specific data residency arrangements without current supporting evidence and Legal approval.",
+
+      forbidden:
+        "RelayLedger is SOC 2 certified, fully GDPR compliant and guarantees complete protection against invoice fraud.",
+
       nextReview: "",
     },
   ],
 };
+
 
 const empty = () => ({
   product: "",
@@ -778,7 +1066,7 @@ function formatDocument(data) {
   const put = (...lines) => l.push(...lines);
 
   put(
-    `# ${data.product || "Untitled product"} — Product Reference Guide`,
+    `# ${data.product || "Untitled product"}: Product Reference Guide`,
     "",
     `Example data: ${
       data.product === "RelayLedger"
@@ -795,7 +1083,7 @@ function formatDocument(data) {
     `Last updated: ${data.lastUpdated || "Not specified"}`,
     "",
     `What it does: ${data.summary || "Not specified"}`,
-    `Who it's for: ${data.audience || "Not specified"}`,
+    ` Target buyers ${data.audience || "Not specified"}`,
     `Content uses: ${data.useCases || "Not specified"}`,
     "",
     "## Messaging and claim boundaries",
@@ -889,33 +1177,129 @@ const suffix = (s) =>
     .replace(/^-|-$/g, "")
     .slice(0, 45) || "product";
 
+
+
 export const faqs = [
   {
-    question: "Can writers use every fact in the guide?",
+    question: "What should a B2B SaaS product fact sheet include?",
     answer:
-      "No. Only facts marked Approved with a named source, reviewer, verification date and relevant plan or market restrictions should be considered for publication. Draft, Needs review and Restricted entries must not be published as approved claims.",
+      "A B2B SaaS product fact sheet should include product features, supported integrations, pricing, subscription plan restrictions and approved marketing claims. Each claim should have a supporting source, verification date and named approver. Also document unsupported claims, feature limitations and restrictions on customer results or security statements.",
   },
   {
-    question: "How should we keep the guide current?",
+    question: "What's the difference between a product fact sheet and brand writing guidelines?",
     answer:
-      "Assign an owner, add authoritative source references and verification dates, and recheck pricing, integrations and plan limits whenever the product changes. The guide flags incomplete and overdue claims.",
+      "A product fact sheet documents what writers can accurately say about your product, including features, integrations, pricing and approved claims. Brand writing guidelines define how that information should be communicated, covering tone, terminology, formatting and writing style. B2B SaaS companies should use both to maintain product accuracy and consistent brand messaging.",
   },
   {
-    question: "How can I share the guide?",
+    question: "How detailed should a product fact sheet be?",
     answer:
-      "Copy the complete document, download a Markdown file, or print/save a PDF using your browser. Your changes stay in this page unless you export them; the example sources are fictional.",
+      "Your product fact sheet should be detailed enough for a new writer to produce an accurate first draft without needing a product demo or several clarification calls. Document the features, integrations, pricing and restrictions relevant to your marketing content. For each important claim, include its approved wording, supporting source and verification details.",
+  },
+  {
+    question: "Who should be responsible for maintaining our product fact sheet?",
+    answer:
+      "I'd put someone in Product Marketing or Content Marketing in charge of maintaining the fact sheet. They don't need to verify everything themselves. Product managers can confirm features and integrations, Commercial can check pricing, and Legal can approve security claims. The important thing is having one person responsible for making sure those updates actually happen.",
+  },
+  {
+    question: "How do I know which product claims are safe to publish?",
+    answer:
+      "A product claim is safe to publish when it's supported by a reliable source, approved by the appropriate person and still accurate. Check that the claim applies to the intended market, subscription plan and product version.",
+  },
+  {
+    question: "What evidence should we collect before approving a product claim?",
+    answer:
+      "Before approving a product claim, collect evidence that supports the exact wording you plan to publish. That could be a product specification, integration document, or verified customer case study. Record the source, who approved it, when it was checked and any plan or market restrictions. If the evidence doesn't support the statement, revise the claim before approving it.",
+  },
+  {
+    question: "How often should we review and update our product fact sheet?",
+    answer:
+      "Set a review schedule of 30, 60 or 90 days based on how frequently your product changes. Assign an owner to check approved claims against current documentation, especially pricing, integrations and plan restrictions. Update any outdated information immediately, and add recurring corrections from editorial reviews to prevent the same errors appearing in future drafts.",
   },
 ];
 
+
+
+
+
+const STORAGE_KEY = "growup-product-fact-sheet-v1";
+
 export default function ProductReferenceGuide() {
-  const [data, setData] = useState(newSample);
-  const [step, setStep] = useState(0);
-  const [tab, setTab] = useState("guide");
-  const [filter, setFilter] = useState("All");
-  const [showOnlyIssues, setShowOnlyIssues] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [notice, setNotice] = useState("");
+const [data, setData] = useState(newSample);
+const [step, setStep] = useState(0);
+const [tab, setTab] = useState("guide");
+const [filter, setFilter] = useState("All");
+const [showOnlyIssues, setShowOnlyIssues] = useState(false);
+const [copied, setCopied] = useState(false);
+const [confirmReset, setConfirmReset] = useState(false);
+const [notice, setNotice] = useState("");
+
+const [storageReady, setStorageReady] = useState(false);
+
+
+
+useEffect(() => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      if (
+        parsed.data &&
+        typeof parsed.data === "object" &&
+        !Array.isArray(parsed.data) &&
+        Array.isArray(parsed.data.facts) &&
+        Array.isArray(parsed.data.terms)
+      ) {
+        setData(parsed.data);
+      }
+
+      if (
+        Number.isInteger(parsed.step) &&
+        parsed.step >= 0 &&
+        parsed.step < sections.length
+      ) {
+        setStep(parsed.step);
+      }
+
+      if (["guide", "facts", "checks"].includes(parsed.tab)) {
+        setTab(parsed.tab);
+      }
+
+      if (typeof parsed.filter === "string") {
+        setFilter(parsed.filter);
+      }
+
+      if (typeof parsed.showOnlyIssues === "boolean") {
+        setShowOnlyIssues(parsed.showOnlyIssues);
+      }
+    }
+  } catch (error) {
+    console.error("Unable to restore product fact sheet:", error);
+  } finally {
+    setStorageReady(true);
+  }
+}, []);
+
+useEffect(() => {
+  if (!storageReady) return;
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        data,
+        step,
+        tab,
+        filter,
+        showOnlyIssues,
+      })
+    );
+  } catch (error) {
+    console.error("Unable to save product fact sheet:", error);
+  }
+}, [data, step, tab, filter, showOnlyIssues, storageReady]);
+
 
   const update = (field, value) =>
     setData((d) => ({ ...d, [field]: value }));
@@ -1044,52 +1428,162 @@ export default function ProductReferenceGuide() {
     }
   };
 
-  const exportCSV = () => {
-    const rows = [
-      [
-        "Category",
-        "Title",
-        "Status",
-        "Approved wording",
-        "Source",
-        "Source URL",
-        "Verified by",
-        "Verified date",
-        "Review due",
-        "Market",
-        "Plan",
-        "Caveat",
-        "Never say",
-      ],
-      ...data.facts.map((f) => [
-        f.category,
-        f.title,
-        f.status,
-        f.claim,
-        f.sourceTitle,
-        f.sourceUrl,
-        f.verifiedBy,
-        f.checked,
-        f.nextReview,
-        f.market,
-        f.plan,
-        f.caveat,
-        f.forbidden,
-      ]),
+
+
+
+const exportExcel = async () => {
+  try {
+    const ExcelJSModule = await import("exceljs");
+    const ExcelJS = ExcelJSModule.default || ExcelJSModule;
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "GrowUp";
+    workbook.subject = "Product Reference Guide";
+
+    const factsSheet = workbook.addWorksheet("Product Claims");
+    const termsSheet = workbook.addWorksheet("Terminology");
+    const guideSheet = workbook.addWorksheet("Product Reference");
+
+    factsSheet.columns = [
+      { header: "Category", key: "category", width: 20 },
+      { header: "Product fact", key: "title", width: 34 },
+      { header: "Status", key: "status", width: 18 },
+      { header: "Approved or proposed claim", key: "claim", width: 65 },
+      { header: "Source", key: "sourceTitle", width: 40 },
+      { header: "Documentation URL", key: "sourceUrl", width: 36 },
+      { header: "Verified by", key: "verifiedBy", width: 28 },
+      { header: "Date verified", key: "checked", width: 18 },
+      { header: "Review due", key: "nextReview", width: 18 },
+      { header: "Market", key: "market", width: 22 },
+      { header: "Applicable plans", key: "plan", width: 30 },
+      { header: "Restrictions", key: "caveat", width: 55 },
+      { header: "Claims to avoid", key: "forbidden", width: 55 },
     ];
 
-    const csv = rows
-      .map((r) =>
-        r.map((v) => '"' + String(v ?? "").replaceAll('"', '""') + '"').join(",")
-      )
-      .join("\r\n");
+    data.facts.forEach((fact) => {
+      factsSheet.addRow(fact);
+    });
 
-    download(
-      `${suffix(data.product)}-product-facts.csv`,
-      "\uFEFF" + csv,
-      "text/csv;charset=utf-8;"
-    );
-  };
+    termsSheet.columns = [
+      { header: "Wording to avoid", key: "avoid", width: 48 },
+      { header: "Approved wording", key: "use", width: 55 },
+      { header: "Usage notes or exceptions", key: "note", width: 70 },
+    ];
+
+    data.terms.forEach((term) => {
+      termsSheet.addRow(term);
+    });
+
+    guideSheet.columns = [
+      { header: "Field", key: "field", width: 32 },
+      { header: "Details", key: "value", width: 100 },
+    ];
+
+    [
+      ["Product", data.product],
+      ["Company", data.company],
+      ["Product description", data.summary],
+      ["Target audience", data.audience],
+      ["Market", data.market],
+      ["Applicable plans", data.version],
+      ["Content assets", data.useCases],
+      ["Product positioning", data.positioning],
+      ["Restricted claims", data.claimsPolicy],
+      ["Reference owner", data.owner],
+      ["Contact email", data.ownerEmail],
+      ["Last reviewed", data.lastUpdated],
+      ["Review frequency", `Every ${data.reviewCadence} days`],
+      ["Approval responsibilities", data.approvalProcess],
+    ].forEach(([field, value]) => {
+      guideSheet.addRow({ field, value: value || "Not specified" });
+    });
+
+    [factsSheet, termsSheet, guideSheet].forEach((sheet) => {
+      sheet.views = [{ state: "frozen", ySplit: 1 }];
+
+      sheet.getRow(1).height = 32;
+
+      sheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF073738" },
+        };
+
+        cell.font = {
+          name: "Aptos",
+          bold: true,
+          color: { argb: "FFFFFFFF" },
+          size: 11,
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+          wrapText: true,
+        };
+      });
+
+      for (let i = 2; i <= sheet.rowCount; i++) {
+        const row = sheet.getRow(i);
+        row.height = 60;
+
+        row.eachCell((cell) => {
+          cell.font = {
+            name: "Aptos",
+            size: 10,
+            color: { argb: "FF073738" },
+          };
+
+          cell.alignment = {
+            vertical: "top",
+            wrapText: true,
+          };
+
+          if (i % 2 === 0) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFEEF4F3" },
+            };
+          }
+        });
+      }
+
+      if (sheet.rowCount > 1) {
+        sheet.autoFilter = {
+          from: { row: 1, column: 1 },
+          to: { row: sheet.rowCount, column: sheet.columnCount },
+        };
+      }
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = `${suffix(data.product)}-product-reference.xlsx`;
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    setNotice("Excel reference downloaded.");
+  } catch (error) {
+    console.error("Excel export failed:", error);
+    setNotice("Excel export failed. Please try again.");
+  }
+};
+
+
+
 
   const setExampleField = (key) => ({
     value: data[key],
@@ -1188,13 +1682,13 @@ export default function ProductReferenceGuide() {
               <div className="prg-pane">
                 {step === 0 && (
                   <>
-                    <span className="prg-kicker">01 / THE PRODUCT</span>
-                    <h2>Give writers the right context.</h2>
-                    <p className="prg-muted">
-                      Make it obvious which product, audience, market and
-                      release these guidelines apply to. The information here
-                      appears at the top of the reference.
-                    </p>
+               <span className="prg-kicker">01 / THE PRODUCT</span>
+<h2>Establish the Product and Audience Context</h2>
+<p className="prg-muted">
+  Document the product, target buyers, markets and applicable
+  plans so writers have an accurate reference when producing
+  content.
+</p>
 
                     <div className="prg-grid">
                       <Field label="Product name">
@@ -1211,10 +1705,10 @@ export default function ProductReferenceGuide() {
                       </Field>
                     </div>
 
-                    <Field
-                      label="What does the product actually do?"
-                      hint="Write a factual description, not a tagline."
-                    >
+<Field
+  label="What does your product do?"
+  hint="Describe its core functionality and the workflows it supports."
+>
                       <textarea
                         rows={3}
                         placeholder="Explain the problem, workflow and outcome without making unsupported promises."
@@ -1222,7 +1716,7 @@ export default function ProductReferenceGuide() {
                       />
                     </Field>
 
-                    <Field label="Who is the content written for?">
+                    <Field label="Who are your target buyers?">
                       <textarea
                         rows={2}
                         placeholder="Roles, company sizes, industries and buying context"
@@ -1231,13 +1725,13 @@ export default function ProductReferenceGuide() {
                     </Field>
 
                     <div className="prg-grid">
-                      <Field label="Market / geography">
+                      <Field label="Target markets or regions">
                         <input
                           placeholder="e.g. United Kingdom"
                           {...setExampleField("market")}
                         />
                       </Field>
-                      <Field label="Version or applicable plans">
+                      <Field label="Applicable plans or product versions">
                         <input
                           placeholder="e.g. UK plans, v2.1"
                           {...setExampleField("version")}
@@ -1245,7 +1739,7 @@ export default function ProductReferenceGuide() {
                       </Field>
                     </div>
 
-                    <Field label="Where will writers use this guide?">
+                    <Field label="Which content assets will use this reference?">
                       <textarea
                         rows={2}
                         placeholder="Comparison pages, website copy, blog posts, sales material…"
@@ -1254,26 +1748,23 @@ export default function ProductReferenceGuide() {
                     </Field>
 
                     <div className="prg-info">
-                      <strong>Why market and version matter:</strong> a feature
-                      available to Enterprise customers in the UK may not be
-                      available on Starter or in another region. Record those
-                      boundaries before content is commissioned.
+                      <strong>Why market and plan details matter:</strong> Features, integrations and pricing can differ across subscription plans and regions. Document these differences so writers don't make claims about capabilities your customers can't access.
                     </div>
                   </>
                 )}
 
                 {step === 1 && (
                   <>
-                    <span className="prg-kicker">02 / MESSAGING GUARDRAILS</span>
-                    <h2>What can writers safely say?</h2>
-                    <p className="prg-muted">
-                      Separate approved product positioning from wording that
-                      can create inaccurate or misleading claims.
-                    </p>
-
+        <span className="prg-kicker">02 / MESSAGING & CLAIMS</span>
+<h2>Set Clear Rules for Product Messaging</h2>
+<p className="prg-muted">
+  Establish how your product should be described, which
+  statements require verification and what language writers
+  should use instead.
+</p>
                     <Field
                       label="Core product positioning"
-                      hint="What should every writer understand about the product, in plain English?"
+                      hint="Describe the product's value, use cases and messages writers should communicate consistently"
                     >
                       <textarea
                         rows={3}
@@ -1282,10 +1773,12 @@ export default function ProductReferenceGuide() {
                       />
                     </Field>
 
-                    <Field
-                      label="Claims writers must avoid"
-                      hint="Be specific about unsupported outcomes, guarantees, plan access, security and certification statements."
-                    >
+                   <Field
+  label="Restricted and unsupported claims"
+  hint="Specify claims about performance, pricing, integrations or security that writers must avoid."
+>
+
+
                       <textarea
                         rows={4}
                         placeholder="e.g. Never say all plans have API access or that users are guaranteed to save X hours."
@@ -1295,7 +1788,7 @@ export default function ProductReferenceGuide() {
 
                     <div className="prg-section">
                       <div className="prg-section-head">
-                        <h3>Words and phrases to control</h3>
+                        <h3>Approved Language and Terminology</h3>
                         <Button
                           kind="alt"
                           small
@@ -1306,13 +1799,13 @@ export default function ProductReferenceGuide() {
                             }))
                           }
                         >
-                          ＋ Add phrase
+                          ＋ Add language rule
                         </Button>
                       </div>
-                      <p className="prg-muted">
-                        Give a concrete replacement instead of simply banning
-                        buzzwords.
-                      </p>
+                    <p className="prg-muted">
+  Record phrases that need replacing and specify the wording
+  approved for publication.
+</p>
 
                       {!data.terms.length && (
                         <div className="prg-empty" style={{ marginTop: 14 }}>
@@ -1324,7 +1817,7 @@ export default function ProductReferenceGuide() {
                       {data.terms.map((t, i) => (
                         <div className="prg-card" key={t.id}>
                           <div className="prg-cardtop">
-                            <strong>Phrase {i + 1}</strong>
+                            ＋ Add language rule
                             <Button
                               small
                               kind="danger"
@@ -1334,7 +1827,7 @@ export default function ProductReferenceGuide() {
                             </Button>
                           </div>
                           <div className="prg-grid">
-                            <Field label="Avoid">
+                            <Field label="Wording to avoid">
                               <input
                                 placeholder="e.g. Seamless integration"
                                 value={t.avoid}
@@ -1343,7 +1836,7 @@ export default function ProductReferenceGuide() {
                                 }
                               />
                             </Field>
-                            <Field label="Write instead">
+                            <Field label="Approved wording">
                               <input
                                 placeholder="Name the system and method"
                                 value={t.use}
@@ -1353,7 +1846,7 @@ export default function ProductReferenceGuide() {
                               />
                             </Field>
                           </div>
-                          <Field label="When this rule applies">
+                          <Field label="Usage notes or exceptions">
                             <input
                               placeholder="e.g. Check whether connection is native or API-based"
                               value={t.note}
@@ -1370,24 +1863,25 @@ export default function ProductReferenceGuide() {
 
                 {step === 2 && (
                   <>
-                    <span className="prg-kicker">
-                      03 / PRODUCT FACT LIBRARY
-                    </span>
-                    <h2>Build a source-backed fact library.</h2>
-                    <p className="prg-muted">
-                      One fact per entry. Record what can be said, who checked
-                      it, and which customers or markets it applies to.
-                    </p>
+          <span className="prg-kicker">
+  03 / VERIFIED PRODUCT INFORMATION
+</span>
+<h2>Establish Clear Standards for Product Claims</h2>
+<p className="prg-muted">
+Document what writers can say about your product, where the information comes from and who verified it. Include plan restrictions to prevent inaccurate claims.
+</p>
 
-                    <div className="prg-pillrow">
-                      <span className="prg-pill">{stats.total} facts</span>
-                      <span className="prg-pill">
-                        {stats.approved} publish-ready
-                      </span>
-                      <span className="prg-pill">
-                        {stats.flagged} need attention
-                      </span>
-                    </div>
+             <div className="prg-pillrow">
+  <span className="prg-pill">
+    {stats.total} recorded facts
+  </span>
+  <span className="prg-pill">
+    {stats.approved} approved
+  </span>
+  <span className="prg-pill">
+    {stats.flagged} need attention
+  </span>
+</div>
 
                     <div className="prg-row" style={{ marginTop: 18 }}>
                       <div style={{ minWidth: 160, flex: 1 }}>
@@ -1432,10 +1926,9 @@ export default function ProductReferenceGuide() {
                         checked={showOnlyIssues}
                         onChange={(e) => setShowOnlyIssues(e.target.checked)}
                       />
-                      <span>
-                        Show only facts that need review or have missing
-                        evidence
-                      </span>
+                    <span>
+  Show only claims requiring review or additional evidence
+</span>
                     </label>
 
                     {filteredFacts.length === 0 && (
@@ -1461,13 +1954,15 @@ export default function ProductReferenceGuide() {
                                 Fact {String(number).padStart(2, "0")} ·{" "}
                                 {f.title || "Untitled"}
                               </strong>
-                              <div className="prg-cardmeta">
-                                {ready
-                                  ? "Publish-ready, subject to stated caveats"
-                                  : stats.overdue(f)
-                                  ? "Review overdue"
-                                  : "Not ready for publication"}
-                              </div>
+
+                         <div className="prg-cardmeta">
+  {ready
+    ? "Approved for publication, subject to documented restrictions"
+    : stats.overdue(f)
+    ? "Review overdue"
+    : "Not approved for publication"}
+</div>
+
                             </div>
                             <span
                               className={`prg-badge ${
@@ -1483,7 +1978,7 @@ export default function ProductReferenceGuide() {
                           </div>
 
                           <div className="prg-grid">
-                            <Field label="Category">
+                            <Field label="Product information category">
                               <select
                                 value={f.category}
                                 onChange={(e) =>
@@ -1507,7 +2002,7 @@ export default function ProductReferenceGuide() {
                                 ))}
                               </select>
                             </Field>
-                            <Field label="Review status">
+                            <Field label="Verification status">
                               <select
                                 value={f.status}
                                 onChange={(e) =>
@@ -1526,7 +2021,7 @@ export default function ProductReferenceGuide() {
                             </Field>
                           </div>
 
-                          <Field label="Internal fact title">
+                          <Field label="Product fact title">
                             <input
                               placeholder="e.g. API access on Enterprise"
                               value={f.title}
@@ -1535,11 +2030,10 @@ export default function ProductReferenceGuide() {
                               }
                             />
                           </Field>
-
-                          <Field
-                            label="Approved or proposed wording"
-                            hint="Use exactly what writers are permitted to publish, subject to approval status."
-                          >
+<Field
+  label="Approved or proposed claim"
+  hint="Write the precise statement writers may publish once verification is complete."
+>
                             <textarea
                               rows={2}
                               value={f.claim}
@@ -1551,7 +2045,7 @@ export default function ProductReferenceGuide() {
                           </Field>
 
                           <div className="prg-grid">
-                            <Field label="Authoritative source">
+                            <Field label="Source of information">
                               <input
                                 placeholder="Document title, section or ticket ID"
                                 value={f.sourceTitle}
@@ -1564,7 +2058,7 @@ export default function ProductReferenceGuide() {
                                 }
                               />
                             </Field>
-                            <Field label="Source URL (optional)">
+                            <Field label="Documentation link (optional)">
                               <input
                                 placeholder="https://…"
                                 type="url"
@@ -1590,7 +2084,7 @@ export default function ProductReferenceGuide() {
                           )}
 
                           <div className="prg-grid3">
-                            <Field label="Verified by">
+                            <Field label="Reviewed and verified by">
                               <input
                                 placeholder="Name and team"
                                 value={f.verifiedBy}
@@ -1603,7 +2097,7 @@ export default function ProductReferenceGuide() {
                                 }
                               />
                             </Field>
-                            <Field label="Verified on">
+                            <Field label="Date verified">
                               <input
                                 type="date"
                                 value={f.checked}
@@ -1612,7 +2106,7 @@ export default function ProductReferenceGuide() {
                                 }
                               />
                             </Field>
-                            <Field label="Next review">
+                            <Field label="Review due">
                               <input
                                 type="date"
                                 value={f.nextReview}
@@ -1628,7 +2122,7 @@ export default function ProductReferenceGuide() {
                           </div>
 
                           <div className="prg-grid">
-                            <Field label="Market / region">
+                            <Field label="Market availability">
                               <input
                                 placeholder="e.g. UK only"
                                 value={f.market}
@@ -1637,7 +2131,7 @@ export default function ProductReferenceGuide() {
                                 }
                               />
                             </Field>
-                            <Field label="Plans / tiers">
+                            <Field label="Applicable subscription plans">
                               <input
                                 placeholder="e.g. Growth, Enterprise"
                                 value={f.plan}
@@ -1648,7 +2142,7 @@ export default function ProductReferenceGuide() {
                             </Field>
                           </div>
 
-                          <Field label="Caveats, limits and exceptions">
+                          <Field label="Restrictions and exceptions">
                             <textarea
                               rows={2}
                               placeholder="e.g. Administrator setup required; does not sync invoice line items."
@@ -1659,7 +2153,7 @@ export default function ProductReferenceGuide() {
                             />
                           </Field>
 
-                          <Field label="What writers must NOT say">
+                          <Field label="Claims writers must avoid">
                             <textarea
                               rows={2}
                               placeholder="e.g. Available to every customer"
@@ -1671,10 +2165,12 @@ export default function ProductReferenceGuide() {
                           </Field>
 
                           <div className="prg-row" style={{ marginTop: 12 }}>
-                            <span className="prg-subtle">
-                              Use “Approved” only after checking the source and
-                              caveats.
-                            </span>
+                       
+                       <span className="prg-subtle">
+  Approval requires a verified source, named reviewer and
+  confirmation of all relevant restrictions.
+</span>
+                       
                             <Button
                               kind="danger"
                               small
@@ -1691,21 +2187,22 @@ export default function ProductReferenceGuide() {
 
                 {step === 3 && (
                   <>
-                    <span className="prg-kicker">04 / OWNER & REVIEW</span>
-                    <h2>Keep claims current.</h2>
-                    <p className="prg-muted">
-                      Product information changes. Name the people who sign it
-                      off and establish when content must be checked again.
-                    </p>
+                  <span className="prg-kicker">04 / OWNERSHIP & APPROVALS</span>
+<h2>Assign Ownership for Product Claims</h2>
+<p className="prg-muted">
+  Assign responsibility for keeping product information accurate,
+  approving claims and reviewing changes before they appear in
+  published content.
+</p>
 
-                    <Field label="Guide owner">
+                    <Field label="Who owns this reference?">
                       <input
                         placeholder="e.g. Product Marketing Lead"
                         {...setExampleField("owner")}
                       />
                     </Field>
 
-                    <Field label="Owner's email (optional)">
+                    <Field label="Contact email (optional)">
                       <input
                         type="email"
                         placeholder="owner@company.com"
@@ -1714,13 +2211,13 @@ export default function ProductReferenceGuide() {
                     </Field>
 
                     <div className="prg-grid">
-                      <Field label="Last reviewed">
+                      <Field label="Date last reviewed">
                         <input
                           type="date"
                           {...setExampleField("lastUpdated")}
                         />
                       </Field>
-                      <Field label="Default review interval">
+                      <Field label="How often should claims be reviewed?">
                         <select {...setExampleField("reviewCadence")}>
                           <option value="14">Every 14 days</option>
                           <option value="30">Every 30 days</option>
@@ -1741,20 +2238,23 @@ export default function ProductReferenceGuide() {
                       />
                     </Field>
 
-                    <div className="prg-info">
-                      <strong>Recommended publishing rule:</strong> A fact
-                      marked Approved should still be held if its source is
-                      missing, review date is overdue, or its market and plan
-                      restrictions do not match the intended page.
-                    </div>
+               <div className="prg-info">
+  <strong>Before approving a claim:</strong> Confirm the
+  source is current, the review date hasn't passed and
+  the claim applies to the intended market and subscription
+  plan.
+</div>
 
                     <div className="prg-section">
-                      <div className="prg-section-head">
-                        <h3>Fact health</h3>
-                        <span className="prg-count">
-                          {stats.approved} of {stats.total} publish-ready
-                        </span>
-                      </div>
+                      
+                      
+                <div className="prg-section-head">
+  <h3>Claim verification summary</h3>
+  <span className="prg-count">
+    {stats.approved} of {stats.total} claims ready for publication
+  </span>
+</div>
+
 
                       {data.facts.map((f, i) => (
                         <div className="prg-minirow" key={f.id}>
@@ -1786,36 +2286,37 @@ export default function ProductReferenceGuide() {
 
                 {step === 4 && (
                   <>
-                    <span className="prg-kicker">05 / FINAL REVIEW</span>
-                    <h2>Check before you share.</h2>
-                    <p className="prg-muted">
-                      The reference can be exported at any time. Publish-ready
-                      facts must have complete verification details; the rest
-                      remain clearly marked as drafts or restricted.
-                    </p>
 
-                    <div className="prg-review-grid">
-                      <div className="prg-stat">
-                        <strong>{stats.readiness}%</strong>
-                        <span>Guide completeness</span>
-                      </div>
-                      <div className="prg-stat">
-                        <strong>{stats.approved}</strong>
-                        <span>Publish-ready facts</span>
-                      </div>
-                      <div className="prg-stat">
-                        <strong>{stats.flagged}</strong>
-                        <span>Facts to review</span>
-                      </div>
-                    </div>
+               <span className="prg-kicker">05 / FINAL REVIEW</span>
+<h2>Review Your Claims Before Sharing</h2>
+<p className="prg-muted">
+  See what's approved, what still needs attention and whether
+  the reference is ready to share with your writers or agency.
+</p>
+
+           <div className="prg-review-grid">
+  <div className="prg-stat">
+    <strong>{stats.readiness}%</strong>
+    <span>Reference completeness</span>
+  </div>
+  <div className="prg-stat">
+    <strong>{stats.approved}</strong>
+    <span>Verified claims</span>
+  </div>
+  <div className="prg-stat">
+    <strong>{stats.flagged}</strong>
+    <span>Claims needing review</span>
+  </div>
+</div>
 
                     <div className="prg-section">
-                      <div className="prg-section-head">
-                        <h3>Pre-sharing checks</h3>
-                        <span className="prg-count">
-                          {warnings.length} alerts
-                        </span>
-                      </div>
+                    
+            <div className="prg-section-head">
+  <h3>Final checks</h3>
+  <span className="prg-count">
+    {warnings.length} items to address
+  </span>
+</div>
 
                       {warnings.length ? (
                         <ul className="prg-list">
@@ -1830,47 +2331,43 @@ export default function ProductReferenceGuide() {
                           ))}
                         </ul>
                       ) : (
-                        <div className="prg-info">
-                          The guide has its required governance information
-                          and no Approved facts are missing mandatory evidence.
-                          Confirm facts are suitable for the intended content
-                          before publishing.
-                        </div>
+
+                <div className="prg-info">
+  No verification issues detected. Check that approved
+  claims are current and relevant to the content being
+  produced.
+</div>
+
+
                       )}
                     </div>
 
                     <div className="prg-section">
-                      <div className="prg-section-head">
-                        <h3>Export your reference</h3>
-                      </div>
-                      <p className="prg-muted">
-                        Export the full guide—including statuses, sources,
-                        reviewer names, dates, restrictions and phrase
-                        rules—not just the preview shown alongside this form.
-                      </p>
-
+             <div className="prg-section-head">
+  <h3>Share Your Product Reference</h3>
+</div>
+<p className="prg-muted">
+  Copy or download the complete reference, including
+  product facts, approved language, sources and restrictions.
+</p>
                       <div
                         className="prg-row"
                         style={{ marginTop: 16, justifyContent: "flex-start" }}
                       >
-                        <Button kind="primary" onClick={copy}>
-                          {copied ? "✓ Copied" : "Copy full guide"}
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            download(
-                              `${suffix(data.product)}-product-reference.md`,
-                              fullText,
-                              "text/markdown;charset=utf-8"
-                            )
-                          }
-                        >
-                          ↓ Download Markdown
-                        </Button>
-                        <Button onClick={exportCSV}>↓ Export facts CSV</Button>
-                        <Button onClick={() => window.print()}>
-                          ↗ Save as PDF
-                        </Button>
+
+
+
+        <Button kind="primary" onClick={copy}>
+  {copied ? "✓ Copied" : "Copy guide"}
+</Button>
+
+<Button onClick={exportExcel}>
+  ↓ Download Excel
+</Button>
+
+<Button onClick={() => window.print()}>
+  ↗ Save as PDF
+</Button>
                       </div>
                     </div>
 
@@ -1958,7 +2455,7 @@ export default function ProductReferenceGuide() {
                         {data.summary || "Add a factual product description."}
                       </p>
                       <p>
-                        <strong>Who it's for:</strong>{" "}
+                        <strong> Target buyers:</strong>{" "}
                         {data.audience || "Add your target audience."}
                       </p>
                       <p>
@@ -2000,55 +2497,114 @@ export default function ProductReferenceGuide() {
                   </>
                 )}
 
-                {tab === "facts" && (
-                  <>
-                    <div className="prg-doc-section">
-                      <h4>Product claims</h4>
-                      <p className="prg-doc-mini">
-                        {stats.approved} publish-ready / {stats.total} total.
-                        Draft or restricted claims are shown for reference only.
-                      </p>
-                    </div>
+             
+{tab === "facts" && (
+  <>
+    <div className="prg-doc-section">
+      <h4>Product claims</h4>
+      <p className="prg-doc-mini">
+        {stats.approved} approved for use out of {stats.total} recorded.
+        Other claims remain visible for review.
+      </p>
+    </div>
 
-                    {data.facts.length ? (
-                      data.facts.map((f) => (
-                        <div className="prg-doc-fact" key={f.id}>
-                          <div
-                            className="prg-row"
-                            style={{ marginBottom: 4 }}
-                          >
-                            <strong>{f.title || "Untitled fact"}</strong>
-                            <span
-                              className={`prg-badge ${
-                                stats.complete(f) &&
-                                !stats.overdue(f) &&
-                                f.status === "Approved"
-                                  ? "approved"
-                                  : "review"
-                              }`}
-                            >
-                              {f.status}
-                            </span>
-                          </div>
-                          <p>{f.claim || "No wording entered"}</p>
-                          <p className="prg-doc-mini">
-                            {f.category} · {f.plan || "Plan unknown"} ·{" "}
-                            {f.market || "Market unknown"}
-                          </p>
-                          <p className="prg-doc-mini">
-                            Source: {f.sourceTitle || "Missing"} · Checked:{" "}
-                            {f.checked || "Not verified"}
-                          </p>
-                          {f.caveat && (
-                            <p className="prg-doc-mini">Caveat: {f.caveat}</p>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="prg-empty">No product facts yet.</div>
-                    )}
-                  </>
-                )}
+    {data.facts.length ? (
+      data.facts.map((f) => {
+        const ready =
+          stats.complete(f) &&
+          !stats.overdue(f) &&
+          f.status === "Approved";
+
+        return (
+          <div className="prg-doc-fact" key={f.id}>
+            <div className="prg-fact-top">
+              <h5 className="prg-fact-title">
+                {f.title || "Untitled fact"}
+              </h5>
+
+              <span
+                className={`prg-badge ${
+                  ready
+                    ? "approved"
+                    : f.status === "Restricted"
+                    ? "restricted"
+                    : "review"
+                }`}
+              >
+                {ready
+                  ? "Approved"
+                  : stats.overdue(f)
+                  ? "Overdue"
+                  : f.status === "Approved"
+                  ? "Needs review"
+                  : f.status}
+              </span>
+            </div>
+
+            <p className="prg-fact-claim">
+              {f.claim || "No claim wording entered."}
+            </p>
+
+            <div className="prg-fact-details">
+              {f.category && (
+                <span className="prg-fact-detail">
+                  {f.category}
+                </span>
+              )}
+
+              {f.plan && (
+                <span className="prg-fact-detail">
+                  {f.plan}
+                </span>
+              )}
+
+              {f.market && (
+                <span className="prg-fact-detail">
+                  {f.market}
+                </span>
+              )}
+            </div>
+
+            <div className="prg-fact-source">
+              <span className="prg-fact-source-label">
+                Source & verification
+              </span>
+
+              <div className="prg-fact-source-text">
+                {f.sourceTitle || "Source not provided"}
+              </div>
+
+              <div
+                className="prg-fact-source-text"
+                style={{ color: "#708783", marginTop: 4 }}
+              >
+                {f.checked
+                  ? `Checked ${f.checked}`
+                  : "Verification pending"}
+
+                {f.verifiedBy
+                  ? ` · ${f.verifiedBy}`
+                  : ""}
+              </div>
+            </div>
+
+            {f.caveat && (
+              <div className="prg-fact-caveat">
+                <strong>Limitation: </strong>
+                {f.caveat}
+              </div>
+            )}
+          </div>
+        );
+      })
+    ) : (
+      <div className="prg-empty">
+        No product facts added yet.
+      </div>
+    )}
+  </>
+)}
+
 
                 {tab === "checks" && (
                   <>
@@ -2133,10 +2689,11 @@ export default function ProductReferenceGuide() {
             <h3 style={{ margin: "0 0 9px", fontSize: 20 }}>
               Start with a blank guide?
             </h3>
-            <p className="prg-muted">
-              This clears the current entries in this tab. Export anything you
-              want to keep first.
-            </p>
+         <p className="prg-muted">
+  This will replace your current guide and its saved progress with
+  a blank version. Download a copy first if you want to keep it.
+</p>
+
             <div
               className="prg-row"
               style={{ marginTop: 22, justifyContent: "flex-end" }}
@@ -2150,13 +2707,29 @@ export default function ProductReferenceGuide() {
         </div>
       )}
 
-      <div className="prg-print-document">
-        <h1>{data.product || "Untitled product"} — Product Reference Guide</h1>
-        <p className="prg-print-meta">
-          {data.market || "Market unspecified"} ·{" "}
-          {data.version || "Version unspecified"} · Owner:{" "}
-          {data.owner || "Unassigned"}
-        </p>
+ <div className="prg-print-document">
+  <div className="prg-print-header">
+    <div className="prg-print-brand">
+      GrowUp
+    </div>
+
+    <div className="prg-print-eyebrow">
+      Product Reference Guide
+    </div>
+
+    <h1>{data.product || "Untitled product"}</h1>
+
+    <p className="prg-print-subtitle">
+      Product Claims & Editorial Reference
+    </p>
+  </div>
+
+  <p className="prg-print-meta">
+    {data.market || "Market unspecified"} ·{" "}
+    {data.version || "Version unspecified"} · Owner:{" "}
+    {data.owner || "Unassigned"} · Last reviewed:{" "}
+    {data.lastUpdated || "Not specified"}
+  </p>
 
         <h2>Product context</h2>
         <p>
@@ -2191,9 +2764,9 @@ export default function ProductReferenceGuide() {
         <h2>Product facts</h2>
         {data.facts.map((f) => (
           <section key={f.id}>
-            <h3>
-              {f.title || "Untitled"} — {f.category} [{f.status}]
-            </h3>
+      <h3>
+  {f.title || "Untitled"} · {f.category} · {f.status}
+</h3>
             <p>
               <strong>Wording:</strong> {f.claim}
               <br />
@@ -2219,10 +2792,16 @@ export default function ProductReferenceGuide() {
           Review cadence: Every {data.reviewCadence} days. Only publish Approved
           claims backed by sources and current verification.
         </p>
-        <p style={{ fontSize: "9pt" }}>
-          RelayLedger examples are fictional demonstration data. Replace all
-          sample sources with actual product records before publication.
-        </p>
+  <p style={{ fontSize: "9pt" }}>
+  {data.product === "RelayLedger"
+    ? "RelayLedger is a fictional demonstration. Replace sample claims and sources with verified product information before publication."
+    : "Confirm all product claims against approved sources before publication."}
+</p>
+
+<div className="prg-print-footer">
+  <span>GROWUP · PRODUCT REFERENCE</span>
+  <span>seo-growup.com</span>
+</div>
       </div>
     </div>
   );

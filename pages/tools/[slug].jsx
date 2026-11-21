@@ -48,7 +48,7 @@ const TOOL_SEO = {
   "product-fact-sheet": {
     title: "Free Product Fact Sheet Template for SaaS | GrowUp",
     description:
-      "Create a product fact sheet for your writers and agencies. Keep product features, pricing, integrations and approved marketing claims in one reference.",
+      "Keep product claims accurate across your content. Document approved wording, supporting sources, verification dates and plan restrictions in one reference.",
   },
 
   "content-brief-template": {
