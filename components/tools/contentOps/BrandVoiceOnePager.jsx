@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 /**
  * GrowUp — Brand Writing Guidelines
@@ -16,152 +16,216 @@ const EMPTY_EXAMPLE = () => ({
 });
 
 const EXAMPLE = {
-  brand: "RelayLedger",
-  product: "A fictional B2B accounts payable platform for finance teams",
+  brand: "AccessPay",
+
+  product:
+    "A finance automation platform that connects businesses' financial systems with their banks to automate payments, collections and bank statement retrieval.",
+
   audience:
-    "Finance managers, controllers and operations leads at growing B2B companies",
+    "CFOs, finance directors and treasury managers at UK mid-market and enterprise companies managing complex payment processes and multiple banking relationships.",
+
   writerContext:
-    "Comparison pages, product explainers, implementation guides and email nurture content",
-  owner: "Head of Marketing",
-  updated: "2026-11-20",
+    "SEO articles, software comparison pages, product landing pages and customer case studies.",
+
+  owner: "Head of Content Marketing",
+
+  updated: "21 November 2026",
+
   voiceSummary:
-    "Precise, calm and useful. Write like a knowledgeable colleague explaining an operational task, not a software advertisement.",
+    "Professional, precise and commercially informed. Explain how AccessPay supports finance and treasury operations using specific product capabilities, practical examples and evidence.",
+
   perspective: "you",
+
   locale: "British English",
+
   reading:
-    "Short sentences where possible. Use headings that describe the task. Explain finance terms on first use.",
+    "Use descriptive headings, concise paragraphs and clear explanations of technical terminology. Lead with the buyer's operational challenge, explain the relevant capability and support claims with approved evidence. Avoid unnecessary jargon, repetition and unsupported superlatives.",
+
   principles: [
     {
-      title: "Lead with the buyer's task",
+      title: "Address a specific buyer requirement",
       detail:
-        "Start with what the finance team needs to complete, then show how the workflow works.",
+        "Focus each section on a recognisable challenge facing CFOs, finance directors or treasury teams. For example, explain how finance teams can consolidate payment processes across multiple banks rather than making general claims about improving efficiency.",
     },
     {
-      title: "Use specific nouns and verbs",
+      title: "Explain the product capability",
       detail:
-        "Name the report, approval, data field or action rather than saying ‘solution’ or ‘optimise’.",
+        "Identify the relevant AccessPay functionality and explain how it supports the buyer's workflow. Specify whether the content concerns payment automation, bank connectivity, statement retrieval or financial controls. Avoid describing capabilities without explaining their practical application.",
     },
     {
-      title: "Make claims verifiable",
+      title: "Support commercial and product claims",
       detail:
-        "Attach a source to numbers, integrations, plan limits and customer outcomes before publishing.",
+        "Verify statements about integrations, supported payment methods, implementation, security and customer outcomes. Use approved documentation or published customer evidence, and include the relevant conditions, limitations and timeframes.",
     },
   ],
+
   terms: [
     {
-      avoid: "seamless",
-      use: "describe the steps or integration requirements",
-      note: "Don't imply zero setup.",
+      avoid: "seamless integration",
+      use: "direct connectivity between finance systems and banks",
+      note:
+        "Specify the connection method, supported systems and implementation requirements where relevant.",
     },
     {
-      avoid: "leverage",
-      use: "use",
-      note: "Prefer a natural verb.",
+      avoid: "revolutionise your finance operations",
+      use: "automate payment processing and bank statement retrieval",
+      note:
+        "Describe the operational improvement rather than making a broad transformation claim.",
     },
     {
-      avoid: "powerful solution",
-      use: "name the feature or report",
-      note: "Specify what the user gets.",
+      avoid: "powerful financial solution",
+      use: "payments automation and bank connectivity platform",
+      note:
+        "Name the relevant product category or capability so buyers understand what is being offered.",
     },
     {
-      avoid: "revolutionary",
-      use: "omit unless supported by evidence",
-      note: "Avoid unverifiable superlatives.",
+      avoid: "guaranteed cost savings",
+      use: "reduce manual payment processing and administrative work",
+      note:
+        "Do not promise financial outcomes without an approved customer result and supporting evidence.",
     },
   ],
+
   claims: {
     capabilities:
-      "Check every feature statement against the current product documentation. Never imply a feature is available on all plans without verification.",
+      "Describe only capabilities supported by current AccessPay product documentation. Distinguish between payment automation, bank connectivity, cash management and fraud prevention. Confirm whether specific functionality requires additional configuration or services.",
+
     integrations:
-      "Only name an integration if it appears on the approved integrations list. Describe whether the connection is native, via API or third-party automation.",
+      "Verify named banks, ERP systems and payment networks against approved AccessPay documentation. Specify the relevant connectivity method, such as API, SFTP, Host-to-Host or SWIFT, where appropriate. Do not imply that every integration is immediately available without setup.",
+
     metrics:
-      "Use customer results only with a named customer, approved number, timeframe and a link to the original case study. No blanket savings claims.",
+      "Use performance figures and customer outcomes only when supported by approved case studies or company data. Include the customer, measurement period and relevant context. Do not invent percentages, processing improvements, cost savings or implementation results.",
+
     pricing:
-      "Link to the current pricing page. State the currency, billing basis and plan where relevant; do not invent plan limits.",
+      "Reference the current AccessPay pricing information or approved commercial documentation. Explain the relevant subscription basis, implementation fees and pricing variables where publicly available. Do not invent package prices, discounts or contractual terms.",
+
     prohibited:
-      "No ‘guaranteed ROI’, ‘100% accurate’, ‘all customers’, ‘instant setup’ or ‘best-in-class’ without documented support.",
+      "Avoid unsupported claims such as 'zero payment errors', 'guaranteed ROI', 'instant implementation', '100% fraud prevention' or 'compatible with every system'. Replace absolute promises with specific, verifiable product information.",
+
     evidence:
-      "Approved product docs, pricing page, integration directory, reviewed customer case studies and a named internal approver.",
+      "Approved AccessPay product pages, technical documentation, integration specifications, pricing guidance, published customer case studies and internally approved product information.",
+
     approver:
-      "Head of Product for capabilities and integrations; Head of Marketing for tone and final publication.",
+      "Product Marketing or the relevant Product Lead verifies product positioning and functionality. Technical specialists confirm integrations and payment terminology. The Head of Content Marketing approves editorial quality and publication.",
   },
+
+
+
+
   examples: [
     {
       category: "Headlines",
-      before: "Unlock unprecedented efficiency in accounts payable.",
-      after: "Review supplier invoices in one queue.",
-      why: "Names the workflow instead of making a vague promise.",
+      before:
+        "Transform your financial operations with next-generation payment technology.",
+      after:
+        "Automate corporate payments across multiple banks without managing separate payment processes for each banking relationship.",
+      why:
+        "Name the product capability and the specific buyer problem it addresses, rather than making broad technology claims.",
     },
     {
       category: "Features",
-      before: "Leverage our powerful platform to streamline operations.",
+      before:
+        "Our innovative platform simplifies complex financial operations and gives finance teams everything they need to work more efficiently.",
       after:
-        "Use the approvals dashboard to assign an invoice to the right reviewer.",
-      why: "Specifies the action and the feature.",
+        "Connect your finance applications to supported banks and automate payment file submissions, reducing the need to prepare and upload payment files manually through individual banking portals.",
+      why:
+        "Explain what the feature does, how it works and which manual tasks it helps reduce.",
     },
     {
       category: "Integrations",
-      before: "Seamlessly connects with all your tools.",
+      before:
+        "AccessPay integrates seamlessly with every major bank and ERP system, allowing your finance team to get connected in minutes.",
       after:
-        "Check the integrations directory for supported accounting systems and setup requirements.",
-      why: "Avoids claiming unsupported compatibility or effortless setup.",
+        "Connect supported ERP and finance systems to banking partners through available connectivity methods, including API, SFTP and Host-to-Host connections. Confirm compatibility and implementation requirements for each integration before deployment.",
+      why:
+        "Specify supported connectivity methods without promising universal compatibility or immediate implementation.",
     },
     {
       category: "Benefits",
-      before: "Transform the way your team works forever.",
-      after: "Keep invoice comments, documents and approvals together.",
-      why: "Describes a practical change without hyperbole.",
+      before:
+        "AccessPay helps finance teams save time, increase productivity and focus on the work that really matters.",
+      after:
+        "Reduce the time finance teams spend switching between banking portals, preparing payment files and completing repetitive payment administration by managing supported payment workflows through connected finance systems.",
+      why:
+        "Connect benefits to actual finance workflows instead of making generic productivity claims.",
     },
     {
       category: "Product claims",
-      before: "Our AI eliminates every invoice error.",
-      after: "Use validation flags to spot missing fields before approval.",
-      why: "Doesn't promise perfect accuracy.",
+      before:
+        "Eliminate payment errors and prevent fraud with AccessPay's advanced security technology.",
+      after:
+        "Strengthen payment controls by using supported validation and approval processes to identify potential issues before payments are submitted. Confirm the available controls and configuration requirements against the relevant product documentation.",
+      why:
+        "Describe verified security and payment controls without guaranteeing the elimination of errors or fraud.",
     },
     {
       category: "Support",
-      before: "Enjoy best-in-class customer support.",
+      before:
+        "Our world-class support team guarantees a seamless implementation, so you'll never have to worry about onboarding or technical issues.",
       after:
-        "Check your plan for its included support channels and response commitments.",
-      why: "Directs readers to verifiable terms.",
+        "Discuss your existing banking relationships, finance systems and payment workflows with the AccessPay team to understand the connectivity options, implementation requirements and support arrangements relevant to your organisation.",
+      why:
+        "Set clear expectations about implementation and support without promising outcomes that haven't been verified.",
     },
     {
       category: "Results",
-      before: "Every finance team saves hours each week.",
+      before:
+        "AccessPay reduces payment processing time by 80% and helps every finance team achieve significant operational savings.",
       after:
-        "In the approved case study, the named team reported the time saved over the stated period.",
-      why: "Requires customer-specific evidence; replace with sourced numbers before publication.",
+        "In customer case studies, report the verified improvement alongside the original process, measurement period and implementation context. For example, explain how a named customer changed its payment workflow and quantify the resulting time savings only where the published evidence supports them.",
+      why:
+        "Support performance claims with approved customer data, including the results achieved and measurement period.",
     },
     {
       category: "Clarity",
       before:
-        "It is important to note that users have the ability to export reports.",
-      after: "You can export the report.",
-      why: "Removes an unnecessary introduction and passive phrasing.",
+        "Organisations can leverage automated financial technology solutions to enhance operational visibility and facilitate improved management of their banking-related activities.",
+      after:
+        "Retrieve bank statements automatically from supported banking partners and make account information available to your finance team without manually downloading statements from separate banking portals.",
+      why:
+        "Replace abstract terminology with specific descriptions of the task, functionality and practical benefit.",
     },
     {
       category: "Calls to action",
-      before: "Book a call to learn more about our solution.",
-      after: "Book a 20-minute walkthrough of invoice approvals.",
-      why: "Sets a specific expectation for the next step.",
+      before:
+        "Ready to unlock the future of finance? Contact our experts today and discover how AccessPay can revolutionise your business.",
+      after:
+        "Book a consultation to discuss your current payment processes, banking connections and finance systems, and explore which AccessPay capabilities may be relevant to your requirements.",
+      why:
+        "Explain what buyers can expect from the next step, including the specific requirements they'll discuss.",
     },
     {
       category: "Comparisons",
-      before: "We're better than every competitor on the market.",
+      before:
+        "AccessPay is the industry's leading payment automation platform, offering better features, integrations and value than every competitor.",
       after:
-        "Compare approval rules, integrations and pricing before choosing a platform.",
-      why: "Gives buyers useful evaluation criteria rather than an unsupported ranking.",
+        "When comparing payment automation platforms, evaluate supported banking connections, ERP integrations, payment approval controls, implementation requirements and commercial terms. Assess each provider against your existing finance infrastructure and operational priorities.",
+      why:
+        "Use verifiable evaluation criteria to help buyers compare platforms without making unsupported superiority claims.",
     },
   ],
+
+
+
   checklist: [
-    "The opening sentence names a buyer problem or task.",
-    "Generic promotional phrases have been replaced with specific language.",
-    "Feature, integration and pricing claims have an approved source.",
-    "Numbers and customer outcomes have attribution and a timeframe.",
-    "Headings tell readers what each section helps them do.",
-    "The CTA explains what will happen next.",
+    "The introduction addresses a specific finance or treasury challenge relevant to the target audience.",
+
+    "The article explains the relevant AccessPay capability and its practical application.",
+
+    "Product features, supported payment methods and integrations have been checked against approved documentation.",
+
+    "Customer results, percentages and financial claims include an approved source and relevant timeframe.",
+
+    "Technical terminology is accurate and clearly explained for the intended buyer.",
+
+    "Comparisons use relevant evaluation criteria rather than unsupported superiority claims.",
+
+    "Headings clearly describe the information covered in each section.",
+
+    "The call to action reflects the buyer's stage of evaluation and sets a clear expectation.",
   ],
 };
+
 
 const EMPTY = {
   brand: "",
@@ -378,36 +442,120 @@ function EmptyLine({ children }) {
   return <p className="bwg-empty">{children}</p>;
 }
 
+
 export const faqs = [
   {
-    question: "Can I share this with freelancers and agencies?",
+    question: "What should B2B SaaS brand writing guidelines include?",
     answer:
-      "Yes. Complete the guide, then copy the document or print it as a PDF to send to any external or internal writer.",
+      "Your writing guidelines should explain what your product does, who you're selling to and how you want your content written. Include your preferred terminology, formatting rules and where writers should check product claims. I'd also add five to ten before-and-after examples from previous drafts. These are particularly useful for showing freelancers and agencies what good content looks like.",
   },
   {
-    question: "Do I have to write exactly ten examples?",
+    question: "How do I create writing guidelines for freelance writers and content agencies?",
     answer:
-      "No. Ten is a useful starting point; you can add or remove examples. Before-and-after edits are usually more actionable than adjectives alone.",
+      "Start with the information a freelance writer or agency needs to understand your business: what your product does, who buys it and what you're expecting them to produce. Then document your writing style, preferred terminology and rules for product claims. I'd also include examples of drafts you've previously corrected, so writers can see what you expect before they start working.",
   },
   {
-    question: "Does this check whether my product claims are accurate?",
+    question: "What's the difference between brand voice guidelines and editorial guidelines?",
     answer:
-      "No. This is a documentation tool. Confirm claims with your internal sources and approvers before publishing.",
+      "Brand voice guidelines explain how your company should sound, including its tone, word choices and level of formality. Editorial guidelines focus on how content gets written and reviewed, covering things like article structure, product accuracy and fact-checking. For B2B SaaS companies, I'd recommend combining both so writers understand your preferred style and know which product claims they can actually make.",
   },
   {
-    question: "Where is my information stored?",
+    question: "How detailed should brand writing guidelines be?",
     answer:
-      "This version keeps entries in the current page state. It does not send your entries to a server. Copy or export the guide before leaving or reloading.",
+      "Your writing guidelines should be detailed enough that a new writer can understand your product, target audience and editorial standards without needing a lengthy onboarding call. I'd focus on the things they need to get right: product terminology, writing style, formatting and factual claims. Add five to ten examples of previously corrected sentences, but leave article-specific instructions to your content briefs.",
+  },
+  {
+    question: "How often should we update our brand writing guidelines?",
+    answer:
+      "Every quarter is a reasonable starting point, but I wouldn't wait three months to correct inaccurate product information. If you've launched a new feature, changed your pricing or added an integration, update the guidelines straight away.",
+  },
+  {
+    question: "Can I customise the writing guidelines for different products or audiences?",
+    answer:
+      "Yes, and I'd recommend doing this if you're selling to buyers with very different priorities. A CFO evaluating payment software probably wants to understand financial controls, costs and risk, while a treasury manager may care more about bank connectivity and cash visibility. You can adjust the audience, terminology and writing examples for each group. Just download each version before starting a new one.",
   },
 ];
 
+
+const STORAGE_KEY = "growup-brand-writing-guidelines-v1";
+
 export default function BrandWritingGuidelines() {
-  const [data, setData] = useState(() => clone(EXAMPLE));
-  const [active, setActive] = useState("identity");
-  const [previewTab, setPreviewTab] = useState("guide");
-  const [notice, setNotice] = useState("");
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [showFaq, setShowFaq] = useState(-1);
+const [data, setData] = useState(() => clone(EXAMPLE));
+const [active, setActive] = useState("identity");
+const [previewTab, setPreviewTab] = useState("guide");
+const [notice, setNotice] = useState("");
+const [confirmReset, setConfirmReset] = useState(false);
+
+const [storageReady, setStorageReady] = useState(false);
+
+// Restore the user's previous work when the page loads.
+useEffect(() => {
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      if (
+        parsed.data &&
+        typeof parsed.data === "object" &&
+        !Array.isArray(parsed.data) &&
+        Array.isArray(parsed.data.examples) &&
+        Array.isArray(parsed.data.principles) &&
+        Array.isArray(parsed.data.terms) &&
+        Array.isArray(parsed.data.checklist) &&
+        parsed.data.claims &&
+        typeof parsed.data.claims === "object"
+      ) {
+        setData(parsed.data);
+      }
+
+      if (
+        parsed.active &&
+        STEPS.some((step) => step.key === parsed.active)
+      ) {
+        setActive(parsed.active);
+      }
+
+      if (
+        parsed.previewTab === "guide" ||
+        parsed.previewTab === "examples"
+      ) {
+        setPreviewTab(parsed.previewTab);
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "Could not restore saved writing guidelines:",
+      error
+    );
+  } finally {
+    setStorageReady(true);
+  }
+}, []);
+
+// Automatically save whenever the user makes a change.
+useEffect(() => {
+  if (!storageReady) return;
+
+  try {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        data,
+        active,
+        previewTab,
+      })
+    );
+  } catch (error) {
+    console.warn(
+      "Could not save writing guidelines:",
+      error
+    );
+  }
+}, [data, active, previewTab, storageReady]);
+
+
 
   const update = (key, value) =>
     setData((prev) => ({ ...prev, [key]: value }));
@@ -483,7 +631,7 @@ export default function BrandWritingGuidelines() {
 
   const buildText = useMemo(() => {
     const lines = [
-      `${data.brand || "Brand"} — Brand Writing Guidelines`,
+      `${data.brand || "Brand"}: Brand Writing Guidelines`,
       `Owner: ${data.owner || "Not specified"} | Updated: ${
         data.updated || "Not specified"
       }`,
@@ -557,7 +705,7 @@ export default function BrandWritingGuidelines() {
 
   function exportMarkdown() {
     const md =
-      `# ${data.brand || "Brand"} — Brand Writing Guidelines\n\n` +
+      `# ${data.brand || "Brand"}: Brand Writing Guidelines\n\n` +
       buildText.split("\n").slice(1).join("\n");
 
     const blob = new Blob([md], {
@@ -577,11 +725,9 @@ export default function BrandWritingGuidelines() {
     notify("Markdown file downloaded.");
   }
 
-  function printGuide() {
-    setActive("review");
-    setPreviewTab("guide");
-    window.setTimeout(() => window.print(), 60);
-  }
+function printGuide() {
+  window.print();
+}
 
   function loadExample() {
     setData(clone(EXAMPLE));
@@ -680,18 +826,18 @@ export default function BrandWritingGuidelines() {
           <main className="bwg-editor">
             {active === "identity" && (
               <>
-                <SectionHeading
-                  eyebrow="01 / THE CONTEXT"
-                  title="Who are we writing for?"
-                  description="Give every writer the same starting point: what you sell, who buys it and which work this guide applies to."
-                />
+               <SectionHeading
+  eyebrow="01 / THE CONTEXT"
+  title="Define Your Product and Target Audience"
+  description="Give writers a clear understanding of your product, ideal customers and the content they’ll be responsible for producing."
+/>
 
                 <div className="bwg-two">
                   <Field
                     label="Brand / company"
                     value={data.brand}
                     onChange={(v) => update("brand", v)}
-                    placeholder="e.g. RelayLedger"
+                     placeholder="e.g. AccessPay"
                     required
                   />
                   <Field
@@ -712,7 +858,7 @@ export default function BrandWritingGuidelines() {
 
                 <Field
                   label="Primary audience"
-                  hint="Roles, company types and buyer maturity — not just 'everyone'."
+                  hint="Roles, company types and buyer maturity"
                   value={data.audience}
                   onChange={(v) => update("audience", v)}
                   rows={2}
@@ -735,27 +881,20 @@ export default function BrandWritingGuidelines() {
                   placeholder="YYYY-MM-DD"
                 />
 
-                <div className="bwg-tip">
-                  <Icon name="alert" size={17} />
-                  <span>
-                    <strong>Useful distinction:</strong> A content writer
-                    doesn't need your entire company history. They need the
-                    product, reader and job the content must perform.
-                  </span>
-                </div>
+         
               </>
             )}
 
             {active === "voice" && (
               <>
-                <SectionHeading
-                  eyebrow="02 / THE HOUSE STYLE"
-                  title="How should your brand sound?"
-                  description="Replace vague adjectives like ‘professional’ with practical instructions a writer can follow while editing."
-                />
+            <SectionHeading
+  eyebrow="02 / EDITORIAL STANDARDS"
+  title="Define Your Brand’s Writing Standards"
+  description="Establish clear guidelines for tone, terminology, sentence structure and formatting so every writer works to the same editorial requirements."
+/>
 
                 <Field
-                  label="Voice summary"
+                  label="Writing style summary"
                   value={data.voiceSummary}
                   onChange={(v) => update("voiceSummary", v)}
                   rows={3}
@@ -794,11 +933,10 @@ export default function BrandWritingGuidelines() {
 
                 <div className="bwg-subhead">
                   <div>
-                    <h3>Writing principles</h3>
-                    <p>
-                      Three or four memorable rules work better than a page
-                      of adjectives.
-                    </p>
+                    <h3>Editorial principles</h3>
+               <p>
+  Define the standards writers should apply when drafting and reviewing content.
+</p>
                   </div>
                   <span className="bwg-count">
                     {completePrinciples} complete
@@ -819,23 +957,23 @@ export default function BrandWritingGuidelines() {
                         <Icon name="trash" size={16} />
                       </button>
                     </div>
+<Field
+  label="Editorial rule"
+  value={r.title}
+  onChange={(v) => updateRow("principles", i, "title", v)}
+  placeholder="e.g. Explain the relevant product capability"
+/>
 
-                    <Field
-                      label="Rule"
-                      value={r.title}
-                      onChange={(v) => updateRow("principles", i, "title", v)}
-                      placeholder="e.g. Lead with the buyer's task"
-                    />
 
-                    <Field
-                      label="What this means in practice"
-                      value={r.detail}
-                      onChange={(v) =>
-                        updateRow("principles", i, "detail", v)
-                      }
-                      rows={2}
-                      placeholder="Explain how to apply the rule to a real draft."
-                    />
+<Field
+  label="Application guidelines"
+  value={r.detail}
+  onChange={(v) =>
+    updateRow("principles", i, "detail", v)
+  }
+  rows={2}
+  placeholder="e.g. Identify the relevant product functionality and explain how it addresses a specific buyer requirement."
+/>
                   </div>
                 ))}
 
@@ -845,23 +983,22 @@ export default function BrandWritingGuidelines() {
                     appendRow("principles", { title: "", detail: "" })
                   }
                 >
-                  <Icon name="plus" size={16} /> Add writing principle
+                  <Icon name="plus" size={16} /> Add editorial principle
                 </button>
               </>
             )}
 
             {active === "language" && (
               <>
-                <SectionHeading
-                  eyebrow="03 / EDITORIAL GUARDRAILS"
-                  title="What can writers say?"
-                  description="Make prohibited language and product claims explicit, so fewer inaccuracies reach the approval stage."
-                />
-
+              <SectionHeading
+  eyebrow="03 / LANGUAGE & PRODUCT ACCURACY"
+  title="Set Rules for Language & Product Claims"
+  description="Establish clear rules for terminology, product information and supporting evidence so content meets your company's accuracy and approval standards."
+/>
                 <div className="bwg-subhead">
                   <div>
                     <h3>Words and preferred replacements</h3>
-                    <p>Give an alternative, not just a blacklist.</p>
+                    <p>Identify language writers should avoid and provide the preferred wording</p>
                   </div>
                   <span className="bwg-count">
                     {completeTerms} replacements
@@ -929,16 +1066,16 @@ export default function BrandWritingGuidelines() {
                 </div>
 
                 {[
-                  [
-                    "capabilities",
-                    "Features and capabilities",
-                    "When can a writer say a feature exists or is available?",
-                  ],
-                  [
-                    "integrations",
-                    "Integrations",
-                    "What must they check before naming an integration?",
-                  ],
+              [
+  "capabilities",
+  "Features and capabilities",
+  "Specify how writers should verify product functionality, availability and limitations.",
+],
+[
+  "integrations",
+  "Integrations",
+  "Define the approved sources for supported integrations and connectivity claims.",
+],
                   [
                     "metrics",
                     "Customer outcomes and statistics",
@@ -979,31 +1116,32 @@ export default function BrandWritingGuidelines() {
 
             {active === "examples" && (
               <>
-                <SectionHeading
-                  eyebrow="04 / SHOW, DON'T JUST TELL"
-                  title="Show writers the exact edit"
-                  description="Before-and-after examples are the most useful part of the guide. Use sentences from your own marketing copy where possible."
-                />
+            <SectionHeading
+  eyebrow="04 / APPROVED WRITING EXAMPLES"
+  title="Document Examples of Acceptable Writing"
+  description="Provide examples of how your company expects content to be written, using actual sentences from previous drafts and their approved revisions."
+/>
+        
 
-                <div className="bwg-example-progress">
-                  <div>
-                    <strong>
-                      {completeExamples} / {data.examples.length}
-                    </strong>{" "}
-                    complete examples
-                  </div>
-                  <div className="bwg-meter">
-                    <div
-                      style={{
-                        width: `${
-                          data.examples.length
-                            ? (100 * completeExamples) / data.examples.length
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                </div>
+        <div className="bwg-example-progress">
+  <div>
+    <strong>Writing examples</strong>
+    <span style={{ marginLeft: 12 }}>
+      {completeExamples} / {data.examples.length} complete
+    </span>
+  </div>
+  <div className="bwg-meter">
+    <div
+      style={{
+        width: `${
+          data.examples.length
+            ? (100 * completeExamples) / data.examples.length
+            : 0
+        }%`,
+      }}
+    />
+  </div>
+</div>
 
                 {data.examples.map((r, i) => (
                   <div className="bwg-example" key={i}>
@@ -1030,51 +1168,58 @@ export default function BrandWritingGuidelines() {
                         </button>
                       </div>
                     </div>
+<div>
+  <SelectField
+    label="Content category"
+    value={r.category}
+    onChange={(v) =>
+      updateRow("examples", i, "category", v)
+    }
+    options={CATEGORIES}
+  />
+  <p className="bwg-hint">
+    e.g. Product claims, headlines, integrations, benefits or comparisons
+  </p>
+</div>
 
-                    <SelectField
-                      label="What this example teaches"
-                      value={r.category}
-                      onChange={(v) =>
-                        updateRow("examples", i, "category", v)
-                      }
-                      options={CATEGORIES}
-                    />
 
-                    <div className="bwg-before-after">
-                      <div className="bwg-before">
-                        <Field
-                          label="BEFORE · Don't write this"
-                          value={r.before}
-                          onChange={(v) =>
-                            updateRow("examples", i, "before", v)
-                          }
-                          rows={3}
-                          placeholder="Paste an unhelpful sentence"
-                        />
-                      </div>
-                      <div className="bwg-after">
-                        <Field
-                          label="AFTER · Write this instead"
-                          value={r.after}
-                          onChange={(v) =>
-                            updateRow("examples", i, "after", v)
-                          }
-                          rows={3}
-                          placeholder="Show a better, more specific version"
-                        />
-                      </div>
-                    </div>
 
-                    <Field
-                      label="Why this version works"
-                      hint="Optional, but useful for teaching the underlying rule."
-                      value={r.why}
-                      onChange={(v) =>
-                        updateRow("examples", i, "why", v)
-                      }
-                      rows={2}
-                      placeholder="e.g. Names the buyer's task and removes an unverified claim."
-                    />
+<div className="bwg-before-after">
+  <div className="bwg-before">
+    <Field
+      label="Original wording"
+      value={r.before}
+      onChange={(v) =>
+        updateRow("examples", i, "before", v)
+      }
+      rows={3}
+      placeholder="e.g. Our innovative platform revolutionises financial operations."
+    />
+  </div>
+  <div className="bwg-after">
+    <Field
+      label="Approved revision"
+      value={r.after}
+      onChange={(v) =>
+        updateRow("examples", i, "after", v)
+      }
+      rows={3}
+      placeholder="e.g. Automate corporate payments across multiple banks."
+    />
+  </div>
+</div>
+
+
+<Field
+  label="Reason for the revision"
+  hint="Explain the editorial standard demonstrated by the approved version so writers can apply it consistently."
+  value={r.why}
+  onChange={(v) =>
+    updateRow("examples", i, "why", v)
+  }
+  rows={2}
+  placeholder="e.g. Replaces a broad promotional claim with a specific product capability."
+/>
                   </div>
                 ))}
 
@@ -1215,10 +1360,12 @@ export default function BrandWritingGuidelines() {
                       <Icon name="print" size={16} /> Print / PDF
                     </button>
                   </div>
-                  <small>
-                    Everything stays on this page until you leave or reload.
-                    Export to keep a copy.
-                  </small>
+<small>
+  Your progress saves automatically in this browser, including
+  your current step and completed examples. You can reload
+  the page and continue editing. Export a copy for backup or
+  sharing.
+</small>
                 </div>
               </>
             )}
@@ -1309,7 +1456,7 @@ export default function BrandWritingGuidelines() {
 
                   <section className="bwg-doc-section">
                     <h3>
-                      <span>02</span> The house style
+                      <span>02</span> Editorial standards
                     </h3>
                     {filled(data.voiceSummary) ? (
                       <p className="bwg-doc-emphasis">
@@ -1475,32 +1622,231 @@ export default function BrandWritingGuidelines() {
               </button>
             </div>
 
-            <div className="bwg-print-complete">
-              <h1>
-                {data.brand || "Brand"} — Brand Writing Guidelines
-              </h1>
-              <pre>{buildText}</pre>
+   
+<div className="bwg-print-complete">
+  <header className="bwg-pdf-cover">
+    <div className="bwg-pdf-topline">
+      <span>GROWUP / EDITORIAL RESOURCES</span>
+      <span>BRAND GUIDELINES</span>
+    </div>
+
+    <div className="bwg-pdf-cover-main">
+      <span className="bwg-pdf-kicker">
+        CONTENT PRODUCTION REFERENCE
+      </span>
+      <h1>Brand Writing Guidelines</h1>
+      <h2>{data.brand || "Your company"}</h2>
+      <p>
+        Product context, editorial standards, approved terminology,
+        product claims and writing examples.
+      </p>
+    </div>
+  </header>
+
+  <div className="bwg-pdf-meta">
+    <div>
+      <span>DOCUMENT OWNER</span>
+      <strong>{data.owner || "Not specified"}</strong>
+    </div>
+    <div>
+      <span>LAST REVIEWED</span>
+      <strong>{data.updated || "Not specified"}</strong>
+    </div>
+    <div>
+      <span>LANGUAGE</span>
+      <strong>{data.locale}</strong>
+    </div>
+  </div>
+
+  <div className="bwg-pdf-content">
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>01</span>
+        <h2>Product and Target Audience</h2>
+      </div>
+
+      <div className="bwg-pdf-field">
+        <h3>Product description</h3>
+        <p>{data.product || "Not specified"}</p>
+      </div>
+
+      <div className="bwg-pdf-field">
+        <h3>Primary audience</h3>
+        <p>{data.audience || "Not specified"}</p>
+      </div>
+
+      <div className="bwg-pdf-field">
+        <h3>Approved content formats</h3>
+        <p>{data.writerContext || "Not specified"}</p>
+      </div>
+    </section>
+
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>02</span>
+        <h2>Editorial Standards</h2>
+      </div>
+
+      <div className="bwg-pdf-field">
+        <h3>Writing style summary</h3>
+        <p>{data.voiceSummary || "Not specified"}</p>
+      </div>
+
+      <div className="bwg-pdf-inline-meta">
+        <div>
+          <strong>Point of view</strong>
+          <span>{data.perspective}</span>
+        </div>
+        <div>
+          <strong>Language convention</strong>
+          <span>{data.locale}</span>
+        </div>
+      </div>
+
+      <div className="bwg-pdf-field">
+        <h3>Sentence structure and formatting</h3>
+        <p>{data.reading || "Not specified"}</p>
+      </div>
+
+      {data.principles.some(
+        (r) => filled(r.title) || filled(r.detail)
+      ) && (
+        <div className="bwg-pdf-group">
+          <h3 className="bwg-pdf-subheading">
+            Editorial principles
+          </h3>
+
+          {data.principles
+            .filter((r) => filled(r.title) || filled(r.detail))
+            .map((r, i) => (
+              <div className="bwg-pdf-rule" key={i}>
+                <strong>{r.title || `Principle ${i + 1}`}</strong>
+                <p>{r.detail}</p>
+              </div>
+            ))}
+        </div>
+      )}
+    </section>
+
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>03</span>
+        <h2>Approved Terminology</h2>
+      </div>
+
+      {data.terms
+        .filter((r) => filled(r.avoid) || filled(r.use))
+        .map((r, i) => (
+          <div className="bwg-pdf-term" key={i}>
+            <div className="bwg-pdf-term-grid">
+              <div>
+                <span>TERM TO AVOID</span>
+                <p>{r.avoid || "Not specified"}</p>
+              </div>
+              <div>
+                <span>APPROVED ALTERNATIVE</span>
+                <p>{r.use || "Not specified"}</p>
+              </div>
             </div>
+            {filled(r.note) && (
+              <p className="bwg-pdf-note">{r.note}</p>
+            )}
+          </div>
+        ))}
+    </section>
+
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>04</span>
+        <h2>Product Claims and Approvals</h2>
+      </div>
+
+      {[
+        ["capabilities", "Features and capabilities"],
+        ["integrations", "Integrations"],
+        ["metrics", "Customer outcomes and statistics"],
+        ["pricing", "Pricing and plan limits"],
+        ["prohibited", "Restricted and prohibited claims"],
+        ["evidence", "Approved evidence sources"],
+        ["approver", "Claim verification and approval owners"],
+      ]
+        .filter(([key]) => filled(data.claims[key]))
+        .map(([key, label]) => (
+          <div className="bwg-pdf-claim" key={key}>
+            <h3>{label}</h3>
+            <p>{data.claims[key]}</p>
+          </div>
+        ))}
+    </section>
+
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>05</span>
+        <h2>Editorial Examples and Approved Revisions</h2>
+      </div>
+
+      {data.examples
+        .filter((r) => filled(r.before) || filled(r.after))
+        .map((r, i) => (
+          <article className="bwg-pdf-example" key={i}>
+            <div className="bwg-pdf-example-title">
+              <span>
+                EXAMPLE {String(i + 1).padStart(2, "0")}
+              </span>
+              <strong>{r.category}</strong>
+            </div>
+
+            <div className="bwg-pdf-original">
+              <span>ORIGINAL DRAFT</span>
+              <p>{r.before || "Not specified"}</p>
+            </div>
+
+            <div className="bwg-pdf-approved">
+              <span>APPROVED REVISION</span>
+              <p>{r.after || "Not specified"}</p>
+            </div>
+
+            {filled(r.why) && (
+              <div className="bwg-pdf-rationale">
+                <strong>Editorial rationale</strong>
+                <p>{r.why}</p>
+              </div>
+            )}
+          </article>
+        ))}
+    </section>
+
+    <section className="bwg-pdf-section">
+      <div className="bwg-pdf-section-heading">
+        <span>06</span>
+        <h2>Pre-Publishing Checklist</h2>
+      </div>
+
+      <div className="bwg-pdf-checklist">
+        {data.checklist.filter(filled).map((item, i) => (
+          <div className="bwg-pdf-check" key={i}>
+            <span className="bwg-pdf-checkbox"></span>
+            <p>{item}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <footer className="bwg-pdf-footer">
+      <strong>GROWUP</strong>
+      <span>Brand Writing Guidelines</span>
+      <span>seo-growup.com</span>
+    </footer>
+  </div>
+</div>
+
+
+
           </aside>
         </div>
 
-        {/* FAQ */}
-        <section className="bwg-faq">
-          <div className="bwg-eyebrow">HELP & GUIDANCE</div>
-          <h2>Frequently asked questions</h2>
-          {faqs.map((item, i) => (
-            <div className="bwg-faq-item" key={i}>
-              <button
-                aria-expanded={showFaq === i}
-                onClick={() => setShowFaq(showFaq === i ? -1 : i)}
-              >
-                {item.question}
-                <span>{showFaq === i ? "−" : "+"}</span>
-              </button>
-              {showFaq === i && <p>{item.answer}</p>}
-            </div>
-          ))}
-        </section>
+
+
       </div>
     </div>
   );
@@ -1518,18 +1864,29 @@ const CSS = `
   --text: #12393a;
   --muted: #607a7a;
   --white: #fff;
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  font-family: "Montserrat Variable", Montserrat, Arial, sans-serif;
   color: var(--text);
   font-size: 14px;
-  background: #fff;
+  background: transparent;
   line-height: 1.55;
+
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
-.bwg-root * { box-sizing: border-box }
+.bwg-root * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
 .bwg-root button,
 .bwg-root input,
 .bwg-root textarea,
-.bwg-root select { font: inherit }
+.bwg-root select {
+  font: inherit;
+  font-family: inherit;
+}
 .bwg-root button { cursor: pointer }
 .bwg-root button:focus-visible,
 .bwg-root input:focus-visible,
@@ -1663,9 +2020,10 @@ const CSS = `
 
 /* Shell */
 .bwg-shell {
-  max-width: 1208px;
-  padding: 36px 24px 70px;
-  margin: auto;
+  width: 100%;
+  max-width: none;
+  padding: 28px 0 50px;
+  margin: 0;
 }
 
 /* Step nav */
@@ -2083,18 +2441,24 @@ const CSS = `
 
 /* Doc sections */
 .bwg-doc-section {
-  padding: 19px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 24px 0;
+  border-bottom: 1px solid #e5eeeb;
 }
-.bwg-doc-section:last-child { border-bottom: 0 }
+
+.bwg-doc-section:last-child {
+  border-bottom: 0;
+}
+
 .bwg-doc-section h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
-  color: var(--deep);
-  margin: 0 0 12px;
-  letter-spacing: -.025em;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #063b3a;
+  margin: 0 0 15px;
+  letter-spacing: -0.01em;
 }
 .bwg-doc-section h3 span {
   font-size: 10px;
@@ -2111,30 +2475,50 @@ const CSS = `
 }
 .bwg-doc-section p {
   font-size: 11px;
-  line-height: 1.65;
-  color: #446562;
-  margin-bottom: 8px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #496562;
+  margin: 0 0 11px;
   overflow-wrap: anywhere;
 }
-.bwg-doc-section p b { color: var(--deep) }
+
+.bwg-doc-section p b {
+  font-weight: 650;
+  color: #153e3c;
+}
 .bwg-doc-emphasis {
-  font-size: 13px !important;
-  font-weight: 700;
-  color: var(--deep) !important;
+  font-size: 11px !important;
+  font-weight: 400;
+  line-height: 1.8 !important;
+  color: #446562 !important;
+  letter-spacing: 0;
+  margin-bottom: 12px !important;
 }
 .bwg-empty { color: #8a9d99 !important; font-style: italic }
 .bwg-doc-principle {
-  border-left: 2px solid #aed7cc;
-  padding: 3px 0 3px 12px;
+  border-left: 0;
+  border-top: 1px solid #edf1ef;
+  padding: 13px 0 3px;
   margin: 12px 0;
 }
+
 .bwg-doc-principle > b,
 .bwg-doc-claim > b {
+  display: block;
   font-size: 11px;
-  color: var(--deep);
+  font-weight: 650;
+  line-height: 1.5;
+  color: #063b3a;
 }
+
 .bwg-doc-principle p,
-.bwg-doc-claim p { margin: 3px 0 0 }
+.bwg-doc-claim p {
+  margin: 5px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #496562;
+}
 .bwg-doc-term {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 14px minmax(0, 1fr);
@@ -2148,12 +2532,22 @@ const CSS = `
 .bwg-doc-term > span { color: #a15045; text-decoration: line-through }
 .bwg-doc-term > strong { color: #136a5b }
 .bwg-doc-term > small { grid-column: 1 / -1; color: var(--muted) }
-.bwg-doc-claim { margin-bottom: 13px }
+.bwg-doc-claim {
+  padding: 0 0 14px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.bwg-doc-claim:last-of-type {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
 .bwg-doc-example {
-  padding: 12px;
-  border: 1px solid var(--line);
+  padding: 15px;
+  border: 1px solid #e1ebe7;
   border-radius: 8px;
-  margin: 10px 0;
+  background: #fff;
+  margin: 14px 0;
 }
 .bwg-doc-example > small {
   display: block;
@@ -2166,20 +2560,24 @@ const CSS = `
 }
 .bwg-doc-wrong,
 .bwg-doc-right {
-  padding: 9px 10px;
+  padding: 12px;
   font-size: 11px;
-  border-radius: 6px;
+  font-weight: 400;
+  line-height: 1.7;
+  border-radius: 5px;
   overflow-wrap: anywhere;
 }
+
 .bwg-doc-wrong {
-  background: #fcf1ed;
-  color: #924e43;
-  margin-bottom: 6px;
+  background: #faf6f5;
+  color: #76524d;
+  margin-bottom: 8px;
 }
+
 .bwg-doc-right {
-  background: #eaf5ef;
-  color: #116958;
-  font-weight: 650;
+  background: #f0f7f4;
+  color: #245a4f;
+  font-weight: 500;
 }
 .bwg-doc-wrong span,
 .bwg-doc-right span {
@@ -2338,7 +2736,10 @@ const CSS = `
   .bwg-topline { padding: 12px 18px }
   .bwg-top-tag { display: none !important }
   .bwg-hero { padding: 34px 18px }
-  .bwg-shell { padding: 22px 14px 45px }
+  .bwg-shell {
+  width: 100%;
+  padding: 22px 0 45px;
+}
   .bwg-editor { padding: 20px 16px }
   .bwg-step { font-size: 11px; padding: 9px 10px }
   .bwg-steps { gap: 6px }
@@ -2353,45 +2754,499 @@ const CSS = `
   .bwg-export-actions .bwg-btn { width: 100% }
 }
 
-/* Print */
+
+
+
+/* ========================================
+   BRANDED PDF DOCUMENT
+======================================== */
+
+.bwg-print-complete {
+  display: none;
+  font-family: "Montserrat Variable", Montserrat, Arial, sans-serif;
+  color: #12393a;
+  background: #ffffff;
+}
+
+.bwg-pdf-cover {
+  background: #063b3a;
+  color: #ffffff;
+  padding: 30px 34px 35px;
+}
+
+.bwg-pdf-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  color: #afd6cc;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.bwg-pdf-cover-main {
+  padding-top: 28px;
+}
+
+.bwg-pdf-kicker {
+  display: block;
+  color: #93d6c8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+
+.bwg-pdf-cover h1 {
+  color: #ffffff;
+  font-size: 27px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  margin: 0 0 12px;
+}
+
+.bwg-pdf-cover h2 {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.bwg-pdf-cover p {
+  color: #d1e6df;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0;
+}
+
+.bwg-pdf-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 23px 34px;
+  border-bottom: 1px solid #dce9e5;
+}
+
+.bwg-pdf-meta div {
+  min-width: 0;
+}
+
+.bwg-pdf-meta span {
+  display: block;
+  color: #66827a;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  margin-bottom: 7px;
+}
+
+.bwg-pdf-meta strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 650;
+  color: #063b3a;
+  line-height: 1.5;
+}
+
+.bwg-pdf-content {
+  padding: 10px 34px 25px;
+}
+
+.bwg-pdf-section {
+  padding: 25px 0;
+  border-bottom: 1px solid #e1ebe7;
+}
+
+.bwg-pdf-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.bwg-pdf-section-heading > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #eef4f3;
+  color: #167273;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.bwg-pdf-section-heading h2 {
+  color: #063b3a;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.bwg-pdf-field {
+  margin-bottom: 15px;
+  break-inside: avoid;
+}
+
+.bwg-pdf-field h3,
+.bwg-pdf-claim h3 {
+  font-size: 10px;
+  font-weight: 700;
+  color: #063b3a;
+  line-height: 1.5;
+  margin: 0 0 5px;
+}
+
+.bwg-pdf-field p,
+.bwg-pdf-claim p,
+.bwg-pdf-rule p {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #496562;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bwg-pdf-inline-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  padding: 12px 15px;
+  background: #f4f8f6;
+  border-radius: 6px;
+  margin: 15px 0;
+  break-inside: avoid;
+}
+
+.bwg-pdf-inline-meta strong {
+  display: block;
+  font-size: 9px;
+  color: #52766e;
+  margin-bottom: 4px;
+}
+
+.bwg-pdf-inline-meta span {
+  display: block;
+  font-size: 10px;
+  color: #063b3a;
+}
+
+.bwg-pdf-subheading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #063b3a;
+  margin: 20px 0 12px;
+}
+
+.bwg-pdf-rule {
+  padding: 12px 0;
+  border-top: 1px solid #edf1ef;
+  break-inside: avoid;
+}
+
+.bwg-pdf-rule strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #063b3a;
+  margin-bottom: 5px;
+}
+
+.bwg-pdf-term {
+  padding: 13px 0;
+  border-bottom: 1px solid #e8efec;
+  break-inside: avoid;
+}
+
+.bwg-pdf-term-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.bwg-pdf-term-grid > div {
+  min-width: 0;
+}
+
+.bwg-pdf-term-grid span {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: #68847e;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+
+.bwg-pdf-term-grid p {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.65;
+  color: #12393a;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bwg-pdf-term-grid > div:first-child p {
+  color: #a15045;
+}
+
+.bwg-pdf-term-grid > div:last-child p {
+  color: #136a5b;
+}
+
+.bwg-pdf-note {
+  margin: 9px 0 0;
+  color: #607a73;
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+.bwg-pdf-claim {
+  padding: 12px 0;
+  border-bottom: 1px solid #edf1ef;
+  break-inside: avoid;
+}
+
+.bwg-pdf-example {
+  margin: 0 0 20px;
+  padding: 15px;
+  background: #ffffff;
+  border: 1px solid #dce9e5;
+  border-radius: 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.bwg-pdf-example-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.bwg-pdf-example-title span {
+  font-size: 9px;
+  color: #167273;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+}
+
+.bwg-pdf-example-title strong {
+  font-size: 10px;
+  font-weight: 650;
+  color: #063b3a;
+}
+
+.bwg-pdf-original,
+.bwg-pdf-approved {
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin-bottom: 9px;
+  break-inside: avoid;
+}
+
+.bwg-pdf-original {
+  background: #faf5f3;
+}
+
+.bwg-pdf-approved {
+  background: #edf6f2;
+}
+
+.bwg-pdf-original > span,
+.bwg-pdf-approved > span {
+  display: block;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  margin-bottom: 7px;
+}
+
+.bwg-pdf-original > span {
+  color: #985f51;
+}
+
+.bwg-pdf-approved > span {
+  color: #167273;
+}
+
+.bwg-pdf-original p,
+.bwg-pdf-approved p {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.75;
+  margin: 0;
+  color: #12393a;
+}
+
+.bwg-pdf-rationale {
+  padding: 8px 2px 0;
+}
+
+.bwg-pdf-rationale strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #063b3a;
+  margin-bottom: 5px;
+}
+
+.bwg-pdf-rationale p {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #496562;
+  margin: 0;
+}
+
+.bwg-pdf-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 11px;
+  break-inside: avoid;
+}
+
+.bwg-pdf-checkbox {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 1.5px solid #167273;
+  border-radius: 3px;
+  margin-top: 3px;
+}
+
+.bwg-pdf-check p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #496562;
+}
+
+.bwg-pdf-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 19px 0 0;
+  border-top: 1px solid #dce9e5;
+  font-size: 9px;
+  color: #68847e;
+}
+
+.bwg-pdf-footer strong {
+  color: #167273;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+
+/* ========================================
+   PRINT SETTINGS
+======================================== */
+
 @media print {
-  body * { visibility: hidden !important }
-  .bwg-root .bwg-aside,
-  .bwg-root .bwg-aside * { visibility: visible !important }
-  .bwg-root .bwg-aside {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: visible;
+  @page {
+    size: A4;
+    margin: 14mm;
   }
+
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .bwg-root .bwg-aside,
+  .bwg-root .bwg-aside *,
+  .bwg-root .bwg-print-complete,
+  .bwg-root .bwg-print-complete * {
+    visibility: visible !important;
+  }
+
+  .bwg-root,
+  .bwg-root .bwg-layout,
+  .bwg-root .bwg-aside {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .bwg-root .bwg-aside {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+
   .bwg-root .bwg-preview-header,
-  .bwg-root .bwg-preview-footer { display: none !important }
-  .bwg-root .bwg-preview-body { display: none !important }
+  .bwg-root .bwg-preview-body,
+  .bwg-root .bwg-preview-footer {
+    display: none !important;
+  }
+
   .bwg-root .bwg-print-complete {
     display: block !important;
-    padding: 12mm 10mm;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
   }
-  .bwg-root .bwg-print-complete h1 { font-size: 23px; color: #063b3a }
-  .bwg-root .bwg-print-complete pre {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font: 11px/1.65 Arial, sans-serif;
-    color: #12393a;
+
+  .bwg-root .bwg-print-complete,
+  .bwg-root .bwg-print-complete * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  .bwg-root .bwg-print-heading { display: block; margin-bottom: 15mm }
-  .bwg-root .bwg-print-heading h1 {
-    font-size: 29px;
-    color: #063b3a;
-    margin: 4px 0;
+
+  .bwg-pdf-cover,
+  .bwg-pdf-meta,
+  .bwg-pdf-section-heading,
+  .bwg-pdf-field,
+  .bwg-pdf-rule,
+  .bwg-pdf-term,
+  .bwg-pdf-claim,
+  .bwg-pdf-example,
+  .bwg-pdf-check,
+  .bwg-pdf-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
-  .bwg-root .bwg-print-heading p { font-size: 14px }
-  .bwg-root .bwg-doc-section { break-inside: avoid }
-  .bwg-root .bwg-doc-section p { font-size: 11px }
-  .bwg-root .bwg-doc-section h3 { font-size: 14px }
-  @page { size: A4; margin: 12mm }
+
+  .bwg-pdf-section {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .bwg-pdf-section-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
 }
+
 `;

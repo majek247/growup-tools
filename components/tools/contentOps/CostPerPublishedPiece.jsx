@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 /**
  * GrowUp Content Cost Calculator
@@ -20,26 +20,26 @@ const ROUTES = [
     name: "In-house team",
     short: "In-house",
     description:
-      "Allocated loaded payroll for the people producing content, excluding review time counted separately.",
+      "Calculate what your internal team spends producing content, including additional review and approval time.",
   },
   {
     id: "freelancer",
     name: "Freelance writers",
     short: "Freelancer",
     description:
-      "Writer invoices and commissioned production fees, excluding internal team reviews.",
+      "Compare what you pay freelance writers, including the additional time your team spends reviewing their work.",
   },
   {
     id: "agency",
     name: "Content agency",
     short: "Agency",
     description:
-      "Agency invoices or retained production fees, excluding internal team reviews.",
+      "Compare agency fees alongside the internal time and additional costs involved in managing content delivery.",
   },
 ];
 
 const EMPTY_ROUTE = {
-  enabled: true,
+  enabled: false,
   base: "",
   hours: "",
   extra: "",
@@ -51,10 +51,9 @@ const INITIAL = {
   currency: "GBP",
   rate: "",
   period: "Monthly",
-  target: "6",
   context: "",
   routes: Object.fromEntries(
-    ROUTES.map((r) => [r.id, { ...EMPTY_ROUTE }])
+    ROUTES.map((r) => [r.id, { ...EMPTY_ROUTE, enabled: r.id === "agency" }])
   ),
 };
 
@@ -62,9 +61,8 @@ const EXAMPLE = {
   currency: "GBP",
   rate: "55",
   period: "Monthly",
-  target: "6",
   context:
-    "B2B SaaS buyer-intent programme: product comparisons, integration guides and bottom-of-funnel articles (1,400–2,000 words). Comparable research and editorial standards across routes.",
+    "We’re comparing the cost of producing six SEO articles per month, each around 1,500 words. All articles require product research, SEO optimisation and two rounds of revisions.",
   routes: {
     inhouse: {
       enabled: true,
@@ -73,7 +71,7 @@ const EXAMPLE = {
       extra: "160",
       published: "6",
       notes:
-        "60% allocation of content specialist's loaded pay (£3,600); £160 for research tools and specialist design. Reviews by Head of Marketing.",
+        "Our content writer spends roughly 60% of their working week producing articles. The remaining time goes towards campaigns and other marketing work. We've included research tools and design costs separately, with final reviews handled by our Head of Marketing.",
     },
     freelancer: {
       enabled: true,
@@ -82,7 +80,7 @@ const EXAMPLE = {
       extra: "180",
       published: "5",
       notes:
-        "Six commissioned articles at £450 each; five published within the month. £180 for editing and creative support. More internal fact-checking and product corrections.",
+        "We commissioned six articles from freelance writers this month, but only five made it through to publishing. Our marketing team handled the final edits and product fact-checking, with some additional design support needed before the articles went live.",
     },
     agency: {
       enabled: true,
@@ -91,7 +89,7 @@ const EXAMPLE = {
       extra: "0",
       published: "6",
       notes:
-        "Monthly six-piece package with briefing, copyediting, SEO metadata and two revision rounds included. Internal time covers factual sign-off.",
+        "We pay our agency a monthly retainer covering six articles, including research, writing, editing and SEO metadata. Two revision rounds are included. Our Head of Marketing reviews the final drafts and checks product claims before anything gets published.",
     },
   },
 };
@@ -114,13 +112,42 @@ const whole = (n) =>
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
-const validRoute = (r) =>
+// Only production spend and published output are required.
+// Blank optional fields count as zero; a nonzero review-hours value
+// requires an hourly rate so we never silently omit its cost.
+const optionalNumber = (v) => v === "" || v == null ? 0 : number(v);
+const validRoute = (r, rate) =>
   r.enabled &&
-  [r.base, r.hours, r.extra, r.published].every((v) =>
-    Number.isFinite(number(v))
-  ) &&
-  number(r.published) > 0 &&
-  Number.isInteger(number(r.published));
+  Number.isFinite(number(r.base)) &&
+  Number.isInteger(number(r.published)) && number(r.published) > 0 &&
+  Number.isFinite(optionalNumber(r.hours)) &&
+  Number.isFinite(optionalNumber(r.extra)) &&
+  (optionalNumber(r.hours) === 0 || Number.isFinite(number(rate)));
+
+// Convert only monetary fields. Published counts, hours and text stay unchanged.
+// Preserve enough decimal precision for conversion across currencies.
+const convertMoney = (value, fxRate) => {
+  if (value === "" || value == null) return value;
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) return value;
+  return String(Number((amount * fxRate).toFixed(4)));
+};
+
+const convertCurrencyData = (previous, toCurrency, fxRate) => ({
+  ...previous,
+  currency: toCurrency,
+  rate: convertMoney(previous.rate, fxRate),
+  routes: Object.fromEntries(
+    Object.entries(previous.routes).map(([id, route]) => [
+      id,
+      {
+        ...route,
+        base: convertMoney(route.base, fxRate),
+        extra: convertMoney(route.extra, fxRate),
+      },
+    ])
+  ),
+});
 
 const asCsv = (rows) =>
   rows
@@ -137,11 +164,51 @@ export default function ContentCostCalculator() {
   const [view, setView] = useState("comparison");
   const [notice, setNotice] = useState("");
   const [adjust, setAdjust] = useState(0);
-  const [expanded, setExpanded] = useState({
-    inhouse: true,
-    freelancer: true,
-    agency: true,
-  });
+  const [fxStatus, setFxStatus] = useState(null);
+  const [fxPending, setFxPending] = useState(false);
+  const fxBusy = useRef(false);
+
+  const changeCurrency = async (toCurrency) => {
+    const fromCurrency = data.currency;
+    if (toCurrency === fromCurrency || fxBusy.current) return;
+
+    fxBusy.current = true;
+    setFxPending(true);
+    setFxStatus(null);
+    try {
+      const response = await fetch(
+        `https://open.er-api.com/v6/latest/${encodeURIComponent(fromCurrency)}`,
+        { cache: "no-store" }
+      );
+      if (!response.ok) throw new Error("Exchange rate service unavailable");
+      const payload = await response.json();
+      const fxRate = Number(payload?.rates?.[toCurrency]);
+      if (payload?.result !== "success" || !Number.isFinite(fxRate) || fxRate <= 0) {
+        throw new Error("No valid exchange rate returned");
+      }
+
+      setData((previous) =>
+        previous.currency === fromCurrency
+          ? convertCurrencyData(previous, toCurrency, fxRate)
+          : previous
+      );
+      setAdjust(0);
+      setFxStatus({
+        type: "success",
+        message: `Converted ${fromCurrency} to ${toCurrency} at 1 ${fromCurrency} = ${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 4 }).format(fxRate)} ${toCurrency}${payload.time_last_update_utc ? ` · Rate updated ${payload.time_last_update_utc}` : ""}. All monetary inputs and results have been updated.`,
+      });
+    } catch {
+      // Never change the currency label unless its monetary values converted.
+      setFxStatus({
+        type: "error",
+        message: `Couldn't load a live ${fromCurrency} to ${toCurrency} exchange rate. Values remain in ${fromCurrency}. Check your connection and try again.`,
+      });
+    } finally {
+      fxBusy.current = false;
+      setFxPending(false);
+    }
+  };
+
 
   const update = (key, value) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -159,54 +226,36 @@ export default function ContentCostCalculator() {
     setNotice("");
   };
 
+  const selectedRoutes = ROUTES.filter((route) => data.routes[route.id].enabled);
   const rows = useMemo(
-    () =>
-      ROUTES.map((route) => {
-        const r = data.routes[route.id];
-        const valid =
-          validRoute(r) && Number.isFinite(number(data.rate));
-
-        const production = number(r.base);
-        const reviewHours = number(r.hours);
-        const other = number(r.extra);
-        const published = number(r.published);
-        const review = reviewHours * number(data.rate);
-        const total = production + review + other;
-
-        return {
-          ...route,
-          ...r,
-          valid,
-          production,
-          reviewHours,
-          other,
-          published,
-          review,
-          total,
-          perPiece: total / published,
-          reviewShare: total > 0 ? (100 * review) / total : 0,
-          basePerPiece: production / published,
-        };
-      }),
+    () => ROUTES.map((route) => {
+      const r = data.routes[route.id];
+      const valid = validRoute(r, data.rate);
+      const production = number(r.base);
+      const reviewHours = optionalNumber(r.hours);
+      const other = optionalNumber(r.extra);
+      const published = number(r.published);
+      const reviewRate = number(data.rate);
+      const review = reviewHours === 0 ? 0 : reviewHours * reviewRate;
+      const total = production + review + other;
+      return {
+        ...route, ...r, valid, production, reviewHours, other,
+        published, review, total, perPiece: total / published,
+        reviewShare: total > 0 ? (100 * review) / total : 0,
+        basePerPiece: production / published,
+      };
+    }),
     [data]
   );
 
   const ready = rows.filter((r) => r.valid);
 
+  const comparing = ready.length > 1;
+
   const winner =
     ready.length > 0
       ? [...ready].sort((a, b) => a.perPiece - b.perPiece)[0]
       : null;
-
-  const expensive =
-    ready.length > 0
-      ? [...ready].sort((a, b) => b.perPiece - a.perPiece)[0]
-      : null;
-
-  const spread =
-    winner && expensive && expensive.perPiece > 0
-      ? ((expensive.perPiece - winner.perPiece) / expensive.perPiece) * 100
-      : 0;
 
   const equalVolume =
     ready.length >= 2 &&
@@ -224,7 +273,7 @@ export default function ContentCostCalculator() {
             (r.production +
               r.other +
               r.reviewHours *
-                clamp(number(data.rate) + adjust, 0, 10000)) /
+                Math.max(0, (Number.isFinite(number(data.rate)) ? number(data.rate) : 0) + adjust)) /
             r.published,
         }
       : { ...r, adjusted: NaN }
@@ -232,12 +281,10 @@ export default function ContentCostCalculator() {
 
   const fullReport = () => {
     const parts = [
-      "GROWUP — CONTENT COST COMPARISON",
-      `Period: ${data.period} | Currency: ${currency} | Internal review cost: ${fmt(
-        number(data.rate),
-        currency
-      )}/hour`,
+      "GROWUP: CONTENT COST COMPARISON",
+      `Period: ${data.period} | Currency: ${currency} | Internal review rate: ${Number.isFinite(number(data.rate)) ? `${fmt(number(data.rate), currency)}/hour` : "Not provided (no review hours counted)"}`,
       `Comparable content: ${data.context || "Not specified"}`,
+      ...(fxStatus?.type === "success" ? [`Exchange-rate conversion: ${fxStatus.message}`] : []),
       "",
       "ROUTE COMPARISON",
     ];
@@ -248,7 +295,7 @@ export default function ContentCostCalculator() {
           r.production,
           currency
         )} | Review ${whole(r.reviewHours)} h × ${fmt(
-          number(data.rate),
+          (Number.isFinite(number(data.rate)) ? number(data.rate) : 0),
           currency
         )} = ${fmt(r.review, currency)} | Other ${fmt(
           r.other,
@@ -264,21 +311,20 @@ export default function ContentCostCalculator() {
     parts.push(
       "",
       winner
-        ? `LOWEST MODELED COST PER PUBLISHED PIECE: ${winner.name} (${fmt(
-            winner.perPiece,
-            currency
-          )})`
+        ? `${comparing ? "LOWEST MODELED COST PER PUBLISHED PIECE" : "COST PER PUBLISHED PIECE"}: ${winner.name} (${fmt(winner.perPiece, currency)})`
         : "No complete routes yet."
     );
 
     parts.push(
-      equalVolume
-        ? "All included routes have the same published output."
-        : "Different output volumes: cost-per-piece is comparable, but total capacity is not equal. Check like-for-like complexity and quality."
+      !comparing
+        ? "Single-route cost breakdown; add another production route to compare."
+        : equalVolume
+          ? "All included routes have the same published output."
+          : "Different output volumes: cost-per-piece is comparable, but total capacity is not equal. Check like-for-like complexity and quality."
     );
 
     parts.push(
-      "Method: (production spend + internal review hours × fully loaded review rate + other costs) ÷ pieces actually published. Do not double-count review time inside payroll/fees. This is a cost comparison, not a quality or ROI ranking."
+      "Method: (production spend + additional internal review hours × hourly rate + other costs) ÷ published pieces. Do not double-count work included in salaries or invoices. Ensure costs and published output relate to the same work; spending on unfinished pieces may distort the comparison. Lowest cost is not a quality or ROI ranking."
     );
 
     return parts.join("\n");
@@ -293,58 +339,273 @@ export default function ContentCostCalculator() {
     }
   };
 
-  const csv = () => {
-    const csvText = asCsv([
-      [
-        "Route",
-        "Period",
-        "Currency",
-        "Production spend",
-        "Internal review hours",
-        "Review hourly rate",
-        "Internal review cost",
-        "Other costs",
-        "Published pieces",
-        "Total cost",
-        "Cost per published piece",
-        "Assumptions",
-      ],
-      ...ready.map((r) => [
+
+
+const downloadXlsx = async () => {
+  try {
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+
+    workbook.creator = "GrowUp";
+    workbook.title = "Content Production Cost Comparison";
+    workbook.subject = "Content production costs and published output";
+
+    const moneyFormat = {
+      GBP: '"£"#,##0.00',
+      USD: '"$"#,##0.00',
+      EUR: '"€"#,##0.00',
+      NGN: '"₦"#,##0.00',
+    }[currency] || '#,##0.00';
+
+    const dark = "073B3B";
+    const teal = "167273";
+    const pale = "EEF4F3";
+
+    const styleHeading = (cell) => {
+      cell.font = {
+        name: "Montserrat",
+        size: 16,
+        bold: true,
+        color: { argb: "FFFFFFFF" },
+      };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: `FF${dark}` },
+      };
+      cell.alignment = {
+        vertical: "middle",
+      };
+    };
+
+    const styleTable = (sheet, headerRow, lastColumn) => {
+      const row = sheet.getRow(headerRow);
+
+      for (let col = 1; col <= lastColumn; col++) {
+        const cell = row.getCell(col);
+
+        cell.font = {
+          name: "Montserrat",
+          bold: true,
+          color: { argb: "FFFFFFFF" },
+        };
+
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: `FF${teal}` },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+          wrapText: true,
+        };
+      }
+
+      row.height = 30;
+    };
+
+    // SHEET 1 — SUMMARY
+    const summary = workbook.addWorksheet("Summary", {
+      views: [{ state: "frozen", ySplit: 3 }],
+    });
+
+    summary.columns = [
+      { width: 28 },
+      { width: 25 },
+      { width: 25 },
+      { width: 25 },
+    ];
+
+    summary.mergeCells("A1:D2");
+    summary.getCell("A1").value = "GROWUP / CONTENT COST COMPARISON";
+    styleHeading(summary.getCell("A1"));
+    summary.getRow(1).height = 25;
+
+    summary.addRow([]);
+    summary.addRow(["Comparison period", data.period]);
+    summary.addRow(["Currency", currency]);
+    summary.addRow(["Production routes", ready.length]);
+    summary.addRow([
+      "Internal review hourly rate",
+      Number.isFinite(number(data.rate)) ? number(data.rate) : 0,
+    ]);
+    summary.getCell("B7").numFmt = moneyFormat;
+
+    summary.addRow([]);
+    summary.addRow(["Content being compared"]);
+    summary.mergeCells("A10:D12");
+    summary.getCell("A10").value = data.context || "Not specified";
+    summary.getCell("A10").alignment = {
+      wrapText: true,
+      vertical: "top",
+    };
+
+    summary.addRow([]);
+
+    summary.addRow([
+      "Production route",
+      "Published pieces",
+      "Total cost",
+      "Cost per piece",
+    ]);
+
+    styleTable(summary, 14, 4);
+
+    ready.forEach((r, index) => {
+      const rowNumber = 15 + index;
+
+      summary.getRow(rowNumber).values = [
         r.name,
-        data.period,
-        currency,
+        r.published,
+        r.total,
+        r.perPiece,
+      ];
+
+      summary.getCell(`C${rowNumber}`).numFmt = moneyFormat;
+      summary.getCell(`D${rowNumber}`).numFmt = moneyFormat;
+
+      if (comparing && r.id === winner?.id) {
+        ["A", "B", "C", "D"].forEach((col) => {
+          summary.getCell(`${col}${rowNumber}`).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: `FF${pale}` },
+          };
+
+          summary.getCell(`${col}${rowNumber}`).font = {
+            name: "Montserrat",
+            bold: true,
+            color: { argb: `FF${dark}` },
+          };
+        });
+      }
+    });
+
+    // SHEET 2 — DETAILED COST BREAKDOWN
+    const breakdown = workbook.addWorksheet("Cost Breakdown", {
+      views: [{ state: "frozen", ySplit: 1 }],
+    });
+
+    breakdown.columns = [
+      { header: "Production route", width: 24 },
+      { header: "Production spend", width: 22 },
+      { header: "Review hours", width: 18 },
+      { header: "Hourly review cost", width: 22 },
+      { header: "Total review cost", width: 22 },
+      { header: "Other costs", width: 18 },
+      { header: "Published pieces", width: 19 },
+      { header: "Total cost", width: 22 },
+      { header: "Cost per piece", width: 22 },
+    ];
+
+    styleTable(breakdown, 1, 9);
+
+    ready.forEach((r) => {
+      const row = breakdown.addRow([
+        r.name,
         r.production,
         r.reviewHours,
-        number(data.rate),
+        Number.isFinite(number(data.rate)) ? number(data.rate) : 0,
         r.review,
         r.other,
         r.published,
         r.total,
-        r.perPiece.toFixed(2),
-        r.notes,
-      ]),
+        r.perPiece,
+      ]);
+
+      [2, 4, 5, 6, 8, 9].forEach((col) => {
+        row.getCell(col).numFmt = moneyFormat;
+      });
+    });
+
+    breakdown.autoFilter = {
+      from: "A1",
+      to: `I${Math.max(2, ready.length + 1)}`,
+    };
+
+    // SHEET 3 — ASSUMPTIONS
+    const assumptions = workbook.addWorksheet("Assumptions");
+
+    assumptions.columns = [
+      { header: "Production route", width: 27 },
+      { header: "Notes and assumptions", width: 95 },
+    ];
+
+    styleTable(assumptions, 1, 2);
+
+    ready.forEach((r) => {
+      const row = assumptions.addRow([
+        r.name,
+        r.notes || "No assumptions provided.",
+      ]);
+
+      row.getCell(2).alignment = {
+        wrapText: true,
+        vertical: "top",
+      };
+
+      row.height = 70;
+    });
+
+    assumptions.addRow([]);
+    assumptions.addRow([
+      "Calculation method",
+      "(Production spend + internal review costs + other costs) / published pieces",
     ]);
 
-    const blob = new Blob(["\ufeff" + csvText], {
-      type: "text/csv;charset=utf-8;",
+    assumptions.addRow([
+      "Important",
+      "Compare similar content and matching cost periods. Lowest cost does not necessarily mean best quality or ROI.",
+    ]);
+
+    // Apply consistent typography to all populated cells.
+    workbook.worksheets.forEach((sheet) => {
+      sheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          if (!cell.font?.name) {
+            cell.font = {
+              ...(cell.font || {}),
+              name: "Montserrat",
+            };
+          }
+        });
+      });
     });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "growup-content-cost-comparison.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    setNotice("CSV downloaded.");
-  };
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "growup-content-cost-comparison.xlsx";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    setNotice("Excel workbook downloaded.");
+  } catch (error) {
+    console.error("Excel export failed:", error);
+    setNotice("Could not create the Excel file. Please try again.");
+  }
+};
+
 
   const reset = () => {
     setData(structuredClone(INITIAL));
     setStep(0);
     setView("comparison");
     setAdjust(0);
-    setNotice("Started fresh. Fill in your own assumptions.");
+    setFxStatus(null);
+    setNotice("Started fresh. Content agency is selected; choose another route if needed.");
   };
 
   const example = () => {
@@ -352,6 +613,7 @@ export default function ContentCostCalculator() {
     setStep(0);
     setView("comparison");
     setAdjust(0);
+    setFxStatus(null);
     setNotice("Example loaded: a realistic B2B SaaS content programme.");
   };
 
@@ -361,13 +623,26 @@ export default function ContentCostCalculator() {
     <label className="cc-field">
       <span className="cc-label">
         {label}
-        {opts.tooltip && (
-          <small title={opts.tooltip} className="cc-info">
-            ⓘ
-          </small>
-        )}
+        
+        
+{opts.tooltip && (
+  <span className="cc-info-wrap">
+    <span
+      className="cc-info"
+      tabIndex={0}
+      role="button"
+      aria-label={`More information about ${label}`}
+    >
+      ⓘ
+    </span>
+    <span className="cc-tooltip" role="tooltip">
+      {opts.tooltip}
+    </span>
+  </span>
+)}
+
       </span>
-      <div className="cc-input-wrap">
+      <div className={`cc-input-wrap ${opts.prefix ? "cc-has-prefix" : ""}`}>
         {opts.prefix && <span className="cc-affix">{opts.prefix}</span>}
         <input
           aria-label={label}
@@ -388,35 +663,31 @@ export default function ContentCostCalculator() {
     <div className="cc-root">
       <style>{styles}</style>
       <div className="cc-wrap">
-        {/* TOP BAR */}
-        <div className="cc-topbar">
-          <div>
-            <span className="cc-overline">
-              <span className="cc-dot" /> CONTENT OPERATIONS / CALCULATOR
-            </span>
-            <h1>Content Cost Calculator</h1>
-            <p>
-              Calculate the true cost of producing content in-house or
-              outsourcing to freelancers and agencies, including internal
-              review time.
-            </p>
-          </div>
-          <span className="cc-brandmark">
-            GROWUP <span>TOOLKIT</span>
-          </span>
-        </div>
+
+
+  {/* TOOL HEADER */}
+<div className="cc-topbar">
+  <div>
+    <span className="cc-overline">
+      GROWUP / CONTENT OPERATIONS
+    </span>
+    <h2>Compare Your Content Production Costs.</h2>
+  </div>
+</div>
+
 
         {/* STEP NAV */}
         <div className="cc-steps" aria-label="Calculator steps">
           {[
-            ["1", "Set assumptions"],
-            ["2", "Compare routes"],
+            ["1", "Choose routes"],
+            ["2", "Enter costs"],
             ["3", "Review & export"],
           ].map(([n, name], i) => (
             <button
               key={n}
               type="button"
               className={`cc-step ${step === i ? "active" : ""}`}
+              disabled={i > 0 && selectedRoutes.length === 0}
               onClick={() => setStep(i)}
             >
               <b>{n}</b>
@@ -439,106 +710,96 @@ export default function ContentCostCalculator() {
               <span className="cc-kicker">STEP {step + 1} OF 3</span>
               <span className="cc-stepnote">
                 {step === 0
-                  ? "Set your baseline"
+                  ? "Choose what you use"
                   : step === 1
-                  ? "Same period, comparable content"
+                  ? "Costs and published output"
                   : "Your decision summary"}
               </span>
             </div>
 
-            {/* STEP 0 */}
+            {/* STEP 0: choose routes and comparison assumptions */}
             {step === 0 && (
               <>
-                <h2>Start with the hidden cost</h2>
+                <h2>How do you produce content?</h2>
                 <p className="cc-intro">
-                  What does one hour of internal review actually cost? Include
-                  salary, employer contributions and reasonable overhead, not
-                  just take-home pay.
+                  Select the options you use or want to compare. You only need one
+                  to calculate your cost per published piece.
                 </p>
-
-                <div className="cc-grid2">
+                <div className="cc-route-picker">
+                  {ROUTES.map((route) => (
+                    <label key={route.id} className={`cc-route-option ${data.routes[route.id].enabled ? "selected" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={data.routes[route.id].enabled}
+                        onChange={(e) => routeUpdate(route.id, "enabled", e.target.checked)}
+                      />
+                      <span>
+                        <strong>{route.name}</strong>
+                        <small>{route.id === "inhouse" ? "Your employees write the content" : route.id === "freelancer" ? "Independent writers produce content" : "An external agency produces content"}</small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="cc-grid2 cc-basics">
                   <label className="cc-field">
                     <span className="cc-label">Currency</span>
-                    <select
-                      value={data.currency}
-                      onChange={(e) => update("currency", e.target.value)}
-                    >
-                      <option value="GBP">GBP — British pound</option>
-                      <option value="USD">USD — US dollar</option>
-                      <option value="EUR">EUR — Euro</option>
-                      <option value="NGN">NGN — Nigerian naira</option>
+                    <select value={data.currency} disabled={fxPending} onChange={(e) => changeCurrency(e.target.value)}>
+                      <option value="GBP">GBP</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="NGN">NGN</option>
                     </select>
                   </label>
-
                   <label className="cc-field">
                     <span className="cc-label">Comparison period</span>
-                    <select
-                      value={data.period}
-                      onChange={(e) => update("period", e.target.value)}
-                    >
+                    <select value={data.period} onChange={(e) => update("period", e.target.value)}>
                       <option>Monthly</option>
                       <option>Quarterly</option>
                     </select>
                   </label>
-
-                  {field("Fully loaded reviewer cost", data.rate, (v) =>
-                    update("rate", v)
-                  , {
-                    suffix: "/ hour",
-                    placeholder: "e.g. 55",
-                    help: "Use a blended rate if multiple colleagues review content.",
-                  })}
-
-                  {field("Target published pieces", data.target, (v) =>
-                    update("target", v)
-                  , {
-                    suffix: "pieces",
-                    step: "1",
-                    placeholder: "e.g. 6",
-                    help: "Planning target only — actual output drives the calculation.",
-                  })}
                 </div>
-
+                {fxPending && <p className="cc-fx-note" role="status">Converting monetary values using the latest available exchange rate…</p>}
+                {fxStatus && <p className={`cc-fx-note ${fxStatus.type === "error" ? "cc-fx-error" : ""}`} role="status">{fxStatus.message}</p>}
                 <label className="cc-field cc-full">
-                  <span className="cc-label">
-                    What type of content are you comparing?
-                  </span>
+                  <span className="cc-label">What content are you comparing? <span className="cc-optional">optional</span></span>
                   <textarea
-                    rows={4}
+                    rows={3}
                     value={data.context}
                     onChange={(e) => update("context", e.target.value)}
-                    placeholder="e.g. SEO comparison pages and buyer guides for the same target market, 1,400–2,000 words each..."
+                    placeholder="e.g. B2B SaaS comparison pages and buyer guides of similar complexity"
                   />
-                  <span className="cc-help">
-                    Important: compare content with similar research, complexity,
-                    quality and approval standards.
-                  </span>
+                  <span className="cc-help">For a fair comparison, use similar content types, research requirements and quality standards.</span>
                 </label>
-
-                <div className="cc-tip">
-                  <span>✦</span>
-                  <div>
-                    <strong>Avoid double-counting.</strong> If a salary or
-                    supplier fee already includes a person's review time, don't
-                    count those same hours again. The separate review field is
-                    for additional internal oversight.
-                  </div>
-                </div>
+                {!selectedRoutes.length && <div className="cc-warning">Select at least one production route to continue.</div>}
               </>
             )}
 
             {/* STEP 1 */}
             {step === 1 && (
               <>
-                <h2>What does each route really cost?</h2>
+                <h2>Enter your content production costs</h2>
                 <p className="cc-intro">
-                  Enter actual spend and output for the same{" "}
-                  {data.period.toLowerCase()} period. Leave a route switched off
-                  if you don't use it.
+   Add your production costs and the number of articles published for each option. Remember to include any internal review costs that aren’t already covered.
                 </p>
+                <div className="cc-grid2 cc-review-rate">
+                
+             {field("Internal reviewer hourly cost", data.rate, (v) => update("rate", v), {
+prefix: {
+  GBP: "£",
+  USD: "$",
+  EUR: "€",
+  NGN: "₦",
+}[data.currency],
+suffix: "/ hour",
+placeholder: "e.g. 55",
+  tooltip:
+    "This is the cost of one hour of your team’s time, not a monthly salary. Divide annual salary plus employer costs by annual working hours. For example, £80,000 ÷ 1,600 hours = £50/hour. Use a blended rate if several people review content.",
+  help: "Enter the hourly cost of the person reviewing your content.",
+})}
 
+                </div>
                 <div className="cc-route-stack">
-                  {ROUTES.map((route) => {
+                  {selectedRoutes.map((route) => {
                     const r = data.routes[route.id];
                     const row = rows.find((x) => x.id === route.id);
 
@@ -561,75 +822,112 @@ export default function ContentCostCalculator() {
                             <strong>{route.name}</strong>
                             <span>{route.description}</span>
                           </div>
-                          <label className="cc-toggle">
-                            <input
-                              type="checkbox"
-                              checked={r.enabled}
-                              onChange={(e) =>
-                                routeUpdate(
-                                  route.id,
-                                  "enabled",
-                                  e.target.checked
-                                )
-                              }
-                            />
-                            <span className="cc-track" />
-                            <span className="cc-sr">
-                              Include {route.name}
-                            </span>
-                          </label>
                         </div>
 
                         {r.enabled && (
                           <>
                             <div className="cc-route-fields">
-                              {field(
-                                route.id === "inhouse"
-                                  ? "Allocated production payroll"
-                                  : "Production fees / invoices",
-                                r.base,
-                                (v) => routeUpdate(route.id, "base", v),
-                                {
-                                  help:
-                                    route.id === "inhouse"
-                                      ? "Only the portion attributable to producing these pieces."
-                                      : "Fees for the content produced in this period.",
-                                }
-                              )}
+                            
+                           {field(
+  route.id === "inhouse"
+    ? "Allocated production payroll"
+    : "Production fees / invoices",
+  r.base,
+  (v) => routeUpdate(route.id, "base", v),
+  {
+    prefix: {
+      GBP: "£",
+      USD: "$",
+      EUR: "€",
+      NGN: "₦",
+    }[data.currency],
+ tooltip:
+  route.id === "inhouse"
+    ? "Enter the portion of your employees' fully loaded pay spent producing content during the selected period. Exclude review hours counted separately."
+    : route.id === "freelancer"
+    ? "Enter the total amount paid to freelance writers for content produced during the selected period. Include article fees and freelance retainers, but exclude internal review costs and additional expenses entered separately."
+    : "Enter the total amount paid to your content agency during the selected period. Include monthly retainers and additional production fees, but exclude internal review costs and other expenses entered separately.",
+    
+        help:
+      route.id === "inhouse"
+        ? "Only the portion attributable to producing these pieces."
+        : "Fees for the content produced in this period.",
+  }
+)}
+
+
                               {field(
                                 "Internal review hours",
                                 r.hours,
                                 (v) => routeUpdate(route.id, "hours", v),
+                           
                                 {
-                                  suffix: "hours",
-                                  help: "Briefing, SME checks, editing, approvals and rework by your team.",
-                                }
+  suffix: "hours",
+  tooltip:
+    "Enter the total hours your internal team spends reviewing, editing, fact-checking and approving content during the selected period. For example, 6 articles requiring 2 hours of review each = 12 hours. Only include additional review time that hasn't already been counted in production costs.",
+  help: "Optional. Additional review, SME checks and approvals by your team.",
+}
                               )}
-                              {field(
-                                "Other costs",
-                                r.extra,
-                                (v) => routeUpdate(route.id, "extra", v),
-                                {
-                                  help: "Design, publishing, tools or additional costs not already included.",
-                                }
-                              )}
+                             
+                             
+                     {field(
+  "Other costs",
+  r.extra,
+  (v) => routeUpdate(route.id, "extra", v),
+  {
+    prefix: {
+      GBP: "£",
+      USD: "$",
+      EUR: "€",
+      NGN: "₦",
+    }[data.currency],
+    tooltip:
+      "Include additional expenses such as design, publishing or software costs that aren't already included in production fees. Leave empty if there are no additional costs.",
+    help: "Optional. Design, publishing, tools or costs not already included.",
+  }
+)}
+
                               {field(
                                 "Actually published",
                                 r.published,
                                 (v) => routeUpdate(route.id, "published", v),
-                                {
-                                  suffix: "pieces",
-                                  step: "1",
-                                  help: "Use completed, approved, live pieces — not drafts or commissions.",
-                                }
+                            
+                        {
+  suffix: "pieces",
+  step: "1",
+  tooltip:
+    "Enter the number of finished content pieces published during the selected period and covered by the costs you've entered. For example, if you paid for 8 articles but only 6 were published, enter 6. Check that your spending and publication figures cover comparable work and periods.",
+  help: "Use published pieces covered by these costs, not just drafts.",
+}
                               )}
                             </div>
 
                             <label className="cc-field cc-full">
-                              <span className="cc-label">
-                                Notes & assumptions{" "}
-                                <span className="cc-optional">optional</span>
-                              </span>
+
+
+<span className="cc-label">
+  Notes & assumptions{" "}
+  <span className="cc-optional">optional</span>
+
+  <span className="cc-info-wrap">
+    <span
+      className="cc-info"
+      tabIndex={0}
+      aria-label="More information about notes and assumptions"
+    >
+      ⓘ
+    </span>
+
+    <span className="cc-tooltip" role="tooltip">
+      Add any details that explain your figures, such as what the production
+      fee includes, how employee costs were allocated, the type of content
+      produced or why one provider requires more review time. These notes
+      help you interpret and share your comparison.
+    </span>
+  </span>
+</span>
+
+
                               <textarea
                                 rows={2}
                                 value={r.notes}
@@ -648,7 +946,7 @@ export default function ContentCostCalculator() {
                               <span>
                                 {row.valid
                                   ? `${fmt(row.total, currency)} total`
-                                  : "Complete the four cost fields to calculate"}
+                                  : "Enter spend and published pieces; add a reviewer rate if necessary"}
                               </span>
                               <strong>
                                 {row.valid
@@ -665,24 +963,31 @@ export default function ContentCostCalculator() {
                     );
                   })}
                 </div>
+                <div className="cc-tip">
+                  <span>✦</span>
+                  <div><strong>Count each cost once.</strong> If an employee’s pay or an agency invoice already covers certain editing or review work, don’t add the same hours again. Leave optional fields blank if they don’t apply.</div>
+                </div>
               </>
             )}
 
             {/* STEP 2 */}
             {step === 2 && (
               <>
-                <h2>Make the comparison useful</h2>
+                <h2>{comparing ? "Review your cost comparison" : "Review your content costs"}</h2>
                 <p className="cc-intro">
-                  Cost per published piece tells you where spend goes. It
-                  doesn't measure commercial impact, editorial quality or speed
-                  on its own.
+  See how much each published piece costs across your selected options. Remember that lower production costs don’t always mean better content.
                 </p>
 
+                {selectedRoutes.length > ready.length && (
+                  <div className="cc-warning">
+                    {selectedRoutes.length - ready.length} selected route(s) still need complete figures and are excluded from the comparison.
+                  </div>
+                )}
                 {winner ? (
                   <>
                     <div className="cc-winner">
                       <span className="cc-kicker">
-                        LOWEST MODELED COST / PIECE
+                        {comparing ? "LOWEST COST / PIECE" : "YOUR COST / PIECE"}
                       </span>
                       <h3>{winner.name}</h3>
                       <div className="cc-winner-price">
@@ -696,27 +1001,57 @@ export default function ContentCostCalculator() {
                       </p>
                     </div>
 
-                    <div className="cc-audit">
-                      <strong>Before choosing a route, check:</strong>
-                      <ul>
-                        <li>
-                          Are research depth and editorial standards actually
-                          comparable?
-                        </li>
-                        <li>
-                          Do deadlines, revisions and SME availability differ?
-                        </li>
-                        <li>
-                          Is the lower-cost route producing qualified leads and
-                          pipeline?
-                        </li>
-                      </ul>
-                    </div>
+                 <div className="cc-full-comparison">
+  <h3>{comparing ? "Your full cost comparison" : "Your cost breakdown"}</h3>
+
+  <div className="cc-full-table">
+    <div className="cc-full-table-head">
+      <span>Production route</span>
+      <span>Total cost</span>
+      <span>Cost / piece</span>
+    </div>
+
+    {ready.map((r) => (
+      <div
+        key={r.id}
+        className={`cc-full-table-row ${
+          comparing && winner?.id === r.id ? "is-lowest" : ""
+        }`}
+      >
+        <span>
+          <strong>{r.short}</strong>
+          <small>{r.published} published</small>
+        </span>
+
+        <span>{fmt(r.total, currency)}</span>
+
+        <strong>{fmt(r.perPiece, currency)}</strong>
+      </div>
+    ))}
+  </div>
+
+
+</div>
+
+<div className="cc-audit">
+  <strong>
+    {comparing
+      ? "Before choosing a route, check:"
+      : "Before using this cost to make a decision, check:"}
+  </strong>
+
+  <ul>
+    <li>Make sure the included costs relate to the pieces published in this period.</li>
+    <li>Check content quality, research depth and turnaround time.</li>
+    <li>Consider qualified leads and pipeline, not just cost.</li>
+  </ul>
+</div>
+
+
                   </>
                 ) : (
                   <div className="cc-empty-state">
-                    Add a review rate and complete at least one production route
-                    to create your cost comparison.
+                    Complete production spend and published output for at least one selected route.
                   </div>
                 )}
 
@@ -729,13 +1064,17 @@ export default function ContentCostCalculator() {
                   >
                     Copy summary
                   </button>
-                  <button
-                    disabled={!ready.length}
-                    className="cc-secondary"
-                    onClick={csv}
-                  >
-                    ↓ Download CSV
-                  </button>
+
+
+             <button
+  disabled={!ready.length}
+  className="cc-secondary"
+  onClick={downloadXlsx}
+>
+  ↓ Download Excel
+</button>
+
+
                   <button
                     disabled={!ready.length}
                     className="cc-secondary"
@@ -744,10 +1083,6 @@ export default function ContentCostCalculator() {
                     Print / Save PDF
                   </button>
                 </div>
-                <p className="cc-help">
-                  Your numbers stay in this browser tab. Print / Save PDF uses
-                  your browser's print dialog.
-                </p>
               </>
             )}
 
@@ -762,6 +1097,7 @@ export default function ContentCostCalculator() {
               {step < 2 && (
                 <button
                   className="cc-primary"
+                  disabled={step === 0 && selectedRoutes.length === 0}
                   onClick={() => setStep((s) => s + 1)}
                 >
                   Continue <span>→</span>
@@ -780,9 +1116,9 @@ export default function ContentCostCalculator() {
           <aside className="cc-results" aria-label="Live cost comparison">
             <div className="cc-results-head">
               <span className="cc-kicker cc-kicker-light">
-                ● LIVE COMPARISON
+                ● LIVE COST BREAKDOWN
               </span>
-              <h2>Your production costs</h2>
+              <h2>{comparing ? "Your production costs" : "Your content costs"}</h2>
               <p>Updated as you change your assumptions.</p>
             </div>
 
@@ -802,16 +1138,19 @@ export default function ContentCostCalculator() {
                 </button>
               </div>
 
+              {selectedRoutes.length > ready.length && (
+                <div className="cc-warning">Incomplete routes are excluded until you enter their required costs and published output.</div>
+              )}
               {ready.length ? (
                 <>
                   <div className="cc-stat-grid">
                     <div className="cc-stat">
-                      <span>Lowest cost / piece</span>
+                      <span>{comparing ? "Lowest cost / piece" : "Cost per published piece"}</span>
                       <strong>{fmt(winner.perPiece, currency)}</strong>
                       <small>{winner.name}</small>
                     </div>
                     <div className="cc-stat">
-                      <span>Compared routes</span>
+                      <span>Included routes</span>
                       <strong>{ready.length}</strong>
                       <small>{data.period.toLowerCase()} basis</small>
                     </div>
@@ -830,7 +1169,7 @@ export default function ContentCostCalculator() {
                             <div className="cc-bar-top">
                               <span>
                                 {r.short}
-                                {r.id === winner.id && <em>Lowest</em>}
+                                {comparing && r.id === winner.id && <em>Lowest</em>}
                               </span>
                               <strong>{fmt(r.perPiece, currency)}</strong>
                             </div>
@@ -873,7 +1212,7 @@ export default function ContentCostCalculator() {
                         ))}
                       </div>
 
-                      {!equalVolume && ready.length > 1 && (
+                      {!equalVolume && comparing && (
                         <div className="cc-warning">
                           ⚑ Output volumes differ. Cost per piece is comparable,
                           but total delivery capacity isn't equal.
@@ -955,9 +1294,9 @@ export default function ContentCostCalculator() {
                     </>
                   )}
 
-                  <div className="cc-sensitivity">
+                  {ready.some((r) => r.reviewHours > 0) && <div className="cc-sensitivity">
                     <div className="cc-sensitivity-head">
-                      <strong>What if review time costs more?</strong>
+                      <strong>How would a higher review rate change costs?</strong>
                       <span>
                         {adjust >= 0 ? "+" : ""}
                         {fmt(adjust, currency)}/hour
@@ -966,16 +1305,16 @@ export default function ContentCostCalculator() {
                     <input
                       aria-label="Adjust internal review hourly rate"
                       type="range"
-                      min="-40"
-                      max="100"
-                      step="5"
+                      min={-Number(data.rate) * 0.5}
+                      max={Number(data.rate)}
+                      step={Math.max(0.01, Number(data.rate) / 20)}
                       value={adjust}
                       onChange={(e) => setAdjust(Number(e.target.value))}
                     />
                     <p>
                       Scenario rate:{" "}
                       {fmt(
-                        clamp(number(data.rate) + adjust, 0, 10000),
+                        Math.max(0, number(data.rate) + adjust),
                         currency
                       )}
                       /hour
@@ -996,7 +1335,7 @@ export default function ContentCostCalculator() {
                     >
                       Reset scenario ↺
                     </button>
-                  </div>
+                  </div>}
 
                   <div className="cc-method">
                     <strong>The formula</strong>
@@ -1011,8 +1350,7 @@ export default function ContentCostCalculator() {
                   <div className="cc-empty-icon">▤</div>
                   <strong>Your comparison will appear here</strong>
                   <p>
-                    Enter a valid review rate and the costs and published output
-                    for at least one route.
+                    Select a route, then enter its production spend and published pieces. Add an hourly rate only if you enter review hours.
                   </p>
                 </div>
               )}
@@ -1020,49 +1358,250 @@ export default function ContentCostCalculator() {
           </aside>
         </div>
 
-        <div className="cc-bottom">
-          <strong>Know the cost. Then judge the value.</strong>
-          <p>
-            Two articles with the same price can demand very different research,
-            SME time and editorial work. Use this calculator to expose the cost
-            structure — not as a substitute for evaluating quality and pipeline
-            contribution.
-          </p>
+        
+      </div>
+
+   <div className="cc-print-only">
+  <div className="cc-pdf-document">
+
+    {/* COVER */}
+    <div className="cc-pdf-cover">
+      <span className="cc-pdf-eyebrow">
+        GROWUP / CONTENT COST COMPARISON
+      </span>
+
+      <h1>Content Production Cost Comparison</h1>
+
+      <p>
+        A breakdown of your content production costs,
+        internal review time and published output.
+      </p>
+
+      <div className="cc-pdf-meta">
+        <div>
+          <small>COMPARISON PERIOD</small>
+          <strong>{data.period}</strong>
+        </div>
+
+        <div>
+          <small>CURRENCY</small>
+          <strong>{currency}</strong>
+        </div>
+
+        <div>
+          <small>PRODUCTION ROUTES</small>
+          <strong>{ready.length}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div className="cc-pdf-body">
+
+      {/* SUMMARY */}
+      <div className="cc-pdf-section">
+        <span className="cc-pdf-eyebrow">
+          01 / OVERVIEW
+        </span>
+
+        <h2>Your cost summary</h2>
+
+        <div className="cc-pdf-stats">
+          <div>
+            <small>
+              {comparing ? "LOWEST COST PER PIECE" : "COST PER PIECE"}
+            </small>
+            <strong>
+              {winner ? fmt(winner.perPiece, currency) : "—"}
+            </strong>
+          </div>
+
+          <div>
+            <small>
+              {comparing ? "LOWEST-COST ROUTE" : "SELECTED ROUTE"}
+            </small>
+            <strong>{winner?.name || "—"}</strong>
+          </div>
+
+          <div>
+            <small>ROUTES INCLUDED</small>
+            <strong>{ready.length}</strong>
+          </div>
+        </div>
+
+        <div className="cc-pdf-context">
+          <strong>Content being compared</strong>
+          <p>{data.context || "Not specified."}</p>
         </div>
       </div>
 
-      <div className="cc-print-only">
-        <h1>GrowUp — Content Cost Comparison</h1>
-        <pre>{fullReport()}</pre>
+      {/* COMPARISON TABLE */}
+      <div className="cc-pdf-section">
+        <span className="cc-pdf-eyebrow">
+          02 / COST COMPARISON
+        </span>
+
+        <h2>Cost per published piece</h2>
+
+        <table className="cc-pdf-table">
+          <thead>
+            <tr>
+              <th>Production route</th>
+              <th>Published</th>
+              <th>Total cost</th>
+              <th>Cost / piece</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {ready.map((r) => (
+              <tr
+                key={r.id}
+                className={
+                  comparing && r.id === winner?.id
+                    ? "cc-pdf-lowest"
+                    : ""
+                }
+              >
+                <td>{r.name}</td>
+                <td>{r.published}</td>
+                <td>{fmt(r.total, currency)}</td>
+                <td>
+                  <strong>{fmt(r.perPiece, currency)}</strong>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {comparing && !equalVolume && (
+          <p className="cc-pdf-note">
+            Published output differs between routes. Consider
+            delivery capacity and content quality alongside cost.
+          </p>
+        )}
       </div>
+
+      {/* DETAILED COSTS */}
+      <div className="cc-pdf-section">
+        <span className="cc-pdf-eyebrow">
+          03 / COST BREAKDOWN
+        </span>
+
+        <h2>How your costs are distributed</h2>
+
+        {ready.map((r) => (
+          <div className="cc-pdf-route" key={r.id}>
+            <h3>{r.name}</h3>
+
+            <div className="cc-pdf-detail">
+              <span>Production spend</span>
+              <strong>{fmt(r.production, currency)}</strong>
+            </div>
+
+            <div className="cc-pdf-detail">
+              <span>Internal review</span>
+              <strong>
+                {whole(r.reviewHours)} hours · {fmt(r.review, currency)}
+              </strong>
+            </div>
+
+            <div className="cc-pdf-detail">
+              <span>Other costs</span>
+              <strong>{fmt(r.other, currency)}</strong>
+            </div>
+
+            <div className="cc-pdf-detail cc-pdf-total">
+              <span>Total production cost</span>
+              <strong>{fmt(r.total, currency)}</strong>
+            </div>
+
+            <div className="cc-pdf-assumptions">
+              <strong>Notes and assumptions</strong>
+              <p>{r.notes || "No additional notes provided."}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* METHODOLOGY */}
+      <div className="cc-pdf-section">
+        <span className="cc-pdf-eyebrow">
+          04 / METHODOLOGY
+        </span>
+
+        <h2>How these costs are calculated</h2>
+
+        <p className="cc-pdf-explanation">
+          Production spend, additional internal review costs
+          and other expenses are added together, then divided
+          by the number of published pieces.
+        </p>
+
+        <p className="cc-pdf-explanation">
+          Avoid counting review time already included in payroll
+          or supplier fees. Keep spending and published output
+          within comparable periods.
+        </p>
+
+        <div className="cc-pdf-disclaimer">
+          This comparison measures production costs, not content
+          quality, qualified leads, pipeline or return on investment.
+        </div>
+      </div>
+
+      <div className="cc-pdf-footer">
+        Prepared using GrowUp's Content Cost Calculator
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
     </div>
   );
 }
 
 export const faqs = [
   {
-    question: "How is the cost per published piece calculated?",
+    question: "How do I calculate the true cost of producing a blog post?",
     answer:
-      "Add production spend, internal review hours multiplied by the fully loaded hourly rate, and any other costs. Divide by the number of pieces actually published in the same period. Avoid counting review costs twice.",
+      "To calculate your cost per blog post, add everything spent producing and publishing your articles, including internal reviews. For example, if you spend £3,000 producing five articles and £500 on additional reviews, your actual cost is £700 per published article, assuming all five are published.",
   },
   {
-    question:
-      "Can I compare in-house, freelancers and agencies fairly?",
+    question: "What costs should I include when calculating content production expenses?",
     answer:
-      "Yes, provided you compare the same period and similar content types, quality standards and research complexity. Use allocated loaded payroll for in-house production, supplier invoices for outsourced production, and count additional internal reviews separately.",
+      "Include everything your business spends getting content from the initial brief to publication. This covers writing fees, employee time, research, editing, design and internal approvals. If your agency already includes editing or SEO optimisation in its fee, don’t add those costs again unless you’ve paid separately for them.",
   },
   {
-    question:
-      "What if some commissioned pieces haven't been published yet?",
+    question: "Why does my content cost more than the writer’s or agency’s quoted fee?",
     answer:
-      "Use only pieces published during the period. Make a note if spending includes work that will publish in a later period, as timing differences can distort the comparison.",
+      "Your content costs more than the quoted fee because your business still spends time managing production. Briefing writers, reviewing drafts, checking product accuracy and approving content all have associated costs. For example, 10 hours of internal review at £50 per hour adds £500 to your original production fee.",
   },
   {
-    question: "How can I share the results?",
+    question: "How much should a B2B SaaS company budget for content production each month?",
     answer:
-      "Use Copy summary for a written breakdown, Download CSV for a spreadsheet-ready comparison, or Print / Save PDF through your browser.",
+      "It depends on your content goals, the number of articles you need and how much research each piece requires. At GrowUp, we charge £525 per article, so producing four to eight articles monthly would cost between £2,100 and £4,200. You'll also need to account for internal reviews, design and publishing costs where applicable.",
+  },
+  {
+    question: "When does hiring an in-house content writer make more financial sense?",
+    answer:
+      "Hiring in-house can make financial sense when you have enough consistent work to justify a full-time writer. If your content needs fluctuate, outsourcing may offer more flexibility because you're paying for agreed deliverables rather than maintaining a permanent salary.",
+  },
+  {
+    question: "How can I reduce content production costs without compromising quality?",
+    answer:
+      "The easiest place to reduce content production costs is often your review process. If your marketing team spends hours rewriting drafts, better briefs and access to accurate product information can reduce that workload. For example, cutting review time from four hours to two per article saves £100 at a £50 hourly rate. You can also cut costs by updating existing articles before commissioning new ones.",
+  },
+  {
+    question: "How do I know whether I’m spending too much on content production?",
+    answer:
+      "You’re spending too much on content if the production costs are rising without a corresponding improvement in quality, qualified leads or pipeline. For example, paying £800 per article may be reasonable for a technical comparison page that influences demos, but expensive for a generic blog post attracting little relevant traffic. Compare your cost per published article with the results it generates before deciding where to cut spending.",
   },
 ];
+
+
+
 
 const styles = `
 .cc-root {
@@ -1072,19 +1611,31 @@ const styles = `
   --cc-muted: #557070;
   --cc-line: #d5e3df;
   --cc-bg: #eef4f3;
+
   color: var(--cc-deep);
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f8faf9;
+  font-family: "Montserrat Variable", Montserrat, Arial, sans-serif;
+
+  background: transparent;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   min-height: 100%;
+
   font-size: 14px;
   line-height: 1.5;
 }
-.cc-root * { box-sizing: border-box; }
+.cc-root * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
 .cc-root button,
 .cc-root input,
 .cc-root select,
-.cc-root textarea { font: inherit; }
+.cc-root textarea {
+  font: inherit;
+  font-family: inherit;
+}
 .cc-root button { cursor: pointer; }
 .cc-root button:disabled { cursor: not-allowed; opacity: .4; }
 .cc-root button:focus-visible,
@@ -1095,24 +1646,26 @@ const styles = `
   outline-offset: 2px;
 }
 .cc-wrap {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 38px 26px 72px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 28px 0 50px;
 }
 .cc-topbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px;
-  padding: 4px 0 34px;
+  align-items: center;
+  gap: 20px;
+  padding: 0 0 28px;
 }
-.cc-topbar h1 {
-  font-size: clamp(32px, 3.6vw, 49px);
-  letter-spacing: -.048em;
-  line-height: 1.12;
-  margin: 12px 0 14px;
+.cc-topbar h2 {
+  font-family: "Montserrat Variable", Montserrat, sans-serif;
+  font-size: clamp(24px, 2.5vw, 28px);
   font-weight: 800;
-  color: #082f30;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+  margin: 8px 0 0;
+  color: #011522;
 }
 .cc-topbar p {
   max-width: 720px;
@@ -1124,7 +1677,7 @@ const styles = `
 .cc-overline,
 .cc-kicker {
   font-size: 10px;
-  letter-spacing: .17em;
+  letter-spacing: .12em;
   color: var(--cc-teal);
   font-weight: 800;
 }
@@ -1198,8 +1751,8 @@ const styles = `
 .cc-textbtn:hover { text-decoration: underline; }
 .cc-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.23fr) minmax(360px, .9fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(350px, .92fr);
+  gap: 22px;
   align-items: start;
 }
 .cc-panel,
@@ -1209,7 +1762,10 @@ const styles = `
   overflow: hidden;
   background: white;
 }
-.cc-editor { padding: 27px 29px; }
+.cc-editor {
+  padding: 27px 29px;
+  overflow: visible;
+}
 .cc-section-head {
   display: flex;
   align-items: center;
@@ -1240,14 +1796,55 @@ const styles = `
 }
 .cc-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .cc-label { font-size: 12px; font-weight: 750; color: #173f3f; }
+.cc-info-wrap {
+  display: inline-flex;
+  position: relative;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
 .cc-info {
   display: inline-grid;
   place-items: center;
-  margin-left: 6px;
-  border-radius: 50%;
-  color: #678b87;
-  font-size: 12px;
-  cursor: help;
+  width: 15px;
+  height: 15px;
+  color: #167273;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cc-tooltip {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 265px;
+  max-width: calc(100vw - 40px);
+  padding: 12px 14px;
+
+  background: #011522;
+  color: #ffffff;
+  border-radius: 8px;
+
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+  z-index: 100;
+}
+
+.cc-info-wrap:hover .cc-tooltip,
+.cc-info-wrap:focus-within .cc-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 .cc-field input,
 .cc-field select,
@@ -1269,19 +1866,59 @@ const styles = `
   position: relative;
 }
 .cc-input-wrap input { min-width: 0; }
-.cc-affix {
+
+
+
+.cc-input-wrap {
+  position: relative;
   display: flex;
   align-items: center;
+}
+
+.cc-input-wrap input {
+  width: 100%;
+  min-width: 0;
+  border-radius: 8px;
+}
+
+.cc-input-wrap.cc-has-prefix input {
+  padding-left: 32px;
+}
+
+.cc-input-wrap .cc-affix:first-child {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #557570;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.cc-input-wrap .cc-affix:last-child:not(:first-child) {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-left: -1px;
   padding: 0 12px;
-  white-space: nowrap;
+  border: 1px solid #bad2cc;
+  border-radius: 0 8px 8px 0;
   background: #f0f6f4;
   color: #5f7775;
+  white-space: nowrap;
   font-size: 12px;
-  border: 1px solid #bad2cc;
-  border-left: 0;
-  border-radius: 0 8px 8px 0;
 }
-.cc-input-wrap:has(.cc-affix) input { border-radius: 8px 0 0 8px; }
+
+.cc-input-wrap:has(.cc-affix:last-child:not(:first-child)) input {
+  border-radius: 8px 0 0 8px;
+}
+
+
 .cc-help { color: #7b918d; font-size: 11px; line-height: 1.55; }
 .cc-full { margin-top: 18px; }
 .cc-optional { font-weight: 500; color: #839994; }
@@ -1299,6 +1936,40 @@ const styles = `
 }
 .cc-tip span { font-size: 20px; color: var(--cc-teal); }
 .cc-tip strong { color: #194c4b; }
+
+.cc-route-picker { display: grid; gap: 10px; margin-bottom: 24px; }
+.cc-route-option {
+  display: flex; align-items: center; gap: 13px; cursor: pointer;
+  padding: 15px; border: 1px solid #d5e3df; border-radius: 10px;
+  background: #fff; transition: background .15s, border-color .15s;
+}
+.cc-route-option.selected { border-color: #167273; background: #f0f8f6; }
+.cc-route-option input { width: 18px; height: 18px; accent-color: #167273; flex: none; }
+.cc-route-option span { display: flex; flex-direction: column; gap: 3px; }
+.cc-route-option strong { font-size: 13px; color: #173f3f; }
+.cc-route-option small { font-size: 11px; line-height: 1.5; color: #647e79; }
+.cc-basics { margin-top: 4px; }
+.cc-review-rate {
+  grid-template-columns: minmax(0, 1fr);
+  width: 75%;
+  max-width: 100%;
+  margin-bottom: 23px;
+}
+
+@media (max-width: 640px) {
+  .cc-review-rate {
+    width: 100%;
+  }
+}
+.cc-fx-note {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #256660;
+}
+.cc-fx-error { color: #9a3f30; }
+
+
 .cc-route-stack { display: flex; flex-direction: column; gap: 15px; }
 .cc-route-card {
   border: 1px solid #d5e4df;
@@ -1445,6 +2116,87 @@ const styles = `
   font-weight: 600;
 }
 .cc-winner p { font-size: 12px; color: #607c77; margin: 10px 0 0; }
+
+
+.cc-full-comparison {
+  margin-top: 24px;
+}
+
+.cc-full-comparison h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #011522;
+  margin: 0 0 14px;
+}
+
+.cc-full-table {
+  border: 1px solid #d5e3df;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cc-full-table-head,
+.cc-full-table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 14px;
+}
+
+.cc-full-table-head {
+  background: #f0f6f4;
+  color: #607b76;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.cc-full-table-row {
+  border-top: 1px solid #e3ece9;
+  color: #294e4b;
+  font-size: 12px;
+}
+
+.cc-full-table-row > :not(:first-child),
+.cc-full-table-head > :not(:first-child) {
+  text-align: right;
+}
+
+.cc-full-table-row > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cc-full-table-row small {
+  color: #7b918d;
+  font-size: 10px;
+}
+
+.cc-full-table-row.is-lowest {
+  background: #edf6f3;
+}
+
+.cc-full-table-row.is-lowest > strong:last-child {
+  color: #167273;
+}
+
+.cc-comparison-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #637e78;
+}
+
+@media (max-width: 480px) {
+  .cc-full-table-head,
+  .cc-full-table-row {
+    padding: 12px 9px;
+    gap: 6px;
+    font-size: 11px;
+  }
+}
+
 .cc-audit { padding: 15px 2px; font-size: 12px; color: #486a65; }
 .cc-audit ul { padding-left: 19px; line-height: 1.95; }
 .cc-results { position: sticky; top: 20px; }
@@ -1681,21 +2433,18 @@ const styles = `
 .cc-empty-state strong { display: block; color: #224c47; font-size: 14px; }
 .cc-empty-state p { margin: 5px 0 0; }
 .cc-empty-icon { font-size: 31px; color: #abc7bc; margin-bottom: 9px; }
-.cc-bottom { max-width: 800px; padding: 32px 2px 0; }
-.cc-bottom strong { font-size: 17px; color: #164c4a; }
-.cc-bottom p { font-size: 12px; color: #748e87; line-height: 1.85; }
 .cc-print-only { display: none; }
 
 @media (max-width: 950px) {
   .cc-layout { grid-template-columns: 1fr; }
   .cc-results { position: static; }
-  .cc-wrap { padding: 28px 18px 55px; }
+  .cc-wrap { padding: 24px 0 45px; }
   .cc-brandmark { display: none; }
 }
 @media (max-width: 560px) {
-  .cc-wrap { padding: 20px 12px 40px; }
+  .cc-wrap { padding: 18px 0 35px; }
   .cc-topbar { padding-bottom: 24px; }
-  .cc-topbar h1 { font-size: 32px; }
+  .cc-topbar h2 { font-size: 24px; }
   .cc-grid2,
   .cc-route-fields { grid-template-columns: 1fr; }
   .cc-editor { padding: 19px 16px; }
@@ -1708,27 +2457,287 @@ const styles = `
   .cc-actions button { width: 100%; }
   .cc-stepnote { display: none; }
 }
+/* PDF DOCUMENT */
+
+.cc-print-only {
+  display: none;
+}
+
 @media print {
-  body * { visibility: hidden !important; }
+  @page {
+    size: A4;
+    margin: 13mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
   .cc-root .cc-print-only,
-  .cc-root .cc-print-only * { visibility: visible !important; }
+  .cc-root .cc-print-only * {
+    visibility: visible !important;
+  }
+
+  .cc-root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    background: #fff !important;
+  }
+
+  .cc-wrap {
+    display: none !important;
+  }
+
   .cc-print-only {
     display: block !important;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    padding: 30px;
-    background: white;
-    color: black;
+    padding: 0;
+    margin: 0;
+    background: #fff;
+    color: #011522;
   }
-  .cc-print-only h1 { font: 700 23px Arial, sans-serif; }
-  .cc-print-only pre {
+
+  .cc-pdf-document {
+    width: 100%;
+    font-family: "Montserrat Variable", Montserrat, Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .cc-pdf-cover {
+    padding: 26px 28px 23px;
+    background: #eef6f3 !important;
+    border-bottom: 1px solid #dce9e4;
+  }
+
+  .cc-pdf-eyebrow {
+    display: block;
+    color: #167273;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .12em;
+  }
+
+  .cc-pdf-cover h1 {
+    margin: 12px 0 8px;
+    font-size: 25px;
+    line-height: 1.2;
+    letter-spacing: -.045em;
+    font-weight: 800;
+    color: #011522;
+  }
+
+  .cc-pdf-cover p {
+    max-width: 480px;
+    margin: 0;
+    color: #5c7972;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  .cc-pdf-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 25px;
+  }
+
+  .cc-pdf-meta div,
+  .cc-pdf-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .cc-pdf-meta small,
+  .cc-pdf-stats small {
+    color: #6d9088;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+
+  .cc-pdf-meta strong {
+    font-size: 11px;
+    color: #011522;
+  }
+
+  .cc-pdf-body {
+    padding: 5px 28px 25px;
+  }
+
+  .cc-pdf-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e1eae7;
+    break-inside: auto;
+  }
+
+  .cc-pdf-section h2 {
+    margin: 8px 0 16px;
+    color: #011522;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.035em;
+  }
+
+  .cc-pdf-stats {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr .7fr;
+    gap: 14px;
+    padding: 17px;
+    border: 1px solid #e0ece8;
+    border-radius: 9px;
+    background: #f4f9f7 !important;
+    break-inside: avoid;
+  }
+
+  .cc-pdf-stats strong {
+    font-size: 15px;
+    color: #073b3b;
+  }
+
+  .cc-pdf-context {
+    margin-top: 18px;
+  }
+
+  .cc-pdf-context strong,
+  .cc-pdf-assumptions strong {
+    color: #174c4b;
+    font-size: 10px;
+  }
+
+  .cc-pdf-context p,
+  .cc-pdf-assumptions p,
+  .cc-pdf-explanation {
+    margin: 6px 0 0;
+    font-size: 10px;
+    line-height: 1.75;
+    color: #486765;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    font: 12px/1.8 Arial, sans-serif;
   }
-  .cc-wrap { display: none !important; }
-  @page { margin: 16mm; }
+
+  .cc-pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+
+  .cc-pdf-table th {
+    padding: 12px 9px;
+    background: #edf5f2 !important;
+    color: #436963;
+    font-size: 9px;
+    text-align: left;
+  }
+
+  .cc-pdf-table td {
+    padding: 12px 9px;
+    border-bottom: 1px solid #e3ece9;
+    color: #294e4b;
+  }
+
+  .cc-pdf-table th:not(:first-child),
+  .cc-pdf-table td:not(:first-child) {
+    text-align: right;
+  }
+
+  .cc-pdf-table thead {
+    display: table-header-group;
+  }
+
+  .cc-pdf-table tr {
+    break-inside: avoid;
+  }
+
+  .cc-pdf-lowest {
+    background: #edf6f3 !important;
+  }
+
+  .cc-pdf-lowest td:last-child {
+    color: #167273;
+  }
+
+  .cc-pdf-note {
+    margin-top: 12px;
+    color: #647e78;
+    font-size: 9px;
+    line-height: 1.6;
+  }
+
+  .cc-pdf-route {
+    padding: 16px 0 18px;
+    border-bottom: 1px solid #e3ece9;
+    break-inside: avoid;
+  }
+
+  .cc-pdf-route h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #073b3b;
+  }
+
+  .cc-pdf-detail {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 5px 0;
+    color: #54726b;
+    font-size: 10px;
+  }
+
+  .cc-pdf-detail strong {
+    color: #193f3d;
+    text-align: right;
+  }
+
+  .cc-pdf-total {
+    margin-top: 8px;
+    padding-top: 11px;
+    border-top: 1px solid #dce8e4;
+    font-weight: 800;
+  }
+
+  .cc-pdf-assumptions {
+    margin-top: 13px;
+    padding: 12px 14px;
+    background: #f4f9f7 !important;
+    border-radius: 8px;
+  }
+
+  .cc-pdf-disclaimer {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #f4f9f7 !important;
+    color: #52726c;
+    font-size: 9px;
+    line-height: 1.7;
+  }
+
+  .cc-pdf-footer {
+    margin-top: 26px;
+    padding-top: 12px;
+    border-top: 1px solid #e3ece9;
+    color: #809691;
+    font-size: 9px;
+  }
+
+  .cc-pdf-cover,
+  .cc-pdf-stats,
+  .cc-pdf-lowest,
+  .cc-pdf-assumptions,
+  .cc-pdf-disclaimer,
+  .cc-pdf-table th {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
 `;

@@ -1,8 +1,13 @@
 import ContentScopeOfWork, {
   faqs as ContentScopeOfWorkFaqs
 } from "./ContentScopeOfWork";
-import CostPerPublishedPiece from "./CostPerPublishedPiece";
-import BrandVoiceOnePager from "./BrandVoiceOnePager";
+import CostPerPublishedPiece, {
+  faqs as CostPerPublishedPieceFaqs
+} from "./CostPerPublishedPiece";
+
+import BrandVoiceOnePager, {
+  faqs as BrandVoiceOnePagerFaqs
+} from "./BrandVoiceOnePager";
 
 import ProductFactSheet, {
   faqs as ProductFactSheetFaqs
@@ -28,15 +33,15 @@ export const contentOpsComponents = {
   faqs: ContentScopeOfWorkFaqs
 },
 
-  "content-cost-calculator": {
-    Component: CostPerPublishedPiece,
-    faqs: []
-  },
+"content-cost-calculator": {
+  Component: CostPerPublishedPiece,
+  faqs: CostPerPublishedPieceFaqs
+},
 
-  "brand-writing-guidelines": {
-    Component: BrandVoiceOnePager,
-    faqs: []
-  },
+"brand-writing-guidelines": {
+  Component: BrandVoiceOnePager,
+  faqs: BrandVoiceOnePagerFaqs
+},
 
   "product-fact-sheet": {
     Component: ProductFactSheet,

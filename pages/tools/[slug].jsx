@@ -36,13 +36,13 @@ const TOOL_SEO = {
   "content-cost-calculator": {
     title: "Free Content Production Cost Calculator | GrowUp",
     description:
-      "Calculate what content production really costs. Compare in-house writers, freelancers and agencies, including the time your team spends reviewing drafts.",
+      "See how much you're spending on content production. Compare in-house, freelance and agency costs, including the additional time your team spends reviewing drafts.",
   },
 
   "brand-writing-guidelines": {
     title: "Free Brand Writing Guidelines Template | GrowUp",
     description:
-      "Create brand writing guidelines your team can follow. Document tone of voice, writing examples, preferred terminology and rules for product claims.",
+      "Create brand writing guidelines for your team, freelancers or agency. Define your writing style, approved terminology, product claims and editorial rules.",
   },
 
   "product-fact-sheet": {
@@ -107,25 +107,25 @@ const TOOL_CTAS = {
 
   "content-cost-calculator": {
     label: "CONTENT PRODUCTION SUPPORT",
-    title: "Know your costs. Need the content delivered?",
+    title: "Make your content budget accountable to pipeline.",
     description:
-      "Get a content production programme with agreed deliverables, transparent monthly costs and fewer hours spent managing external writers.",
+      "Make better use of your content budget with pages built around commercial goals, predictable production costs and reporting that shows their contribution to pipeline.",
     button: "Explore our content services",
   },
 
   "brand-writing-guidelines": {
     label: "EDITORIAL SUPPORT",
-    title: "Tired of rewriting every agency draft?",
+    title: "Tired of rewriting every single draft your writers submit?",
     description:
-      "GrowUp works from your product documentation and writing standards to produce content your marketing team can review without starting again.",
+      "We work with your team to create content that follows your brand guidelines, explains your product properly and brings in qualified leads.",
     button: "Explore our content services",
   },
 
   "product-fact-sheet": {
     label: "PRODUCT-LED CONTENT",
-    title: "Need writers who understand your product?",
+    title: "Need content writers who understand your product?",
     description:
-      "We turn your product features, customer use cases and technical documentation into content written for buyers evaluating your software.",
+      "GrowUp works with your team to produce technically accurate content that addresses buyer requirements and supports your pipeline goals.",
     button: "Explore our content services",
   },
 
