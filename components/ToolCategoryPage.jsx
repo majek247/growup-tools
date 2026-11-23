@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-    ArrowUpRight,
+  ArrowUpRight,
   Calculator,
+  Check,
   ChevronDown,
   FileText,
   Filter,
