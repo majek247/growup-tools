@@ -8,10 +8,6 @@ import { tools } from "../../lib/catalog.mjs";
 import Layout from "../../components/Layout";
 import Workbench from "../../components/Workbench";
 
-import SerpSnippetPreview, {
-  faqs as serpSnippetFaqs,
-} from "../../components/tools/SerpSnippetPreview";
-
 import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
 } from "../../components/tools/FaqSchemaGenerator";
@@ -27,6 +23,50 @@ import AeoPromptGenerator, {
 
 
 const TOOL_SEO = {
+
+
+
+"review-schema-generator": {
+  title: "Free Review Schema Generator (JSON-LD) | GrowUp",
+  description:
+    "Generate Review schema for products, software and businesses. Add customer reviews, calculate average ratings, then copy or download the JSON-LD for free.",
+},
+
+
+
+"video-schema-generator": {
+  title: "Free Video Schema Generator (JSON-LD) | GrowUp",
+  description:
+    "Generate VideoObject schema for your product demos, tutorials and other videos. Enter your video details, then copy or download the JSON-LD for free.",
+},
+
+
+"article-schema-generator": {
+  title: "Free Article Schema Generator (JSON-LD) | GrowUp",
+  description:
+    "Generate Article schema for your blog posts and news articles. Add your title, author and publication details, then copy or download the JSON-LD for free.",
+},
+
+
+"softwareapp-schema-generator": {
+  title: "Free SoftwareApplication Schema Generator (JSON-LD) | GrowUp",
+  description:
+    "Generate SoftwareApplication schema for your SaaS product without coding. Add software details, pricing and features, then copy or download the JSON-LD.",
+},
+
+
+  "organization-schema-generator": {
+  title: "Free Organization Schema Generator (JSON-LD) | GrowUp",
+  description:
+    "Generate Organization schema without coding. Add your company name, website, logo, contact details and social profiles, then copy or download the JSON-LD.",
+},
+
+
+  "faq-schema-generator": {
+    title: "FAQ Schema Markup Generator (Free Tool) | GrowUp",
+    description:
+      "Create FAQ schema markup without coding. Enter your questions and answers, preview the JSON-LD, and copy or download the code for your website.",
+  },
   "content-delivery-planner": {
     title: "Free Content Delivery Plan & Scope Template | GrowUp",
     description:
@@ -145,13 +185,76 @@ const TOOL_CTAS = {
     button: "Explore our content services",
   },
 
-  "ai-assisted-writing-policy": {
-    label: "CONTENT QUALITY SUPPORT",
-    title: "Responsible AI-assisted content production for B2B SaaS",
-    description:
-      "GrowUp handles everything from content research and briefing to writing, fact-checking and optimisation, with every piece tied to pipeline goals.",
-    button: "Explore our content services",
-  },
+"ai-assisted-writing-policy": {
+  label: "CONTENT QUALITY SUPPORT",
+  title: "Responsible AI-assisted content production for B2B SaaS",
+  description:
+    "GrowUp handles everything from content research and briefing to writing, fact-checking and optimisation, with every piece tied to pipeline goals.",
+  button: "Explore our content services",
+},
+
+"faq-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+"organization-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "From technical SEO to content strategy and execution, we help B2B SaaS companies improve search performance and generate more qualified sales opportunities.",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+
+"softwareapp-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "From technical SEO to content strategy and execution, we help B2B SaaS companies improve search performance and generate more qualified sales opportunities.",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+
+"article-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "From technical SEO to content strategy and execution, we help B2B SaaS companies improve search performance and generate more qualified sales opportunities.",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+
+
+"video-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "From technical SEO to content strategy and execution, we help B2B SaaS companies improve search performance and generate more qualified sales opportunities.",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+
+"review-schema-generator": {
+  label: "B2B SAAS SEO SUPPORT",
+  title: "Need help improving your SEO and AI search visibility?",
+  description:
+    "From technical SEO to content strategy and execution, we help B2B SaaS companies improve search performance and generate more qualified sales opportunities.",
+  button: "Explore our SEO services",
+  url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies?hsLang=en",
+},
+
+
+
+
 };
 
 const toolComponents = {
@@ -166,10 +269,6 @@ const toolComponents = {
     faqs: llmsTxtFaqs,
   },
   ...schemaComponents,
-  "serp-snippet-preview": {
-    Component: SerpSnippetPreview,
-    faqs: serpSnippetFaqs,
-  },
   "faq-schema-generator": {
     Component: FaqSchemaGenerator,
     faqs: faqSchemaFaqs,
@@ -203,8 +302,8 @@ const toolCta = {
   description:
     `GrowUp helps B2B SaaS teams put their ${tool.topic.toLowerCase()} work into practice, with research, content production and SEO execution.`,
   button: "Explore our services",
-  ...TOOL_CTAS[tool.slug],
   url: CONTENT_SERVICE_URL,
+  ...TOOL_CTAS[tool.slug],
 };
 
     const customTool = toolComponents[tool.slug];

@@ -33,17 +33,6 @@ export const TOOL_CATEGORIES = [
     featured: "buyer-prompt-generator",
   },
   {
-    slug: "technical-seo",
-    topic: "Technical SEO",
-    label: "Technical SEO",
-    eyebrow: "MARKUP, SNIPPETS & SITE HEALTH",
-    title: "Technical SEO tools",
-    intro: "Create structured data, check search snippets, and handle routine technical SEO tasks without starting from a blank file.",
-    description: "Free technical SEO tools for creating schema markup, checking SERP snippets, and preparing search-ready page metadata.",
-    detail: "Small technical tasks, made much less fiddly.",
-    featured: "serp-snippet-preview",
-  },
-  {
     slug: "agency-hiring",
     topic: "Agency hiring",
     label: "Agency hiring",

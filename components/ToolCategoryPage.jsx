@@ -60,15 +60,16 @@ intro:
     topic: "Technical SEO",
     label: "Technical SEO",
     eyebrow: "MARKUP, SNIPPETS & SITE HEALTH",
- title: "Technical SEO tools",
-directoryTitle: "Handle Technical SEO Tasks.",
+ title: "Technical SEO Tools",
+ metaTitle: "Free Technical SEO Tools & Generators | GrowUp",
+directoryTitle: "Everything You Need for Technical SEO Tasks.",
 directoryDescription:
-  "Generate schema markup, review search snippets, and prepare technical elements for your website pages.",
+  "Browse free tools designed to simplify technical SEO, reduce manual work and improve your website.",
 intro:
-  "Create structured data, check search snippets, and handle routine technical SEO tasks without starting from a blank file.",
+  "From checking your website to fixing common SEO issues, our free tools make it easier to handle technical SEO without spending hours doing everything manually.",
 
     description:
-      "Free technical SEO tools for creating schema markup, checking SERP snippets, and preparing search-ready page metadata.",
+      "Use our free technical SEO tools to check your website, find common issues and handle everyday SEO tasks faster. No complicated setup required.",
     detail: "Small technical tasks, made much less fiddly.",
     featured: "serp-snippet-preview",
   },
@@ -173,16 +174,36 @@ const CATEGORY_EXTRAS = {
       { q: "How should I measure AI search visibility?", a: "Track a consistent set of relevant buyer prompts, record sources and brand mentions, and compare observations over time. Use business outcomes alongside visibility measurements." },
     ],
   },
-  "technical-seo": {
-    ctaLabel: "SEO CONTENT SUPPORT",
-    ctaTitle: "Need the content to match the technical work?",
-    ctaCopy: "GrowUp combines buyer research, search-led content and product expertise to support the pages that matter most to your pipeline.",
-    ctaButton: "Explore our content services",
-    faqs: [
-      { q: "What do these technical SEO tools help with?", a: "They assist with common tasks such as preparing structured data, previewing snippets and generating search-related files. Check each output before adding it to a live website." },
-      { q: "Does valid schema markup improve rankings automatically?", a: "No. Structured data can help search engines interpret eligible page content, but it does not guarantee a rich result or a ranking increase." },
-      { q: "Should developers review generated code?", a: "Yes. Validate generated markup and files against your site, current search engine guidance and publishing environment before deployment." },
-    ],
+"technical-seo": {
+  ctaLabel: "B2B SAAS SEO SUPPORT",
+  ctaTitle: "Need More Hands-On Support With Your SEO?",
+  ctaCopy: "Our team helps B2B SaaS companies improve technical SEO, develop stronger content and increase visibility across Google and AI search.",
+  ctaButton: "Explore our SEO services",
+
+faqs: [
+  {
+    q: "Do I need coding experience to use these technical SEO tools?",
+    a: "No. Most of our tools are designed for marketers, founders and website owners who don't write code. Just enter the information requested, and the tool will generate the output for you. Some tasks, like adding code to your website, may require access to your CMS or help from a developer.",
+  },
+  {
+    q: "Which technical SEO tasks can I handle without a developer?",
+    a: "You can handle plenty of smaller tasks yourself, including generating schema markup, checking page titles and descriptions, and reviewing common website issues. More complicated changes, like fixing crawling problems, server errors or website performance issues, may need someone with technical experience.",
+  },
+  {
+    q: "Are these technical SEO tools completely free to use?",
+    a: "Yes. All the tools in this directory are free to use, with no subscription or payment required. You can choose a tool, enter your information and use the generated results. There's no need to hire GrowUp or purchase any of our services to access them.",
+  },
+  {
+    q: "How do I know which technical SEO tool my website needs?",
+    a: "Start with what you're trying to accomplish. If you're publishing a blog post, use the Article Schema Generator. If you're adding customer reviews, try the Review Schema Generator. Each tool has a short description explaining what it does, so you can choose the one that matches your task.",
+  },
+  {
+    q: "Can I fix technical SEO issues myself, or should I hire an expert?",
+    a: "It depends on the issue. Smaller tasks, like adding schema markup or updating page information, are often manageable without an expert. But if Google isn't indexing important pages, your website has recurring technical errors, or you're unsure what's causing a problem, getting professional help can save time and prevent costly mistakes.",
+  },
+],
+
+
   },
   "agency-hiring": {
     ctaLabel: "WORK WITH GROWUP",
@@ -198,6 +219,9 @@ const CATEGORY_EXTRAS = {
 };
 
 const SERVICE_URL = "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
+
+const SEO_SERVICE_URL =
+  "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies";
 
 const getTypeIcon = (type) => {
   const t = (type || "").toLowerCase();
@@ -441,18 +465,21 @@ const otherCategories = TOOL_CATEGORIES.filter(
                   <h2 id="gtc-service-title">{extras.ctaTitle}</h2>
                   <p>{extras.ctaCopy}</p>
                 </div>
-                <a
-                  className="gtc-service-link"
-                  href={SERVICE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${extras.ctaButton} (opens in a new tab)`}
-                >
+<a
+  className="gtc-service-link"
+  href={category === "technical-seo" ? SEO_SERVICE_URL : SERVICE_URL}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label={`${extras.ctaButton} (opens in a new tab)`}
+>
                   <span>{extras.ctaButton}</span>
                   <span className="gtc-service-arrow" aria-hidden="true">
                     <ArrowUpRight size={19} strokeWidth={2} />
                   </span>
                 </a>
+
+
+
               </section>
 
               <section className="gtc-faq" aria-labelledby="gtc-faq-heading">
