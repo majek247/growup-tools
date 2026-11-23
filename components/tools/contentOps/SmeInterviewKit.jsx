@@ -1,20 +1,26 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 /**
- * GrowUp SME Interview Template — standalone Next.js client component.
- * No Workspace or third-party packages. Exports `faqs` for the existing registry.
- * No built-in recording, transcription, server calls or automatic saving.
+ * GrowUp SME Interview Kit
+ * Standalone Next.js client component. Uses browser localStorage for drafts.
+ * Excel export uses `exceljs` (npm install exceljs).
+ * Does not record interviews, validate claims, or send information to a server.
+ * Sample company, people, and evidence are fictional.
  */
 
-const C = {
+const BRAND = {
+  dark: "#073b3b",
+  ink: "#011522",
   teal: "#167273",
-  dark: "#011522",
   pale: "#eef4f3",
-  line: "#dbe7e4",
-  muted: "#5c7074",
+  muted: "#57716e",
 };
+
+const STORAGE_KEY = "growup-sme-interview-kit-v2";
+
+const STEPS = ["Prepare", "Interview questions", "Review & export"];
 
 const ROLES = [
   "Product",
@@ -32,679 +38,710 @@ const FORMATS = [
   "Case study",
   "Product / integration page",
   "Thought leadership",
+  "Blog article",
+  "Video script",
   "Other",
 ];
 
-const DURATIONS = [15, 20, 30, 45];
+const DURATIONS = [15, 20, 30, 45, 60];
 
-const BANK = {
-  roles: {
-    Product: [
-      [
-        "Workflow",
-        "Talk me through the exact steps a user takes, from the first screen to the finished task.",
-        "Ask for a screen recording or approved screenshot.",
-      ],
-      [
-        "Limitations",
-        "Which steps change by plan, permissions, market or integration?",
-        "Ask for the current product matrix.",
-      ],
-      [
-        "Accuracy",
-        "What do customers routinely assume this feature does that it actually cannot do?",
-        "Record the wording writers must avoid.",
-      ],
-    ],
-    Sales: [
-      [
-        "Buyer language",
-        "What was the exact question a prospect asked recently about this topic?",
-        "Ask for an anonymised call note or quote.",
-      ],
-      [
-        "Alternatives",
-        "What alternatives were on their shortlist, and which difference actually mattered?",
-        "Separate a buyer's stated reason from your interpretation.",
-      ],
-      [
-        "Objections",
-        "What objection delayed a deal, and what evidence helped the buyer move forward?",
-        "Ask for the source of the example and permission to use it.",
-      ],
-    ],
-    "Customer success": [
-      [
-        "Adoption",
-        "At what point do customers get stuck after onboarding, and what usually fixes it?",
-        "Ask for an anonymised support example.",
-      ],
-      [
-        "Outcomes",
-        "What has changed for a customer, and how do we know?",
-        "Confirm baseline, period and how the outcome was measured.",
-      ],
-      [
-        "Limitations",
-        "Which use cases need extra setup, services or a different plan?",
-        "Ask for approved help-centre references.",
-      ],
-    ],
-    Engineering: [
-      [
-        "Technical reality",
-        "What happens behind the scenes when a user completes this workflow?",
-        "Keep the explanation at the reader's technical level.",
-      ],
-      [
-        "Constraints",
-        "What rate limits, data requirements or failure modes would materially change a buyer's decision?",
-        "Ask for a current technical reference.",
-      ],
-      [
-        "Implementation",
-        "Which parts typically require engineering time or administrator access?",
-        "Separate typical from guaranteed timelines.",
-      ],
-    ],
-    "Founder / leadership": [
-      [
-        "Point of view",
-        "What commonly accepted advice in this category do you disagree with, and why?",
-        "Ask for a concrete example, not a slogan.",
-      ],
-      [
-        "Decision",
-        "What trade-off should a buyer understand before choosing an approach?",
-        "Request evidence that supports the recommendation.",
-      ],
-      [
-        "Experience",
-        "Which customer or market experience changed your mind?",
-        "Confirm whether the story is publishable.",
-      ],
-    ],
-    Customer: [
-      [
-        "Before",
-        "What was happening before you looked for a different approach?",
-        "Ask for the actual process and its constraints.",
-      ],
-      [
-        "Decision",
-        "What options did you compare, and why did you choose this one?",
-        "Avoid putting words in the customer's mouth.",
-      ],
-      [
-        "Outcome",
-        "What changed, how did you measure it, and over what period?",
-        "Verify figures and usage permission.",
-      ],
-    ],
-    Other: [
-      [
-        "Experience",
-        "Describe the last time you handled this problem in practice.",
-        "Ask for a specific, verifiable example.",
-      ],
-      [
-        "Trade-offs",
-        "Which conditions make your usual recommendation less useful?",
-        "Capture exceptions.",
-      ],
-      [
-        "Evidence",
-        "What document, example or source could substantiate this?",
-        "Record where to find it.",
-      ],
-    ],
+const COMMON = [
+  {
+    category: "Experience",
+    label: "Recent example",
+    question:
+      "Walk me through the most recent time you dealt with this problem. What happened from start to finish?",
+    probe:
+      "Who was involved, what triggered the work and what happened next?",
   },
-  formats: {
-    "Comparison page": [
-      [
-        "Selection criteria",
-        "Who should choose each option, and who should not?",
-        "Seek the decision criteria a buyer uses.",
-      ],
-      [
-        "Meaningful differences",
-        "Which two or three differences matter in a real purchasing decision?",
-        "Ask for a side-by-side example.",
-      ],
-      [
-        "Proof",
-        "What evidence would you show a sceptical buyer to validate those differences?",
-        "Request approved proof, not an unverified claim.",
-      ],
-    ],
-    "How-to guide": [
-      [
-        "Prerequisites",
-        "What must the reader have ready before they begin?",
-        "Capture tools, access and dependencies.",
-      ],
-      [
-        "Steps",
-        "What is the correct sequence, and where do people usually take a wrong turn?",
-        "Request actual workflow examples.",
-      ],
-      [
-        "Recovery",
-        "If the usual approach fails, what should the reader check first?",
-        "Include a safe fallback or escalation.",
-      ],
-    ],
-    "Case study": [
-      [
-        "Starting point",
-        "What was the customer's starting situation, including baseline and constraints?",
-        "Ask for an approved timeline.",
-      ],
-      [
-        "Intervention",
-        "What exactly changed and who did what?",
-        "Distinguish the product's role from other factors.",
-      ],
-      [
-        "Results",
-        "Which outcomes can be verified, over what period, and what else may have contributed?",
-        "Confirm permission to name customer and quote results.",
-      ],
-    ],
-    "Product / integration page": [
-      [
-        "Use case",
-        "What user problem does this capability actually solve?",
-        "Ask for a real workflow.",
-      ],
-      [
-        "Setup",
-        "What needs to be configured, and what permissions or plans are required?",
-        "Ask for a current setup document.",
-      ],
-      [
-        "Boundaries",
-        "What does this integration or capability not support?",
-        "Check version and market restrictions.",
-      ],
-    ],
-    "Thought leadership": [
-      [
-        "Thesis",
-        "What specific argument would you make that a credible peer might challenge?",
-        "Ask for a defensible point of view.",
-      ],
-      [
-        "Experience",
-        "What first-hand experience illustrates this argument?",
-        "Use examples, not generic predictions.",
-      ],
-      [
-        "Counterargument",
-        "When would the opposing position be reasonable?",
-        "Capture the limits of the thesis.",
-      ],
-    ],
-    Other: [
-      [
-        "Main question",
-        "What should the reader be able to decide or do after reading?",
-        "Ask for one practical outcome.",
-      ],
-      [
-        "Details",
-        "What is usually omitted from other explanations of this subject?",
-        "Ask for specifics.",
-      ],
-      [
-        "Proof",
-        "Which examples or primary sources establish the main point?",
-        "Record access and permission.",
-      ],
-    ],
+  {
+    category: "Process",
+    label: "Actual workflow",
+    question:
+      "Which steps matter most in practice, and where does the process usually slow down?",
+    probe:
+      "Ask for the exact sequence, responsible team and any exceptions.",
   },
+  {
+    category: "Point of view",
+    label: "What standard advice misses",
+    question:
+      "What common advice about this topic do you disagree with, and what have you seen instead?",
+    probe: "Request a specific example, not a general opinion.",
+  },
+  {
+    category: "Buyer insight",
+    label: "Where readers get stuck",
+    question:
+      "What do prospects or customers most often misunderstand when evaluating this approach?",
+    probe:
+      "Capture their actual language from a recent conversation.",
+  },
+  {
+    category: "Proof",
+    label: "Evidence and measures",
+    question:
+      "What would you measure to know this approach is working, and what evidence can we use?",
+    probe:
+      "Confirm the baseline, timeframe, original source and owner.",
+  },
+  {
+    category: "Experience",
+    label: "Unexpected result",
+    question:
+      "What surprised you in a recent project or customer situation involving this problem?",
+    probe: "Ask what changed and what the team learned.",
+  },
+  {
+    category: "Clarity",
+    label: "Explain the terminology",
+    question:
+      "How would you explain the most confusing part of this topic to a knowledgeable buyer without specialist jargon?",
+    probe:
+      "Ask for a short explanation grounded in a real workflow.",
+  },
+  {
+    category: "Wrap-up",
+    label: "What we missed",
+    question:
+      "What important question have I not asked, and what should we verify before publishing?",
+    probe: "Assign an owner and date for each open item.",
+  },
+];
+
+const ROLE_QUESTIONS = {
+  Product: [
+    {
+      category: "Product",
+      label: "Capability in practice",
+      question:
+        "Show me how a customer completes this task today. Which steps can we describe accurately?",
+      probe: "Ask for the latest documentation or a live demo.",
+    },
+    {
+      category: "Product",
+      label: "Limitations",
+      question:
+        "Which capabilities depend on a plan, configuration, integration or permission?",
+      probe: "Record the exact restriction and product owner.",
+    },
+  ],
+  Sales: [
+    {
+      category: "Sales",
+      label: "Buyer objections",
+      question:
+        "What objection keeps coming up in real deals, and what evidence changes the conversation?",
+      probe:
+        "Ask for a recent anonymised discovery-call example.",
+    },
+    {
+      category: "Sales",
+      label: "Buying criteria",
+      question:
+        "Which two or three criteria most often determine whether a buyer progresses to a demo or shortlist?",
+      probe:
+        "Distinguish actual buyer statements from interpretation.",
+    },
+  ],
+  "Customer success": [
+    {
+      category: "Customer success",
+      label: "Where adoption fails",
+      question:
+        "Where do customers get stuck after they start, and which intervention usually makes a difference?",
+      probe: "Capture a support or onboarding example.",
+    },
+    {
+      category: "Customer success",
+      label: "Measured outcomes",
+      question:
+        "What changed for a customer, and how was that improvement measured?",
+      probe:
+        "Verify the before-and-after figures and publication permission.",
+    },
+  ],
+  Engineering: [
+    {
+      category: "Engineering",
+      label: "Technical workflow",
+      question:
+        "What happens behind the scenes when this workflow runs, including dependencies and failure cases?",
+      probe: "Request current technical documentation.",
+    },
+    {
+      category: "Engineering",
+      label: "Implementation effort",
+      question:
+        "What does implementation genuinely require from a customer's technical team?",
+      probe:
+        "Separate typical effort from commitments that cannot be guaranteed.",
+    },
+  ],
+  "Founder / leadership": [
+    {
+      category: "Leadership",
+      label: "Market point of view",
+      question:
+        "What assumption about this market has changed based on your experience?",
+      probe:
+        "Request a concrete customer, product or market example.",
+    },
+    {
+      category: "Leadership",
+      label: "Trade-offs",
+      question:
+        "When is the commonly recommended approach actually the wrong choice?",
+      probe:
+        "Establish the conditions under which your advice would change.",
+    },
+  ],
+  Customer: [
+    {
+      category: "Customer",
+      label: "Before the change",
+      question:
+        "What was the problem like before you started looking for a different approach?",
+      probe: "Capture the original process and constraints.",
+    },
+    {
+      category: "Customer",
+      label: "Decision and result",
+      question:
+        "What alternatives did you consider, what did you choose and what changed?",
+      probe:
+        "Verify outcomes and request permission before quoting.",
+    },
+  ],
+  Other: [
+    {
+      category: "Experience",
+      label: "What worked",
+      question:
+        "Which approach has been most effective in your experience, and in what circumstances?",
+      probe: "Ask for a repeatable process and a recent example.",
+    },
+    {
+      category: "Limitations",
+      label: "Exceptions",
+      question:
+        "When does that approach stop working, and what would you do instead?",
+      probe: "Document the assumptions and trade-offs.",
+    },
+  ],
 };
 
-const id = () => Math.random().toString(36).slice(2, 10);
+const FORMAT_QUESTIONS = {
+  "Comparison page": [
+    {
+      category: "Comparison",
+      label: "Decision criteria",
+      question:
+        "What should determine which option a buyer chooses, and when is each option a poor fit?",
+      probe:
+        "Build a side-by-side comparison using real requirements.",
+    },
+    {
+      category: "Comparison",
+      label: "Meaningful differences",
+      question:
+        "Which product or workflow differences actually change the buying decision?",
+      probe:
+        "Ask for examples and current supporting documentation.",
+    },
+  ],
+  "How-to guide": [
+    {
+      category: "How-to",
+      label: "Sequence",
+      question:
+        "What steps should readers follow, in what order, and which steps do people commonly skip?",
+      probe:
+        "Collect the prerequisites and consequences of skipping a step.",
+    },
+    {
+      category: "How-to",
+      label: "Failure and recovery",
+      question:
+        "What usually goes wrong, and what should the reader check before escalating?",
+      probe: "Ask for a tested fallback, not a guessed workaround.",
+    },
+  ],
+  "Case study": [
+    {
+      category: "Case study",
+      label: "Starting situation",
+      question:
+        "What was the customer's baseline, team setup and business problem before the project?",
+      probe: "Request an approved timeline and baseline measurement.",
+    },
+    {
+      category: "Case study",
+      label: "Intervention and impact",
+      question:
+        "What changed, who was responsible and which outcomes can we substantiate?",
+      probe:
+        "Check attribution, timeframe and naming permissions.",
+    },
+  ],
+  "Product / integration page": [
+    {
+      category: "Product page",
+      label: "Actual use case",
+      question:
+        "Which customer workflow does this feature or integration support, and for whom?",
+      probe:
+        "Ask for real product steps, supported systems and setup requirements.",
+    },
+    {
+      category: "Product page",
+      label: "Boundaries",
+      question:
+        "What does the product or integration not do, and what prerequisites are easy to miss?",
+      probe:
+        "Verify plan, market and permission restrictions.",
+    },
+  ],
+  "Thought leadership": [
+    {
+      category: "Point of view",
+      label: "Clear thesis",
+      question:
+        "What is your specific view on this issue that a knowledgeable peer could reasonably challenge?",
+      probe:
+        "Ask for the evidence or firsthand experience behind the position.",
+    },
+    {
+      category: "Point of view",
+      label: "Counterargument",
+      question:
+        "Where might someone with a different view have a valid point?",
+      probe:
+        "Capture nuance rather than forcing a provocative claim.",
+    },
+  ],
+  "Blog article": [
+    {
+      category: "Article",
+      label: "Reader question",
+      question:
+        "What is the main question buyers need answered before taking the next step?",
+      probe:
+        "Ask for common misconceptions and a recent example.",
+    },
+    {
+      category: "Article",
+      label: "Practical application",
+      question:
+        "What should the reader do differently after reading this article?",
+      probe:
+        "Identify a specific checklist, decision rule or process.",
+    },
+  ],
+  "Video script": [
+    {
+      category: "Video",
+      label: "What to demonstrate",
+      question:
+        "Which part of this subject is easiest to explain by showing it rather than describing it?",
+      probe:
+        "Request a suitable demo, visual or approved example.",
+    },
+    {
+      category: "Video",
+      label: "One takeaway",
+      question:
+        "What is the one point the viewer must remember after watching?",
+      probe:
+        "Capture a concise explanation in the expert's own words.",
+    },
+  ],
+  Other: [
+    {
+      category: "Content",
+      label: "Main outcome",
+      question:
+        "What should the audience understand or decide after consuming this content?",
+      probe: "Clarify one practical outcome.",
+    },
+    {
+      category: "Content",
+      label: "Missing details",
+      question:
+        "What details are normally missing from public explanations of this topic?",
+      probe: "Capture verifiable examples.",
+    },
+  ],
+};
 
-const blank = {
-  brand: "",
+const uid = () => Math.random().toString(36).slice(2, 10);
+const clean = (v) => String(v ?? "").trim();
+
+const clone = (v) => JSON.parse(JSON.stringify(v));
+
+const mkQuestion = (q) => ({
+  ...q,
+  id: uid(),
+  include: true,
+  minutes: 0,
+  manualMinutes: false,
+});
+
+function buildQuestions(role, format) {
+  const suggested = [
+    COMMON[0],
+    ...(ROLE_QUESTIONS[role] || ROLE_QUESTIONS.Other),
+    ...(FORMAT_QUESTIONS[format] || FORMAT_QUESTIONS.Other),
+    COMMON[4],
+  ];
+  return suggested.map(mkQuestion);
+}
+
+function agendaFor(questions, minutes) {
+  const active = questions.filter(
+    (q) => q.include && clean(q.question)
+  );
+
+  const fixed = active.reduce(
+    (s, q) =>
+      s +
+      (q.manualMinutes ? Math.max(0, Number(q.minutes) || 0) : 0),
+    0
+  );
+
+  const flexible = active.filter((q) => !q.manualMinutes);
+
+  let remainder = Math.max(0, minutes - fixed);
+
+  const each = flexible.length
+    ? Math.floor(remainder / flexible.length)
+    : 0;
+
+  let extra = flexible.length
+    ? remainder - each * flexible.length
+    : 0;
+
+  let clock = 0;
+
+  return active.map((q) => {
+    const allocated = q.manualMinutes
+      ? Math.max(0, Number(q.minutes) || 0)
+      : each + (extra-- > 0 ? 1 : 0);
+
+    const result = {
+      ...q,
+      start: clock,
+      end: clock + allocated,
+      allocated,
+    };
+
+    clock += allocated;
+    return result;
+  });
+}
+
+const clockFmt = (m) => `${String(m).padStart(2, "0")}:00`;
+
+const BLANK = {
+  company: "",
   title: "",
-  topic: "",
   format: "Comparison page",
   role: "Sales",
-  person: "",
-  reader: "",
-  decision: "",
-  known: "",
-  unknown: "",
-  artifacts: "",
-  reviewer: "",
-  quotePolicy: "Needs explicit approval",
-  duration: 15,
-  scheduled: "",
+  expertName: "",
+  expertTitle: "",
   interviewer: "",
   interviewDate: "",
+  duration: 30,
+  audience: "",
+  buyerDecision: "",
+  objective: "",
+  commercialGoal: "",
+  scopeIn: "",
+  scopeOut: "",
+  known: "",
+  unknown: "",
+  priorMaterials: "",
+  preRead: "",
+  proofRequested: "",
   consent: "Not confirmed",
+  quotePolicy: "Permission required",
+  prep: {},
   questions: [],
   notes: {},
   evidence: [],
+  highlights: [],
+  openActions: [],
   approvals: {
-    content: "Not requested",
-    claims: "Not requested",
-    quote: "Not requested",
+    editorial: "Pending",
+    claims: "Pending",
+    quotes: "Pending",
   },
-  nextAction: "",
-  nextOwner: "",
-  nextDate: "",
-  meetingNotes: "",
+  summary: "",
+  playbook: { opening: "" },
+  draftUse: "",
+  repurpose: "",
+  reviewer: "",
+  reviewDue: "",
+  transcriptNote: "",
 };
 
-const sample = {
-  ...blank,
-  brand: "RelayLedger (fictional example)",
-  title: "Usage-based billing software vs spreadsheets",
-  topic:
-    "How finance leaders evaluate invoice adjustments, reconciliation controls, and auditability",
-  format: "Comparison page",
-  role: "Sales",
-  person: "Jamie Ellis, Account Executive (fictional)",
-  reader:
-    "Finance directors at B2B SaaS companies moving beyond manual usage billing",
-  decision:
-    "Understand when spreadsheets stop being a defensible billing process and which controls to compare in software.",
-  known:
-    "Our sales team hears concerns about late adjustments, sign-off ownership and reconciling usage data before invoicing.",
-  unknown:
-    "Which approval step buyers find riskiest; whether they need a history of edits; what their current spreadsheet process costs in review time.",
-  artifacts:
-    "An anonymised buyer objection, an approved sample adjustment trail and any validated comparison of review time.",
-  reviewer:
-    "Product Marketing (claims); Sales Lead (call examples)",
-  quotePolicy:
-    "Anonymise buyer accounts; get explicit permission for verbatim quotes",
-  duration: 20,
-  scheduled: "",
-  interviewer: "Content Manager",
-  consent: "Not confirmed",
-  notes: {},
-  evidence: [
-    {
-      id: id(),
-      claim: "Buyers ask who signs off late invoice adjustments",
-      source: "Sales discovery notes — link still needed",
-      owner: "Sales Lead",
-      status: "Needs source",
-      permission: "Internal use only",
-    },
-    {
-      id: id(),
-      claim: "An example adjustment audit trail can be shown",
-      source:
-        "Sample product walkthrough — Product Marketing to supply",
-      owner: "Product Marketing",
-      status: "Needs source",
-      permission: "Approval pending",
-    },
-  ],
-  approvals: {
-    content: "Not requested",
-    claims: "Not requested",
-    quote: "Not requested",
-  },
-  nextAction:
-    "Request anonymised discovery notes and approval-trail screenshot before outline sign-off.",
-  nextOwner: "Content Manager",
-  nextDate: "",
-  meetingNotes:
-    "Example only: no actual interview has taken place.",
-};
 
-const STEPS = ["Set up", "Interview plan", "Notes & evidence", "Review & export"];
 
-const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-
-const text = (v) => String(v ?? "").trim();
-
-const md = (v) => String(v ?? "").replace(/\|/g, "\\|");
-
-const qFrom = (role, format, duration) => {
-  const r = BANK.roles[role] || BANK.roles.Other;
-  const f = BANK.formats[format] || BANK.formats.Other;
-
-  const points = [
-    {
-      type: "Context",
-      title: "Set the scene",
-      question:
-        "Think of the last real example of this problem. Who was involved and what triggered it?",
-      prompt: "Follow up: what happened next?",
-    },
-    ...r.map(([title, question, prompt]) => ({
-      type: role,
-      title,
-      question,
-      prompt,
-    })),
-    ...f.map(([title, question, prompt]) => ({
-      type: format,
-      title,
-      question,
-      prompt,
-    })),
-    {
-      type: "Evidence",
-      title: "Ask for proof",
-      question:
-        "Which specific example, document or number can we check before publishing this?",
-      prompt: "Get the source owner and approval requirements.",
-    },
-    {
-      type: "Close",
-      title: "Check accuracy and permission",
-      question:
-        "What have we missed, what is uncertain, and which claims or quotations need your approval?",
-      prompt: "Agree the follow-up owner and date.",
-    },
-  ];
-
-  const selected =
-    duration <= 15
-      ? [
-          points[0],
-          points[1],
-          points[2],
-          points[4],
-          points[5],
-          points[7],
-          points[8],
-        ]
-      : duration <= 20
-      ? [points[0], ...points.slice(1, 7), points[7], points[8]]
-      : points;
-
-  return selected.map((p, i) => ({
-    id: id(),
-    ...p,
-    enabled: true,
-    minutes: i === 0 || i === selected.length - 1 ? 2 : 0,
-  }));
-};
-
-function schedule(qs, duration) {
-  const active = qs.filter((q) => q.enabled && text(q.question));
-  if (!active.length) return [];
-
-  const fixed = active.reduce(
-    (s, q) => s + Math.max(0, Number(q.minutes) || 0),
-    0
-  );
-  const flex = active.filter((q) => !(Number(q.minutes) > 0));
-  const remaining = Math.max(0, duration - fixed);
-  const base = flex.length
-    ? Math.floor(remaining / flex.length)
-    : 0;
-  let spare = flex.length ? remaining - base * flex.length : 0;
-  let cursor = 0;
-
-  return active.map((q) => {
-    let mins =
-      Number(q.minutes) > 0
-        ? Number(q.minutes)
-        : base + (spare-- > 0 ? 1 : 0);
-    if (!Number(q.minutes) && !flex.length) mins = 0;
-
-    const entry = {
-      ...q,
-      start: cursor,
-      end: cursor + mins,
-      allocated: mins,
-    };
-    cursor += mins;
-    return entry;
-  });
+function initialData() {
+  return {
+    ...clone(BLANK),
+    questions: buildQuestions("Sales", "Comparison page"),
+  };
 }
 
-const fmtMinute = (n) => `${String(n).padStart(2, "0")}:00`;
 
-const clean = (s) => text(s) || "Not supplied";
 
-function buildReport(d, agenda) {
+function exampleData() {
+  return {
+    ...initialData(),
+
+    questions: [
+      mkQuestion({
+        category: "Buyer context",
+        label: "Start with a recent prospect",
+        question:
+          "Can you think of a recent prospect who was still managing usage-based billing in spreadsheets? What was going wrong?",
+        probe:
+          "What had happened that made them start looking for software instead of fixing their existing process?",
+      }),
+
+      mkQuestion({
+        category: "Buyer problems",
+        label: "Understand the actual pain points",
+        question:
+          "When you speak to finance teams still managing billing manually, which parts of their process are causing the most trouble?",
+        probe:
+          "What do they say makes the process difficult, and how does it affect their day-to-day work?",
+      }),
+
+      mkQuestion({
+        category: "Alternatives",
+        label: "Find out what buyers compare",
+        question:
+          "Before prospects approach RelayLedger, what have they typically tried to fix their billing problems, and why are they still looking?",
+        probe:
+          "When they explain why they're looking for something new, what specific requirements or frustrations tend to come up in those conversations?",
+      }),
+
+      mkQuestion({
+        category: "Buying triggers",
+        label: "Identify what moves a deal forward",
+        question:
+          "What tends to convince a finance leader that their spreadsheet setup isn't worth maintaining anymore?",
+        probe:
+          "Think about a recent deal. Was there a particular problem, product demonstration or conversation that changed their mind?",
+      }),
+
+      mkQuestion({
+        category: "Evaluation criteria",
+        label: "Understand what buyers actually care about",
+        question:
+          "Which RelayLedger features do prospects spend the most time asking about during demos?",
+        probe:
+          "What are they trying to solve with those features? Are there questions about limitations or integrations that keep coming up?",
+      }),
+
+      mkQuestion({
+        category: "Evidence and examples",
+        label: "Get evidence the writer can use",
+        question:
+          "Do we have a recent deal that shows the problems a buyer had, what they compared and why they chose their next step?",
+        probe:
+          "Could you share anonymised call notes or a specific example we can check with Product Marketing before using it in the article?",
+      }),
+    ],
+
+    company: "RelayLedger",
+    title:
+      "Usage-based billing software vs spreadsheets: what finance leaders should compare",
+    format: "Comparison page",
+    role: "Sales",
+    expertName: "Jamie Ellis",
+    expertTitle: "Account Executive",
+    interviewer: "Content Manager",
+    duration: 30,
+    audience:
+      "Finance Directors and Heads of RevOps at B2B SaaS companies with 50–300 employees",
+    buyerDecision:
+      "Determine when manual billing controls warrant dedicated software and which features to evaluate.",
+    objective:
+      "Collect first-hand buyer objections, decision criteria and an accurate example of month-end adjustment approvals.",
+    commercialGoal:
+      "Increase organic-sourced demo requests from 25 to 40 per month (+60%) by the end of Q2 2027, with at least 30% qualifying as SQLs.",
+
+
+    playbook: {
+      opening: "We're preparing a comparison page for finance leaders evaluating whether to keep managing usage-based billing in spreadsheets or move to dedicated software. I'd like to understand what you're hearing from prospects, what they've tried and which problems eventually lead them to evaluate other options. Recent deal examples would be especially useful. We'll check any product claims and customer details before publication.",
+    },
+
+    known:
+  "Finance teams struggle with late usage data, manual invoice adjustments and unclear approvals. We know RelayLedger tracks changes, but not which problems drive evaluations.",
+
+unknown:
+  "Which billing problems finally push finance leaders beyond spreadsheets? We need a recent prospect example, their alternatives and the deciding factor behind their shortlist.",
+
+scopeIn:
+  "Focus on month-end bottlenecks, approval ownership, spreadsheet workarounds and what buyers compare during actual evaluations. Prioritise specific sales conversations over general product claims.",
+
+scopeOut:
+  "Exclude implementation walkthroughs, integration architecture and unsupported ROI claims.",
+
+priorMaterials:
+  "Review three recent discovery-call summaries, the current product demo, RelayLedger's feature matrix and existing billing pages.",
+
+proofRequested:
+  "Request an anonymised deal example, the buyer's actual objections, shortlist criteria and relevant call notes.",
+
+
+    preRead:
+      "A 30-minute discussion on buyer concerns, common objections and real approval workflows. Bring one recent anonymised example.",
+    consent: "No recording planned",
+    reviewer: "Product Marketing and Sales Lead",
+    quotePolicy: "Permission required",
+    evidence: [
+      {
+        id: uid(),
+        insight:
+          "Finance teams need a clear approval history for invoice adjustments",
+        source: "Sales discovery notes: link pending",
+        owner: "Sales Lead",
+        status: "Needs source",
+        permission: "Pending",
+      },
+    ],
+  };
+}
+
+const valueOrDash = (s) => clean(s) || "Not provided";
+
+function buildText(d, agenda) {
   const lines = [
-    `# SME Interview Brief — ${clean(d.title)}`,
-    "",
-    `Prepared for: ${clean(d.brand)}`,
-    `Content format: ${d.format} | Expert: ${clean(d.person)} (${d.role})`,
-    `Interviewer: ${clean(d.interviewer)} | Interview date: ${clean(
-      d.interviewDate || d.scheduled
-    )}`,
-    `Duration: ${d.duration} minutes | Audience: ${clean(d.reader)}`,
-    "",
-    "## 1. What the article needs",
-    `Topic: ${clean(d.topic)}`,
-    `Reader decision: ${clean(d.decision)}`,
-    `What we already know: ${clean(d.known)}`,
-    `Gaps this interview must close: ${clean(d.unknown)}`,
-    `Proof to request: ${clean(d.artifacts)}`,
-    "",
-    "## 2. Interview agenda",
+    `# SME Interview Preparation Pack: ${valueOrDash(d.title)}`,
+    `Company: ${valueOrDash(d.company)}`,
+    `Expert: ${valueOrDash(d.expertName)} · ${valueOrDash(d.expertTitle)} (${d.role})`,
+    `Interviewer: ${valueOrDash(d.interviewer)}`,
+    `Content format: ${d.format}`,
+    `Interview date: ${valueOrDash(d.interviewDate)}`,
+    `Interview length: ${d.duration} minutes`, "",
+    "## 1. Interview preparation",
+    `Target reader: ${valueOrDash(d.audience)}`,
+    `Reader decision: ${valueOrDash(d.buyerDecision)}`,
+    `Interview objective: ${valueOrDash(d.objective)}`,
+    `Commercial goal: ${valueOrDash(d.commercialGoal)}`,
+    `What we already know: ${valueOrDash(d.known)}`,
+    `Information gaps: ${valueOrDash(d.unknown)}`,
+    `In scope: ${valueOrDash(d.scopeIn)}`,
+    `Out of scope: ${valueOrDash(d.scopeOut)}`,
+    `Materials to review: ${valueOrDash(d.priorMaterials)}`,
+    `Documents, examples or figures to request: ${valueOrDash(d.proofRequested)}`, "",
+    "## 2. Interview questions and timing",
     ...agenda.flatMap((q, i) => [
-      `${i + 1}. [${fmtMinute(q.start)}–${fmtMinute(q.end)}] ${
-        q.title
-      } (${q.allocated} min)`,
-      `   Question: ${q.question}`,
-      `   Follow-up: ${q.prompt || "—"}`,
+      `${i + 1}. ${q.question} (${clockFmt(q.start)}–${clockFmt(q.end)})`,
+      `Follow-up: ${valueOrDash(q.probe)}`, "",
     ]),
-    "",
-    "## 3. Interview notes — not fact-checked",
+    "Optional opening script:",
+    valueOrDash(d.playbook?.opening), "",
+    "## 3. Blank interview notes worksheet (complete during or after the call)",
     ...agenda.flatMap((q, i) => [
-      `### ${i + 1}. ${q.title}`,
-      `Question: ${q.question}`,
-      `Notes: ${clean(d.notes[q.id]?.answer)}`,
-      `Exact quote / timestamp: ${clean(d.notes[q.id]?.quote)}`,
-      `Open issue: ${clean(d.notes[q.id]?.gap)}`,
+      `${i + 1}. ${q.question}`,
+      "Key insight / example: ______________________________",
+      "Exact quote / timestamp: _____________________",
+      "Source / follow-up owner: _______________________", "",
     ]),
-    `Additional notes: ${clean(d.meetingNotes)}`,
-    "",
-    "## 4. Evidence and permissions",
-    ...(d.evidence.length
-      ? d.evidence.map(
-          (e, i) =>
-            `${i + 1}. ${clean(e.claim)} | Source: ${clean(
-              e.source
-            )} | Owner: ${clean(e.owner)} | Verification: ${
-              e.status
-            } | Permission: ${e.permission}`
-        )
-      : ["No evidence records yet."]),
-    "",
-    "## 5. Handoff and sign-off",
-    `Recording / consent: ${d.consent}`,
-    `Quote policy: ${clean(d.quotePolicy)}`,
-    `Reviewer: ${clean(d.reviewer)}`,
-    `Editorial review: ${d.approvals.content} | Claim verification: ${d.approvals.claims} | Quote permission: ${d.approvals.quote}`,
-    `Next action: ${clean(d.nextAction)} | Owner: ${clean(
-      d.nextOwner
-    )} | Due: ${clean(d.nextDate)}`,
-    "",
-    "## 6. Transcript-to-notes prompt (for an approved transcript)",
-    `Use only the transcript supplied below to prepare writer-ready notes for a ${d.format.toLowerCase()} about ${clean(
-      d.topic
-    )}, written for ${clean(
-      d.reader
-    )}. Organise notes by buyer question and the interview agenda. For every factual claim, include the exact supporting quote and timestamp if supplied. Separate directly observed facts, the speaker's opinion, and your own open questions. Mark numerical results as unverified until matched to an approved source. List product limitations, missing proof, follow-up questions, potential quotes and permission needed. Do not invent events, names, statistics, links or citations. If an answer is missing, write “Not answered.” Do not claim the transcript is approved for publication.`,
-    "[Paste a transcript you have permission to process here.]",
-    "",
-    "This document is a working interview record. Approval labels are user-entered, not independently verified by the tool.",
+    "Only record or share interview materials with appropriate consent. Verify claims and publication permissions before use.",
   ];
   return lines.join("\n");
 }
-
-const transcriptPrompt = (d) =>
-  `You are preparing factual writer notes for a ${d.format.toLowerCase()} on ${clean(
-    d.topic
-  )} for ${clean(
-    d.reader
-  )}. The decision this content must support is: ${clean(
-    d.decision
-  )}. Known gaps: ${clean(
-    d.unknown
-  )}.\n\nUse ONLY the transcript below. Group answers by the questions asked. Include: (1) key takeaways; (2) precise facts with verbatim quotes and timestamps only where supplied; (3) product, plan and market limitations; (4) examples and their owners; (5) all unsupported claims and missing evidence; (6) publishable quotes requiring explicit approval; (7) follow-up questions, suggested owner and priority. Separate speaker opinion from verified facts. Never invent numbers, sources, timestamps or quotes. If a question was not answered, say so. Do not treat a transcript as proof of customer permission.\n\nTRANSCRIPT:\n[Paste an approved transcript here]`;
-
-const CSV = (entries) =>
-  entries
-    .map((row) =>
-      row
-        .map((s) => `"${String(s ?? "").replace(/"/g, '""')}"`)
-        .join(",")
-    )
-    .join("\r\n");
-
-const download = (content, filename, type = "text/plain") => {
-  const blob = new Blob(["\ufeff", content], {
-    type: `${type};charset=utf-8`,
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
-
-const Icon = ({ name, size = 17 }) => {
-  const path =
-    {
-      arrow: (
-        <>
-          <path d="M5 12h14" />
-          <path d="m13 6 6 6-6 6" />
-        </>
-      ),
-      check: <path d="m4 12 5 5L20 6" />,
-      plus: (
-        <>
-          <path d="M12 5v14" />
-          <path d="M5 12h14" />
-        </>
-      ),
-      trash: (
-        <>
-          <path d="M4 7h16" />
-          <path d="M10 11v6M14 11v6" />
-          <path d="M6 7l1 13h10l1-13M9 7V4h6v3" />
-        </>
-      ),
-      copy: (
-        <>
-          <rect x="8" y="8" width="12" height="12" rx="2" />
-          <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
-        </>
-      ),
-      file: (
-        <>
-          <path d="M6 3h9l4 4v14H6z" />
-          <path d="M15 3v5h4M9 13h7M9 17h7" />
-        </>
-      ),
-      clock: (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v6l4 2" />
-        </>
-      ),
-      note: (
-        <>
-          <path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h4" />
-        </>
-      ),
-      alert: (
-        <>
-          <path d="M12 3 2 21h20L12 3Z" />
-          <path d="M12 9v5M12 18h.01" />
-        </>
-      ),
-      wand: (
-        <>
-          <path d="m4 20 12-12 4 4L8 24M16 3v3M21 8h-3M9 5l2 2" />
-        </>
-      ),
-      chevron: <path d="m9 18 6-6-6-6" />,
-    }[name] || <circle cx="12" cy="12" r="8" />;
-
+function safeFilename(s) {
   return (
-    <svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {path}
-    </svg>
+    clean(s)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 65) || "sme-interview"
   );
-};
+}
 
-export const faqs = [
-  {
-    question: "Does this record or transcribe interviews?",
-    answer:
-      "No. The tool creates a tailored interview agenda and a transcript-to-notes prompt. Use your approved recording and transcription process, with appropriate consent.",
-  },
-  {
-    question: "Can I change the questions and interview length?",
-    answer:
-      "Yes. Choose 15, 20, 30 or 45 minutes; change roles and formats; then edit, remove, add and time questions yourself.",
-  },
-  {
-    question: "How do I share the interview notes?",
-    answer:
-      "Copy or download the complete interview guide as Markdown, export evidence as CSV, or use your browser's Print / Save as PDF option.",
-  },
-];
+function saveBlob(bytes, filename, type) {
+  const blob = new Blob([bytes], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const InfoTooltip = ({ text }) => (
+  <span
+    className="sme-info-tooltip"
+    tabIndex={0}
+    role="note"
+    aria-label={text}
+    data-tooltip={text}
+  >
+    ⓘ
+  </span>
+);
 
 const Field = ({
   label,
   value,
   onChange,
-  placeholder,
-  multiline,
+  placeholder = "",
+  multiline = false,
+  help = "",
+  tooltip = "",
+  type = "text",
   rows = 3,
-  help,
 }) => (
-  <label className="si-field">
-    <span className="si-label">{label}</span>
+  <label className="sme-field">
+    <span className="sme-field-label">
+      {label}
+      {tooltip && <InfoTooltip text={tooltip} />}
+    </span>
     {multiline ? (
       <textarea
         rows={rows}
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || "Add details..."}
+        placeholder={placeholder}
       />
     ) : (
       <input
-        value={value}
+        type={type}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || "Enter details..."}
+        placeholder={placeholder}
       />
     )}
     {help && <small>{help}</small>}
   </label>
 );
 
-const Select = ({ label, value, onChange, options, help }) => (
-  <label className="si-field">
-    <span className="si-label">{label}</span>
-    <select value={value} onChange={(e) => onChange(e.target.value)}>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
+const Select = ({
+  label,
+  value,
+  onChange,
+  options,
+  help = "",
+}) => (
+  <label className="sme-field">
+    <span>{label}</span>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {options.map((x) => (
+        <option key={x} value={x}>
+          {x}
         </option>
       ))}
     </select>
@@ -712,1794 +749,1840 @@ const Select = ({ label, value, onChange, options, help }) => (
   </label>
 );
 
-const Section = ({ eyebrow, title, desc, children }) => (
-  <section className="si-panel">
-    <div className="si-panel-head">
-      <div>
-        <div className="si-eyebrow">{eyebrow}</div>
-        <h2>{title}</h2>
-        {desc && <p>{desc}</p>}
-      </div>
-    </div>
+const Section = ({ title, detail, children, kicker }) => (
+  <section className="sme-section">
+    {kicker && <div className="sme-kicker">{kicker}</div>}
+    <h3>{title}</h3>
+    {detail && <p className="sme-section-desc">{detail}</p>}
     {children}
   </section>
 );
 
-export default function SmeInterviewTemplate() {
-  const [data, setData] = useState(() => ({
-    ...blank,
-    questions: qFrom(blank.role, blank.format, blank.duration),
-  }));
+const Arrow = () => <span aria-hidden="true">→</span>;
+
+
+
+
+export const faqs = [
+  {
+    question: "What is an SME interview, and why is it important for B2B SaaS content?",
+    answer:
+      "An SME interview is a conversation with a subject-matter expert to gather information that isn't available in existing research. For B2B SaaS content, it helps writers understand product workflows, customer problems, buyer objections and real examples, so they can produce accurate articles that answer prospective customers' questions.",
+  },
+  {
+    question: "How do I prepare for a subject-matter expert interview?",
+    answer:
+      "To prepare for a subject-matter expert interview, define the content objective, target audience and information you need from the expert. Review existing product documentation and research, identify unanswered questions and prepare a focused interview agenda. Share the discussion topics beforehand so the expert knows what to expect.",
+  },
+  {
+    question: "How long should an SME interview last?",
+    answer:
+      "An SME interview should typically last 30 minutes, which is enough to cover five or six focused questions with follow-ups. More complex topics, such as technical workflows or customer case studies, may require 45–60 minutes. Allocate time to each question and prioritise information missing from your existing research.",
+  },
+  {
+    question: "What questions should I ask a subject-matter expert for a B2B SaaS article?",
+    answer:
+      "Ask questions about the buyer's problem, how the product works, common objections and what influences purchasing decisions. Request specific examples from recent customer or sales conversations. For comparison articles, ask what buyers evaluate between solutions. For product guides, focus on workflows, technical requirements and limitations.",
+  },
+  {
+    question: "How can I keep an SME interview focused when the expert goes off-topic?",
+    answer:
+      "To keep an SME interview focused, prepare a timed agenda with the most important questions first. If the expert goes off-topic, acknowledge their point and bring the discussion back to an unanswered question. Record useful tangents for follow-up and avoid spending too much time on topics already covered.",
+  },
+  {
+    question: "What should I do when an SME cannot provide evidence for a claim?",
+    answer:
+      "If an SME cannot provide evidence for a claim, ask where the information came from and whether supporting documentation exists. Record the claim as unverified and assign someone to check it. If reliable evidence cannot be found, remove the claim or rewrite it without making unsupported assertions.",
+  },
+];
+
+
+
+
+
+export default function SmeInterviewKit() {
+  const [d, setD] = useState(initialData);
   const [step, setStep] = useState(0);
-  const [preview, setPreview] = useState("agenda");
+  const [preview, setPreview] = useState("prepare");
+  const [loaded, setLoaded] = useState(false);
   const [notice, setNotice] = useState("");
-  const [advanced, setAdvanced] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  const update = (key, value) => {
-    setData((d) => ({ ...d, [key]: value }));
-    setNotice("");
-  };
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
 
-  const updateQ = (qid, key, value) => {
-    setData((d) => ({
-      ...d,
-      questions: d.questions.map((q) =>
-        q.id === qid ? { ...q, [key]: value } : q
+      if (raw) {
+        const obj = JSON.parse(raw);
+
+        if (
+          obj &&
+          obj.data &&
+          typeof obj.data === "object" &&
+          Array.isArray(obj.data.questions)
+        ) {
+          setD({
+            ...initialData(),
+            ...obj.data,
+            playbook: { ...BLANK.playbook, ...obj.data.playbook },
+            prep: { ...obj.data.prep },
+            notes: { ...obj.data.notes },
+            approvals: {
+              ...BLANK.approvals,
+              ...obj.data.approvals,
+            },
+          });
+
+          setStep(Math.max(0, Math.min(2, Number(obj.step) || 0)));
+        }
+      }
+    } catch (error) {
+      console.error("Unable to restore SME interview draft", error);
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          data: d,
+          step,
+          savedAt: new Date().toISOString(),
+        })
+      );
+    } catch (error) {
+      console.error("Unable to save SME interview draft", error);
+    }
+  }, [d, step, loaded]);
+
+  const set = (key, value) =>
+    setD((old) => ({ ...old, [key]: value }));
+
+  const setQuestion = (id, key, value) =>
+    setD((old) => ({
+      ...old,
+      questions: old.questions.map((q) =>
+        q.id === id ? { ...q, [key]: value } : q
       ),
     }));
-    setNotice("");
-  };
 
-  const updateN = (qid, key, value) =>
-    setData((d) => ({
-      ...d,
-      notes: { ...d.notes, [qid]: { ...d.notes[qid], [key]: value } },
+  const setNote = (id, key, value) =>
+    setD((old) => ({
+      ...old,
+      notes: {
+        ...old.notes,
+        [id]: { ...old.notes[id], [key]: value },
+      },
     }));
 
-  const updateE = (eid, key, value) =>
-    setData((d) => ({
-      ...d,
-      evidence: d.evidence.map((e) =>
-        e.id === eid ? { ...e, [key]: value } : e
+  const setRecord = (collection, id, key, value) =>
+    setD((old) => ({
+      ...old,
+      [collection]: old[collection].map((r) =>
+        r.id === id ? { ...r, [key]: value } : r
       ),
     }));
 
-  const regen = (
-    role = data.role,
-    format = data.format,
-    duration = data.duration
-  ) => {
+  const dropRecord = (collection, id) =>
+    setD((old) => ({
+      ...old,
+      [collection]: old[collection].filter((r) => r.id !== id),
+    }));
+
+  const agenda = useMemo(
+    () => agendaFor(d.questions, d.duration),
+    [d.questions, d.duration]
+  );
+
+  const allocated = agenda.reduce(
+    (total, q) => total + q.allocated,
+    0
+  );
+
+  const filled = agenda.filter(
+    (q) => clean(d.notes[q.id]?.answer)
+  ).length;
+
+  const outstanding = d.evidence.filter(
+    (e) =>
+      clean(e.insight) &&
+      (e.status !== "Verified" || e.permission !== "Approved")
+  ).length;
+
+  const report = useMemo(
+    () => buildText(d, agenda),
+    [d, agenda]
+  );
+
+  const filename = safeFilename(d.company || d.title);
+  const canExport = !exporting;
+
+  const reset = (example) => {
     if (
-      data.questions.some(
-        (q) => data.notes[q.id]?.answer || data.notes[q.id]?.quote
+      !window.confirm(
+        example
+          ? "Replace this interview kit with the fictional example? Your current draft will be overwritten."
+          : "Start a new interview kit? Your current saved draft will be replaced."
       )
+    )
+      return;
+
+    setD(example ? exampleData() : initialData());
+    setStep(0);
+    setPreview("prepare");
+    setNotice(
+      example
+        ? "Example loaded. Its evidence and permissions still need verification."
+        : "New interview kit started."
+    );
+  };
+
+  const changeRoleFormat = (key, value) => {
+    const changed = { ...d, [key]: value };
+
+    if (
+      d.questions.some((q) => clean(d.notes[q.id]?.answer))
     ) {
       if (
         !window.confirm(
-          "Replace the current questions? Existing notes will remain in memory but will no longer be attached to the new question list."
+          "Rebuild questions for this selection? Existing question-specific notes will be cleared."
         )
       )
         return;
     }
-    setData((d) => ({
-      ...d,
-      role,
-      format,
-      duration,
-      questions: qFrom(role, format, duration),
+
+    setD((old) => ({
+      ...old,
+      [key]: value,
+      questions: buildQuestions(changed.role, changed.format),
       notes: {},
     }));
-    setNotice("Interview questions updated for the selected role and format.");
   };
 
-  const agenda = useMemo(
-    () => schedule(data.questions, data.duration),
-    [data.questions, data.duration]
-  );
+  const rebuild = () => {
+    if (
+      !window.confirm(
+        "Rebuild the question set? Manually edited questions and their notes will be replaced."
+      )
+    )
+      return;
 
-  const allocated = agenda.reduce((sum, q) => sum + q.allocated, 0);
-  const completedNotes = agenda.filter((q) =>
-    text(data.notes[q.id]?.answer)
-  ).length;
-  const missingSource = data.evidence.filter(
-    (e) => e.status !== "Verified" || e.permission !== "Approved"
-  ).length;
+    setD((old) => ({
+      ...old,
+      questions: buildQuestions(old.role, old.format),
+      notes: {},
+    }));
+  };
 
-  const checks = [
-    { ok: !!text(data.topic), label: "Interview topic specified" },
-    {
-      ok: !!text(data.reader) && !!text(data.decision),
-      label: "Reader and decision recorded",
-    },
-    {
-      ok: !!text(data.unknown),
-      label: "Information gaps identified",
-    },
-    {
-      ok: agenda.length >= 3,
-      label: "Interview agenda contains at least three questions",
-    },
-    {
-      ok: allocated === data.duration,
-      label: `Agenda fits ${data.duration}-minute slot`,
-    },
-    { ok: !!text(data.reviewer), label: "Claims reviewer named" },
-    {
-      ok:
-        data.consent === "Confirmed" ||
-        data.consent === "No recording planned",
-      label: "Recording consent status resolved",
-    },
-    {
-      ok: missingSource === 0 && data.evidence.length > 0,
-      label: "Evidence sources and permissions cleared",
-    },
-  ];
+  const moveQuestion = (id, direction) =>
+    setD((old) => {
+      const next = [...old.questions];
+      const i = next.findIndex((q) => q.id === id);
+      const j = i + direction;
 
-  const prepScore = checks.slice(0, 6).filter((c) => c.ok).length;
-  const report = useMemo(() => buildReport(data, agenda), [data, agenda]);
+      if (i < 0 || j < 0 || j >= next.length) return old;
 
-  const safeFile =
-    text(data.brand)
-      .replace(/[^a-z0-9]+/gi, "-")
-      .replace(/^-|-$/g, "")
-      .toLowerCase() || "interview";
+      [next[i], next[j]] = [next[j], next[i]];
 
-  const copy = async (content) => {
+      return { ...old, questions: next };
+    });
+
+  const copy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
-      setNotice("Copied to clipboard.");
+      await navigator.clipboard.writeText(report);
+      setNotice("Interview handoff copied.");
     } catch {
-      setNotice("Clipboard unavailable. Use Download instead.");
+      setNotice(
+        "Clipboard is unavailable. Use Excel or PDF export instead."
+      );
     }
   };
 
-  const startFresh = () => {
-    setData({
-      ...blank,
-      questions: qFrom(blank.role, blank.format, blank.duration),
-    });
-    setStep(0);
-    setNotice("Started a blank interview plan.");
+  const downloadExcel = async () => {
+    setExporting(true);
+
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "GrowUp";
+      wb.title = "SME interview kit";
+
+      const navy = "073B3B";
+      const teal = "167273";
+      const pale = "EEF4F3";
+
+      function sheet(name, heads, rows) {
+        const ws = wb.addWorksheet(name);
+        ws.addRow(heads);
+
+        ws.columns = heads.map((h) => ({
+          header: h,
+          key: h,
+          width: Math.max(20, Math.min(56, h.length + 16)),
+        }));
+
+        const header = ws.getRow(1);
+        header.height = 31;
+
+        header.eachCell((c) => {
+          c.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: `FF${navy}` },
+          };
+          c.font = {
+            name: "Montserrat",
+            bold: true,
+            color: { argb: "FFFFFFFF" },
+            size: 11,
+          };
+          c.alignment = {
+            vertical: "middle",
+            wrapText: true,
+          };
+        });
+
+        rows.forEach((values, i) => {
+          const r = ws.addRow(
+            values.map((x) => (x == null ? "" : x))
+          );
+
+          r.height = 56;
+
+          r.eachCell(
+            { includeEmpty: true },
+            (c) => {
+              c.font = {
+                name: "Montserrat",
+                size: 10,
+                color: { argb: "FF173431" },
+              };
+              c.alignment = {
+                vertical: "top",
+                wrapText: true,
+              };
+
+              if (i % 2 === 0) {
+                c.fill = {
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: { argb: `FF${pale}` },
+                };
+              }
+            }
+          );
+        });
+
+        ws.views = [{ state: "frozen", ySplit: 1 }];
+        ws.autoFilter = {
+          from: "A1",
+          to: `${String.fromCharCode(64 + heads.length)}1`,
+        };
+
+        return ws;
+      }
+
+      sheet("START HERE", ["Item", "Details"], [
+        ["Company", d.company],
+        ["Article", d.title],
+        ["Expert", `${d.expertName} · ${d.expertTitle}`],
+        ["Format", d.format],
+        [
+          "Purpose",
+          "Editable interview preparation and question pack. Complete the notes sheet during or after the interview.",
+        ],
+        [
+          "Important",
+          "Excel changes do not sync back to the browser. The kit does not verify evidence or grant publication permission.",
+        ],
+      ]);
+
+      sheet(
+        "Interview preparation",
+        ["Field", "Response"],
+        [
+          ["Target reader", d.audience],
+          ["Reader decision", d.buyerDecision],
+          ["Interview objective", d.objective],
+          ["Commercial goal", d.commercialGoal],
+          ["In scope", d.scopeIn],
+          ["Out of scope", d.scopeOut],
+          ["What is known", d.known],
+          ["What remains unknown", d.unknown],
+          ["Existing material", d.priorMaterials],
+          ["Requested evidence", d.proofRequested],
+          ["Interviewer", d.interviewer],
+          ["Interview date", d.interviewDate],
+          ["Length (minutes)", d.duration],
+        ]
+      );
+
+      sheet(
+        "Interview questions",
+        [
+          "Order",
+          "Category",
+          "Question",
+          "Follow-up",
+          "Start",
+          "End",
+          "Minutes",
+        ],
+        agenda.map((q, i) => [
+          i + 1,
+          q.category,
+          q.question,
+          q.probe,
+          clockFmt(q.start),
+          clockFmt(q.end),
+          q.allocated,
+        ])
+      );
+
+      sheet(
+        "Blank interview notes",
+        [
+          "Question",
+          "Key insight or example",
+          "Exact quote / timestamp",
+          "Source",
+          "Follow-up / owner",
+        ],
+        agenda.map((q) => [q.question, "", "", "", ""])
+      );
+
+      sheet("Opening script", ["Field", "Text"], [
+        ["Optional opening script", d.playbook?.opening || ""],
+      ]);
+
+      const buffer = await wb.xlsx.writeBuffer();
+
+      saveBlob(
+        buffer,
+        `${filename}-sme-interview-kit.xlsx`,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+
+      setNotice("Editable Excel workbook downloaded.");
+    } catch (error) {
+      console.error(error);
+      setNotice(
+        "Excel export failed. Install exceljs with: npm install exceljs"
+      );
+    } finally {
+      setExporting(false);
+    }
   };
 
-  const useExample = () => {
-    setData({
-      ...sample,
-      questions: qFrom(sample.role, sample.format, sample.duration).map(
-        (q, i) =>
-          i === 3
-            ? {
-                ...q,
-                question:
-                  "When buyers compare spreadsheet approvals with software, what exact control do they ask to see?",
-                prompt:
-                  "Capture their words and a recent anonymised example.",
-              }
-            : q
-      ),
-      notes: {},
-      evidence: sample.evidence.map((e) => ({ ...e, id: id() })),
-    });
-    setStep(0);
-    setNotice(
-      "Fictional RelayLedger example loaded. Proof and permissions remain intentionally unresolved."
-    );
-  };
+  const prepReady = Boolean(
+    clean(d.objective) &&
+      clean(d.audience) &&
+      clean(d.unknown) &&
+      agenda.length
+  );
 
   return (
-    <div className="si-root">
+    <div className="sme-root">
       <style>{CSS}</style>
 
-      <div className="si-layout">
-        <main className="si-editor">
-          <div className="si-toolbar">
-            <div className="si-toolbar-label">
-              <Icon name="note" /> INTERVIEW WORKSPACE
-            </div>
-            <div className="si-toolbar-actions">
-              <button
-                type="button"
-                className="si-light"
-                onClick={useExample}
-              >
-                Use example
-              </button>
-              <button
-                type="button"
-                className="si-ghost"
-                onClick={startFresh}
-              >
-                Start fresh
-              </button>
-            </div>
-          </div>
+      <div className="sme-toolbar">
+        <span className="sme-toolbar-label">
+          SME INTERVIEW KIT
+        </span>
+        <div className="sme-toolbar-actions">
+          <button
+            className="sme-light"
+            type="button"
+            onClick={() => reset(true)}
+          >
+            ↺ Use example
+          </button>
+          <button
+            className="sme-light"
+            type="button"
+            onClick={() => reset(false)}
+          >
+            ＋ Start fresh
+          </button>
+        </div>
+      </div>
 
-          <nav className="si-progress" aria-label="Interview template steps">
-            {STEPS.map((s, i) => (
-              <button
-                type="button"
-                key={s}
-                className={`si-step ${step === i ? "active" : ""} ${
-                  step > i ? "done" : ""
-                }`}
-                onClick={() => setStep(i)}
-              >
-                <span>
-                  {step > i ? <Icon name="check" size={13} /> : i + 1}
-                </span>
-                <b>{s}</b>
-              </button>
-            ))}
-          </nav>
+      <nav
+        className="sme-steps"
+        aria-label="Interview kit sections"
+      >
+        {STEPS.map((label, i) => (
+          <button
+            key={label}
+            type="button"
+            className={`sme-step ${
+              step === i ? "active" : ""
+            }`}
+            onClick={() => setStep(i)}
+          >
+            <span>{i < step ? "✓" : i + 1}</span>
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="sme-layout">
+        <main className="sme-editor">
+          <div className="sme-step-intro">
+            <div className="sme-kicker">
+              {String(step + 1).padStart(2, "0")} /{" "}
+              {STEPS[step].toUpperCase()}
+            </div>
+            <h2>
+              {
+                [
+                  "Prepare for a Focused SME Interview",
+                  "Set Up Your SME Interview Questions",
+                  "Review Your SME Interview Pack Before Exporting",
+                ][step]
+              }
+            </h2>
+            <p>
+              {
+                [
+                  "Define the content assignment, identify gaps that require expert input and establish exactly what needs to be answered and verified.",
+                  "Use the suggested questions as a starting point, then adjust them to cover the specific workflows, buyer concerns and claims your article needs.",
+                  "Review the assignment, questions and timing before sending the pack to your writer or interviewer.",
+                ][step]
+              }
+            </p>
+          </div>
 
           {step === 0 && (
             <>
               <Section
-                eyebrow="01 / THE ASSIGNMENT"
-                title="Start with the article, not the questions"
-                desc="The role and format shape the questions automatically. Add the missing information so the interview has a clear purpose."
+                title="The content assignment"
+                detail="Establish why the interview is needed before drafting questions."
               >
-                <div className="si-fields two">
+                <div className="sme-grid">
                   <Field
                     label="Company or project"
-                    value={data.brand}
-                    onChange={(v) => update("brand", v)}
-                    placeholder="e.g. RelayLedger"
+                    value={d.company}
+                    onChange={(v) => set("company", v)}
+                    placeholder="Company name"
                   />
                   <Field
-                    label="Working article title"
-                    value={data.title}
-                    onChange={(v) => update("title", v)}
-                    placeholder="e.g. Billing software vs spreadsheets"
-                  />
-                </div>
-
-                <div className="si-fields two">
-                  <Select
-                    label="Interviewee's team / role"
-                    value={data.role}
-                    options={ROLES}
-                    onChange={(v) => {
-                      update("role", v);
-                    }}
+                    label="Working content title"
+                    value={d.title}
+                    onChange={(v) => set("title", v)}
+                    placeholder="Working article or video title"
                   />
                   <Select
                     label="Content format"
-                    value={data.format}
+                    value={d.format}
                     options={FORMATS}
-                    onChange={(v) => update("format", v)}
+                    onChange={(v) =>
+                      changeRoleFormat("format", v)
+                    }
                   />
-                </div>
-
-                <div className="si-fields two">
+                  <Select
+                    label="SME team or role"
+                    value={d.role}
+                    options={ROLES}
+                    onChange={(v) =>
+                      changeRoleFormat("role", v)
+                    }
+                  />
                   <Field
-                    label="Interviewee name / position"
-                    value={data.person}
-                    onChange={(v) => update("person", v)}
-                    placeholder="Name and job title"
+                    label="Expert name"
+                    value={d.expertName}
+                    onChange={(v) => set("expertName", v)}
+                  />
+                  <Field
+                    label="Expert position"
+                    value={d.expertTitle}
+                    onChange={(v) => set("expertTitle", v)}
                   />
                   <Field
                     label="Interviewer"
-                    value={data.interviewer}
-                    onChange={(v) => update("interviewer", v)}
-                    placeholder="Marketing manager or writer"
-                  />
-                </div>
-
-                <Field
-                  label="What are we investigating?"
-                  multiline
-                  rows={2}
-                  value={data.topic}
-                  onChange={(v) => update("topic", v)}
-                  placeholder="A particular buyer question or workflow—not just 'billing'"
-                />
-
-                <div className="si-fields two">
-                  <Field
-                    label="Who will read this?"
-                    multiline
-                    rows={2}
-                    value={data.reader}
-                    onChange={(v) => update("reader", v)}
-                    placeholder="Role, company type and situation"
+                    value={d.interviewer}
+                    onChange={(v) => set("interviewer", v)}
                   />
                   <Field
-                    label="What decision should the piece help them make?"
-                    multiline
-                    rows={2}
-                    value={data.decision}
-                    onChange={(v) => update("decision", v)}
-                    placeholder="What can they choose or do after reading?"
+                    label="Interview date"
+                    type="date"
+                    value={d.interviewDate}
+                    onChange={(v) => set("interviewDate", v)}
                   />
                 </div>
 
-                <div className="si-duration">
-                  <span className="si-label">Interview length</span>
-                  <div role="group" aria-label="Interview duration">
-                    {DURATIONS.map((n) => (
-                      <button
-                        type="button"
-                        key={n}
-                        className={data.duration === n ? "selected" : ""}
-                        onClick={() => update("duration", n)}
-                      >
-                        {n} min
-                      </button>
-                    ))}
-                  </div>
-                  <p>
-                    Changing duration redistributes untimed questions. It
-                    won't change a question's manually assigned minutes.
-                  </p>
+                <div className="sme-grid">
+                  <Field
+                    label="Who is the target reader?"
+                    value={d.audience}
+                    onChange={(v) => set("audience", v)}
+                    multiline
+                  />
+                  <Field
+                    label="What decision should the content support?"
+                    value={d.buyerDecision}
+                    onChange={(v) => set("buyerDecision", v)}
+                    multiline
+                  />
+                  <Field
+                    label="What do we need from this interview?"
+                    value={d.objective}
+                    onChange={(v) => set("objective", v)}
+                    multiline
+                  />
+                  <Field
+                    label="Which business or pipeline goal does the content support?"
+                    value={d.commercialGoal}
+                    onChange={(v) => set("commercialGoal", v)}
+                    multiline
+                  />
                 </div>
+              </Section>
 
-                <div className="si-fields two">
+              <Section
+                title="Pre-interview research and content gaps"
+                detail="Gather everything available from existing product docs first, and save SME interviews for nuances that require specialist input"
+              >
+                <div className="sme-grid">
                   <Field
                     label="What do we already know?"
+                    value={d.known}
+                    onChange={(v) => set("known", v)}
                     multiline
-                    rows={3}
-                    value={data.known}
-                    onChange={(v) => update("known", v)}
-                    placeholder="Existing notes, established product facts, buyer language..."
                   />
                   <Field
                     label="What still needs an answer?"
+                    value={d.unknown}
+                    onChange={(v) => set("unknown", v)}
                     multiline
-                    rows={3}
-                    value={data.unknown}
-                    onChange={(v) => update("unknown", v)}
-                    placeholder="Specific unknowns the expert can resolve"
+                  />
+                  <Field
+                    label="Topics in scope"
+                    value={d.scopeIn}
+                    onChange={(v) => set("scopeIn", v)}
+                    multiline
+                  />
+                  <Field
+                    label="Topics outside scope"
+                    value={d.scopeOut}
+                    onChange={(v) => set("scopeOut", v)}
+                    multiline
+                  />
+                  <Field
+                    label="Existing materials to review"
+                    value={d.priorMaterials}
+                    onChange={(v) => set("priorMaterials", v)}
+                    multiline
+                  />
+                  <Field
+                    label="Documents, examples or figures to request"
+                    value={d.proofRequested}
+                    onChange={(v) => set("proofRequested", v)}
+                    multiline
                   />
                 </div>
-
-                <button
-                  type="button"
-                  className="si-primary si-wide"
-                  onClick={() => {
-                    regen(data.role, data.format, data.duration);
-                    setStep(1);
-                  }}
-                >
-                  Build my interview plan <Icon name="arrow" />
-                </button>
               </Section>
+
+
+
+
+
+
             </>
           )}
 
           {step === 1 && (
             <>
               <Section
-                eyebrow="02 / QUESTION DESIGN"
-                title="Questions worth using the expert's time on"
-                desc="Role-specific and format-specific questions are a starting point. Edit the words, add probes and prioritise the gaps that matter."
+                title="Interview plan"
+                detail="Reorder or edit the questions, then remove anything already answered in your background research."
               >
-                <div className="si-plan-summary">
+                <div className="sme-plan-top">
                   <div>
-                    <Icon name="clock" />
-                    <strong>{data.duration}-minute interview</strong>
+                    <strong>
+                      {agenda.length} active questions
+                    </strong>
                     <span>
-                      {agenda.length} questions · {allocated} minutes allocated
+                      {allocated} of {d.duration} minutes scheduled
                     </span>
                   </div>
                   <button
                     type="button"
-                    className="si-light"
-                    onClick={() => regen()}
+                    className="sme-light"
+                    onClick={rebuild}
                   >
-                    Rebuild question set
+                    Rebuild suggested questions
                   </button>
                 </div>
 
-                {allocated !== data.duration && (
-                  <div className="si-warning">
-                    <Icon name="alert" /> Your question timings total{" "}
-                    {allocated} minutes. Adjust fixed minutes or the interview
-                    length before using the script.
+                <div className="sme-duration">
+                  <span>Interview length</span>
+                  <div>
+                    {DURATIONS.map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={
+                          d.duration === n ? "selected" : ""
+                        }
+                        onClick={() => set("duration", n)}
+                      >
+                        {n} min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {allocated !== d.duration && (
+                  <div className="sme-warning">
+                    The active questions total {allocated}{" "}
+                    minutes. Adjust manually assigned minutes or
+                    increase the interview length.
                   </div>
                 )}
 
-                <div className="si-questions">
-                  {data.questions.map((q, i) => (
-                    <article
-                      className={`si-question ${
-                        !q.enabled ? "muted" : ""
-                      }`}
-                      key={q.id}
-                    >
-                      <div className="si-question-top">
-                        <span className="si-chip">
-                          {String(i + 1).padStart(2, "0")} · {q.type}
-                        </span>
-                        <div className="si-inline">
-                          <label className="si-mini-check">
-                            <input
-                              type="checkbox"
-                              checked={q.enabled}
-                              onChange={(e) =>
-                                updateQ(
-                                  q.id,
-                                  "enabled",
-                                  e.target.checked
-                                )
-                              }
-                            />{" "}
-                            Include
-                          </label>
-                          <button
-                            aria-label={`Remove question ${i + 1}`}
-                            type="button"
-                            className="si-iconbtn"
-                            onClick={() =>
-                              setData((d) => ({
-                                ...d,
-                                questions: d.questions.filter(
-                                  (x) => x.id !== q.id
-                                ),
-                              }))
-                            }
-                          >
-                            <Icon name="trash" size={15} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="si-fields two">
-                        <Field
-                          label="Question label"
-                          value={q.title}
-                          onChange={(v) => updateQ(q.id, "title", v)}
-                        />
-                        <label className="si-field">
-                          <span className="si-label">
-                            Minutes (0 = automatic)
-                          </span>
+                {d.questions.map((q, i) => (
+                  <article
+                    key={q.id}
+                    className={`sme-question ${
+                      !q.include ? "disabled" : ""
+                    }`}
+                  >
+                    <div className="sme-item-head">
+                      <strong>
+                        {String(i + 1).padStart(2, "0")} ·{" "}
+                        {q.category}
+                      </strong>
+                      <div className="sme-actions">
+                        <label>
                           <input
-                            min="0"
-                            max="45"
-                            type="number"
-                            value={q.minutes}
+                            type="checkbox"
+                            checked={q.include}
                             onChange={(e) =>
-                              updateQ(
+                              setQuestion(
                                 q.id,
-                                "minutes",
-                                clamp(Number(e.target.value) || 0, 0, 45)
+                                "include",
+                                e.target.checked
+                              )
+                            }
+                          />{" "}
+                          Include
+                        </label>
+                        <button
+                          type="button"
+                          aria-label="Move question up"
+                          onClick={() => moveQuestion(q.id, -1)}
+                          disabled={i === 0}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Move question down"
+                          onClick={() => moveQuestion(q.id, 1)}
+                          disabled={
+                            i === d.questions.length - 1
+                          }
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Remove question"
+                          onClick={() =>
+                            setD((old) => ({
+                              ...old,
+                              questions: old.questions.filter(
+                                (x) => x.id !== q.id
+                              ),
+                            }))
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+            <Field
+  label="Question label"
+  tooltip="Give this question a short name so it's easy to identify and reorder."
+  value={q.label}
+                      onChange={(v) =>
+                        setQuestion(q.id, "label", v)
+                      }
+                    />
+
+             <Field
+  label="Main interview question"
+  tooltip="Write the question you'll ask the expert. Focus on information missing from your research."
+  value={q.question}
+                      onChange={(v) =>
+                        setQuestion(q.id, "question", v)
+                      }
+                      multiline
+                      rows={2}
+                    />
+
+                    <div className="sme-grid">
+                   <Field
+  label="Follow-up probe or evidence request"
+  tooltip="Add a follow-up that asks for specific examples, clarification or supporting evidence."
+  value={q.probe}
+                        onChange={(v) =>
+                          setQuestion(q.id, "probe", v)
+                        }
+                        multiline
+                        rows={2}
+                      />
+                      <div className="sme-stack">
+                        <label className="sme-checkline small">
+                          <input
+                            type="checkbox"
+                            checked={q.manualMinutes}
+                            onChange={(e) =>
+                              setQuestion(
+                                q.id,
+                                "manualMinutes",
+                                e.target.checked
                               )
                             }
                           />
+                  <span className="sme-manual-time-label">
+  <strong>Set time manually</strong>
+  <InfoTooltip text="Choose how many minutes to spend on this question. Other questions will share the remaining interview time." />
+</span>
                         </label>
+                        {q.manualMinutes && (
+                          <Field
+                            label="Minutes"
+                            type="number"
+                            value={q.minutes}
+                            onChange={(v) =>
+                              setQuestion(
+                                q.id,
+                                "minutes",
+                                Math.max(0, Number(v) || 0)
+                              )
+                            }
+                          />
+                        )}
                       </div>
-
-                      <Field
-                        label="Main question"
-                        multiline
-                        rows={2}
-                        value={q.question}
-                        onChange={(v) =>
-                          updateQ(q.id, "question", v)
-                        }
-                      />
-                      <Field
-                        label="Probe / what to ask them to show"
-                        value={q.prompt}
-                        onChange={(v) =>
-                          updateQ(q.id, "prompt", v)
-                        }
-                      />
-                    </article>
-                  ))}
-                </div>
+                    </div>
+                  </article>
+                ))}
 
                 <button
                   type="button"
-                  className="si-add"
+                  className="sme-add"
                   onClick={() =>
-                    setData((d) => ({
-                      ...d,
+                    setD((old) => ({
+                      ...old,
                       questions: [
-                        ...d.questions,
-                        {
-                          id: id(),
-                          type: "Custom",
-                          title: "My question",
+                        ...old.questions,
+                        mkQuestion({
+                          category: "Custom",
+                          label: "New question",
                           question: "",
-                          prompt: "",
-                          enabled: true,
-                          minutes: 0,
-                        },
+                          probe: "",
+                        }),
                       ],
                     }))
                   }
                 >
-                  <Icon name="plus" /> Add my own question
+                  ＋ Add another question
                 </button>
               </Section>
-
               <Section
-                eyebrow="INTERVIEW PREPARATION"
-                title="Ask for something you can actually cite"
-                desc="Keep proof requests and permission rules explicit so the writer doesn't need another meeting afterwards."
+                title="Optional opening script"
+                detail="Prepare a short introduction for the SME. Leave this blank if you prefer to open the call naturally."
               >
                 <Field
-                  label="Documents, examples or numbers to request"
+                  label="How will you introduce the interview?"
+                  value={d.playbook?.opening || ""}
+                  onChange={(v) =>
+                    set("playbook", { ...d.playbook, opening: v })
+                  }
+                  placeholder="We're preparing a [content format] for [audience] about [topic]. I'd like to learn [specific gaps]. A recent example would help us get the details right."
                   multiline
-                  rows={3}
-                  value={data.artifacts}
-                  onChange={(v) => update("artifacts", v)}
-                  placeholder="Named asset, source owner, date, and permitted use"
+                  rows={5}
                 />
-                <div className="si-fields two">
-                  <Field
-                    label="Who signs off claims and quotes?"
-                    value={data.reviewer}
-                    onChange={(v) => update("reviewer", v)}
-                  />
-                  <Select
-                    label="Quote / customer permission policy"
-                    value={data.quotePolicy}
-                    onChange={(v) => update("quotePolicy", v)}
-                    options={[
-                      "Needs explicit approval",
-                      "Internal use only",
-                      "Anonymise by default",
-                      "Approved quotes only",
-                    ]}
-                  />
-                </div>
               </Section>
             </>
           )}
 
           {step === 2 && (
             <>
-              <Section
-                eyebrow="03 / LIVE NOTES"
-                title="Capture answers next to the question"
-                desc="Use this during or after the conversation. Quotes and timestamps are separate from paraphrased notes so nothing is accidentally presented as a verbatim statement."
-              >
-                <div className="si-fields two">
-                  <Field
-                    label="Interview date"
-                    value={data.interviewDate}
-                    onChange={(v) => update("interviewDate", v)}
-                    placeholder="e.g. 20 November 2026"
-                  />
-                  <Select
-                    label="Recording / consent status"
-                    value={data.consent}
-                    onChange={(v) => update("consent", v)}
-                    options={[
-                      "Not confirmed",
-                      "Confirmed",
-                      "No recording planned",
-                      "Declined",
-                    ]}
-                  />
-                </div>
+              <div className="sme-metrics">
+                <div><b>{agenda.length}</b><span>Interview questions</span></div>
+                <div><b>{allocated}/{d.duration}</b><span>Minutes scheduled</span></div>
+                <div><b>{clean(d.playbook?.opening) ? "Yes" : "Optional"}</b><span>Opening script</span></div>
+              </div>
 
-                <div className="si-progressline">
-                  <span>
-                    {completedNotes} of {agenda.length} question notes
-                    captured
-                  </span>
-                  <div>
-                    <i
-                      style={{
-                        width: `${
-                          agenda.length
-                            ? (100 * completedNotes) / agenda.length
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                </div>
 
-                {agenda.map((q, i) => (
-                  <article className="si-note" key={q.id}>
-                    <div className="si-note-head">
-                      <span className="si-chip">
-                        {fmtMinute(q.start)}–{fmtMinute(q.end)}
-                      </span>
-                      <strong>
-                        {i + 1}. {q.question}
-                      </strong>
-                    </div>
 
-                    <Field
-                      label="Answer / useful details"
-                      multiline
-                      rows={3}
-                      value={data.notes[q.id]?.answer || ""}
-                      onChange={(v) => updateN(q.id, "answer", v)}
-                      placeholder="What the expert actually explained; distinguish fact from opinion"
-                    />
+<Section
+  title="Final preparation review"
+  detail="Make sure the essential details are covered before the interview takes place."
+>
+  <div className="sme-playbook-line">
+    {clean(d.objective) ? "✓" : "○"} Interview objective
+    is clearly defined
+  </div>
 
-                    <div className="si-fields two">
-                      <Field
-                        label="Exact quote and timestamp (if available)"
-                        multiline
-                        rows={2}
-                        value={data.notes[q.id]?.quote || ""}
-                        onChange={(v) => updateN(q.id, "quote", v)}
-                        placeholder="Only copy verbatim words"
-                      />
-                      <Field
-                        label="Unanswered question / follow-up"
-                        multiline
-                        rows={2}
-                        value={data.notes[q.id]?.gap || ""}
-                        onChange={(v) => updateN(q.id, "gap", v)}
-                        placeholder="What still needs verifying?"
-                      />
-                    </div>
-                  </article>
-                ))}
+  <div className="sme-playbook-line">
+    {clean(d.audience) && clean(d.buyerDecision)
+      ? "✓"
+      : "○"}{" "}
+    Target audience and buying decision are documented
+  </div>
 
-                <Field
-                  label="Other meeting notes"
-                  multiline
-                  rows={3}
-                  value={data.meetingNotes}
-                  onChange={(v) => update("meetingNotes", v)}
-                />
-              </Section>
+  <div className="sme-playbook-line">
+    {clean(d.unknown) ? "✓" : "○"} Research gaps
+    are identified
+  </div>
+
+  <div className="sme-playbook-line">
+    {agenda.length &&
+    agenda.every((q) => clean(q.question) && clean(q.probe))
+      ? "✓"
+      : "○"}{" "}
+    Interview questions and follow-ups are ready
+  </div>
+
+  <div className="sme-playbook-line">
+    {allocated === d.duration && agenda.length
+      ? "✓"
+      : "○"}{" "}
+    Question timings fit the interview duration
+  </div>
+
+  {!prepReady && (
+    <p className="sme-playbook-note">
+      Complete the core assignment details before
+      sharing the interview pack.
+    </p>
+  )}
+</Section>
+
+<Section
+  title="What's included in your interview pack"
+  detail="Everything your writer or interviewer needs to prepare for the conversation."
+>
+  {[
+    "Content assignment, audience and research gaps",
+    "Selected questions, follow-ups and timings",
+    "Optional opening script",
+    "Existing materials and evidence requests",
+  ].map((x) => (
+    <div key={x} className="sme-playbook-line">
+      ✓ {x}
+    </div>
+  ))}
+</Section>
 
               <Section
-                eyebrow="EVIDENCE TRACKER"
-                title="Separate a good quote from a verified claim"
-                desc="The tool never validates evidence itself. You mark what has a source and what is approved for publication."
+                title="Export your SME interview pack"
+                detail="Share the preparation and agenda with your interviewer or download an editable pack for the call."
               >
-                {data.evidence.map((e, i) => (
-                  <article className="si-evidence" key={e.id}>
-                    <div className="si-question-top">
-                      <strong>Evidence {i + 1}</strong>
-                      <button
-                        type="button"
-                        aria-label={`Remove evidence ${i + 1}`}
-                        className="si-iconbtn"
-                        onClick={() =>
-                          setData((d) => ({
-                            ...d,
-                            evidence: d.evidence.filter(
-                              (x) => x.id !== e.id
-                            ),
-                          }))
-                        }
-                      >
-                        <Icon name="trash" size={16} />
-                      </button>
-                    </div>
-
-                    <Field
-                      label="Claim, example or quoted result"
-                      value={e.claim}
-                      onChange={(v) => updateE(e.id, "claim", v)}
-                    />
-
-                    <div className="si-fields two">
-                      <Field
-                        label="Source / link / timestamp"
-                        value={e.source}
-                        onChange={(v) => updateE(e.id, "source", v)}
-                      />
-                      <Field
-                        label="Who can verify it?"
-                        value={e.owner}
-                        onChange={(v) => updateE(e.id, "owner", v)}
-                      />
-                    </div>
-
-                    <div className="si-fields two">
-                      <Select
-                        label="Verification status"
-                        value={e.status}
-                        onChange={(v) => updateE(e.id, "status", v)}
-                        options={[
-                          "Needs source",
-                          "Under review",
-                          "Verified",
-                          "Not usable",
-                        ]}
-                      />
-                      <Select
-                        label="Publication permission"
-                        value={e.permission}
-                        onChange={(v) => updateE(e.id, "permission", v)}
-                        options={[
-                          "Approval pending",
-                          "Internal use only",
-                          "Approved",
-                          "Not permitted",
-                        ]}
-                      />
-                    </div>
-                  </article>
-                ))}
-
-                <button
-                  type="button"
-                  className="si-add"
-                  onClick={() =>
-                    setData((d) => ({
-                      ...d,
-                      evidence: [
-                        ...d.evidence,
-                        {
-                          id: id(),
-                          claim: "",
-                          source: "",
-                          owner: "",
-                          status: "Needs source",
-                          permission: "Approval pending",
-                        },
-                      ],
-                    }))
-                  }
-                >
-                  <Icon name="plus" /> Add evidence item
-                </button>
-              </Section>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <Section
-                eyebrow="04 / HANDOFF"
-                title="Make the next steps unambiguous"
-                desc="This isn't an automated approval system. Statuses reflect what your team has recorded, not independent verification."
-              >
-                <div className="si-reviewgrid">
-                  <div className="si-reviewbox">
-                    <span>Interview preparation</span>
-                    <strong>{prepScore}/6</strong>
-                    <small>Core setup checks satisfied</small>
-                  </div>
-                  <div className="si-reviewbox">
-                    <span>Questions with notes</span>
-                    <strong>
-                      {completedNotes}/{agenda.length}
-                    </strong>
-                    <small>Active interview questions</small>
-                  </div>
-                  <div className="si-reviewbox">
-                    <span>Evidence needing attention</span>
-                    <strong>{missingSource}</strong>
-                    <small>Unverified or not approved</small>
-                  </div>
-                </div>
-
-                <div className="si-checklist">
-                  {checks.map((c, i) => (
-                    <div key={i}>
-                      <span
-                        className={`si-checkmark ${
-                          c.ok ? "ok" : "pending"
-                        }`}
-                      >
-                        {c.ok ? <Icon name="check" size={13} /> : "!"}
-                      </span>
-                      {c.label}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="si-fields two">
-                  <Select
-                    label="Editorial sign-off"
-                    value={data.approvals.content}
-                    onChange={(v) =>
-                      setData((d) => ({
-                        ...d,
-                        approvals: { ...d.approvals, content: v },
-                      }))
-                    }
-                    options={[
-                      "Not requested",
-                      "In review",
-                      "Approved",
-                      "Changes needed",
-                    ]}
-                  />
-                  <Select
-                    label="Product and claims sign-off"
-                    value={data.approvals.claims}
-                    onChange={(v) =>
-                      setData((d) => ({
-                        ...d,
-                        approvals: { ...d.approvals, claims: v },
-                      }))
-                    }
-                    options={[
-                      "Not requested",
-                      "In review",
-                      "Approved",
-                      "Changes needed",
-                    ]}
-                  />
-                </div>
-
-                <Select
-                  label="Quote / customer permission sign-off"
-                  value={data.approvals.quote}
-                  onChange={(v) =>
-                    setData((d) => ({
-                      ...d,
-                      approvals: { ...d.approvals, quote: v },
-                    }))
-                  }
-                  options={[
-                    "Not requested",
-                    "In review",
-                    "Approved",
-                    "Changes needed",
-                    "Not applicable",
-                  ]}
-                />
-
-                <div className="si-fields two">
-                  <Field
-                    label="Next action"
-                    multiline
-                    rows={2}
-                    value={data.nextAction}
-                    onChange={(v) => update("nextAction", v)}
-                    placeholder="e.g. Ask Product for approved permissions matrix"
-                  />
-                  <Field
-                    label="Action owner"
-                    value={data.nextOwner}
-                    onChange={(v) => update("nextOwner", v)}
-                  />
-                </div>
-
-                <Field
-                  label="Due date"
-                  value={data.nextDate}
-                  onChange={(v) => update("nextDate", v)}
-                  placeholder="e.g. 24 November 2026"
-                />
-              </Section>
-
-              <Section
-                eyebrow="EXPORT"
-                title="A usable handoff, not just meeting notes"
-                desc="The full document includes the agenda, every answer, evidence statuses, approvals, actions, and a transcript-processing prompt."
-              >
-                <div className="si-export">
-                  <button type="button" onClick={() => copy(report)}>
-                    <Icon name="copy" /> Copy full guide
+                <div className="sme-export">
+                  <button type="button" onClick={copy}>
+                    Copy interview pack
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      download(
-                        report,
-                        `${safeFile}-sme-interview.md`,
-                        "text/markdown"
-                      )
-                    }
+                    onClick={downloadExcel}
+                    disabled={!canExport}
                   >
-                    <Icon name="file" /> Download Markdown
+                    {exporting
+                      ? "Preparing Excel…"
+                      : "Download Excel"}
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      download(
-                        CSV([
-                          [
-                            "Claim",
-                            "Source",
-                            "Owner",
-                            "Verification",
-                            "Permission",
-                          ],
-                          ...data.evidence.map((e) => [
-                            e.claim,
-                            e.source,
-                            e.owner,
-                            e.status,
-                            e.permission,
-                          ]),
-                        ]),
-                        `${safeFile}-evidence.csv`,
-                        "text/csv"
-                      )
-                    }
-                  >
-                    <Icon name="file" /> Evidence CSV
-                  </button>
-                  <button
-                    type="button"
+                    className="sme-primary"
                     onClick={() => window.print()}
                   >
-                    <Icon name="file" /> Print / Save PDF
+                    Save as PDF
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  className="si-copy-prompt"
-                  onClick={() => copy(transcriptPrompt(data))}
-                >
-                  <Icon name="copy" /> Copy transcript-to-notes prompt
-                </button>
-
-                <p className="si-smallprint">
-                  Only paste interview transcripts into services approved by
-                  your organisation and the participants. This tool does not
-                  upload or process recordings.
+                <p className="sme-disclaimer">
+                  Changes save automatically in this browser.
+                  Excel edits do not sync back. This kit does not
+                  record or transcribe interviews.
                 </p>
               </Section>
             </>
           )}
 
-          <div className="si-footer-nav">
+          <div className="sme-bottom-nav">
             <button
               type="button"
-              className="si-light"
+              className="sme-light"
               disabled={step === 0}
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              onClick={() =>
+                setStep((s) => Math.max(0, s - 1))
+              }
             >
-              Back
+              ← Back
             </button>
-            <span>
-              Step {step + 1} of {STEPS.length}
-            </span>
-            {step < STEPS.length - 1 && (
+            <span>Step {step + 1} of 3</span>
+            {step < 2 && (
               <button
                 type="button"
-                className="si-primary"
-                onClick={() => setStep((s) => Math.min(3, s + 1))}
+                className="sme-primary"
+                onClick={() =>
+                  setStep((s) => Math.min(2, s + 1))
+                }
               >
-                Continue <Icon name="arrow" />
+                Continue <Arrow />
               </button>
             )}
           </div>
 
           {notice && (
-            <div role="status" className="si-toast">
+            <div className="sme-notice" role="status">
               {notice}
             </div>
           )}
+
         </main>
 
-        <aside className="si-preview">
-          <div className="si-preview-sticky">
-            <div className="si-preview-head">
-              <div>
-                <div className="si-eyebrow">LIVE PREVIEW</div>
-                <h3>Interview handoff</h3>
-              </div>
-              <span className="si-preview-badge">Editable</span>
-            </div>
 
-            <div
-              className="si-preview-tabs"
-              role="tablist"
-              aria-label="Preview content"
-            >
-              {[
-                ["agenda", "Agenda"],
-                ["notes", "Notes"],
-                ["handoff", "Handoff"],
-              ].map(([key, label]) => (
-                <button
-                  type="button"
-                  key={key}
-                  role="tab"
-                  aria-selected={preview === key}
-                  className={preview === key ? "active" : ""}
-                  onClick={() => setPreview(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
 
-            <div className="si-paper">
-              <div className="si-paper-kicker">
-                GROWUP / INTERVIEW BRIEF
-              </div>
-              <h4>{data.title || "Untitled content assignment"}</h4>
-              <p className="si-paper-sub">
-                {data.brand || "Your company"} · {data.format}
-              </p>
-              <div className="si-paper-stat">
-                <span>
-                  <Icon name="clock" size={14} /> {data.duration} minutes
-                </span>
-                <span>{data.role} expert</span>
-              </div>
+<aside className="sme-aside">
+  <div className="sme-preview-head">
+    <small>LIVE INTERVIEW PACK</small>
 
-              {preview === "agenda" && (
-                <>
-                  <div className="si-paper-section">QUESTIONS & TIMING</div>
-                  {agenda.length ? (
-                    agenda.map((q, i) => (
-                      <div className="si-paper-item" key={q.id}>
-                        <span>
-                          {fmtMinute(q.start)}–{fmtMinute(q.end)}
-                        </span>
-                        <div>
-                          <b>
-                            {i + 1}. {q.title}
-                          </b>
-                          <p>{q.question}</p>
-                          {q.prompt && <small>{q.prompt}</small>}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p>Add questions to build the agenda.</p>
-                  )}
-                </>
-              )}
+    <h3>{d.title || "SME interview preparation"}</h3>
 
-              {preview === "notes" && (
-                <>
-                  <div className="si-paper-section">CAPTURED ANSWERS</div>
-                  {agenda.map((q, i) => (
-                    <div className="si-paper-item" key={q.id}>
-                      <span>{i + 1}.</span>
-                      <div>
-                        <b>{q.title}</b>
-                        <p>{data.notes[q.id]?.answer || "No notes yet"}</p>
-                        {data.notes[q.id]?.quote && (
-                          <small>
-                            Quote: {data.notes[q.id].quote}
-                          </small>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+    <p>
+      {d.company || "Your company"} · {d.format}
+    </p>
 
-              {preview === "handoff" && (
-                <>
-                  <div className="si-paper-section">
-                    INTERVIEW OBJECTIVE
-                  </div>
-                  <p>
-                    {data.decision ||
-                      "Add the buyer decision in Setup."}
-                  </p>
-                  <div className="si-paper-section">
-                    OPEN INFORMATION GAPS
-                  </div>
-                  <p>
-                    {data.unknown ||
-                      "Add the questions this interview needs to resolve."}
-                  </p>
-                  <div className="si-paper-section">EVIDENCE STATUS</div>
-                  <p>
-                    {data.evidence.length} evidence entries ·{" "}
-                    {missingSource} requiring verification or permission
-                  </p>
-                  <div className="si-paper-section">NEXT ACTION</div>
-                  <p>{data.nextAction || "No follow-up recorded."}</p>
-                  <div className="si-paper-section">SIGN-OFF</div>
-                  <p>
-                    Editorial: {data.approvals.content}
-                    <br />
-                    Claims: {data.approvals.claims}
-                    <br />
-                    Quotes: {data.approvals.quote}
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="si-preview-bottom">
-              <span>
-                {agenda.length} questions · {completedNotes} answers captured
-              </span>
-              <button type="button" onClick={() => setStep(3)}>
-                Review & export <Icon name="chevron" size={14} />
-              </button>
-            </div>
-          </div>
-        </aside>
+    <div className="sme-preview-metrics">
+      <div>
+        <b>{agenda.length}</b>
+        <span>Questions</span>
       </div>
 
-      <div className="si-print-only">
-        <pre>{report}</pre>
+      <div>
+        <b>{d.duration} min</b>
+        <span>Duration</span>
+      </div>
+
+      <div>
+        <b>{allocated}/{d.duration}</b>
+        <span>Minutes scheduled</span>
+      </div>
+    </div>
+  </div>
+
+  <div className="sme-preview-inner">
+    <div className="sme-tabs">
+      {[
+        ["prepare", "Preparation"],
+        ["agenda", "Questions"],
+        ["handoff", "Review"],
+      ].map(([key, label]) => (
+        <button
+          key={key}
+          type="button"
+          className={preview === key ? "active" : ""}
+          onClick={() => setPreview(key)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+
+    {/* TAB 1 — COMPLETE PREPARATION */}
+
+    {preview === "prepare" && (
+      <>
+        <div className="sme-preview-section">
+          <h4>Content assignment</h4>
+
+          {[
+            ["Company or project", d.company],
+            ["Working content title", d.title],
+            ["Content format", d.format],
+            ["SME team or role", d.role],
+            ["Expert name", d.expertName],
+            ["Expert position", d.expertTitle],
+            ["Interviewer", d.interviewer],
+            ["Interview date", d.interviewDate],
+            ["Interview duration", `${d.duration} minutes`],
+          ].map(([label, value]) => (
+            <div className="sme-preview-detail" key={label}>
+              <span>{label}</span>
+              <strong>{valueOrDash(value)}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="sme-preview-section">
+          <h4>Audience and commercial objectives</h4>
+
+          {[
+            ["Target reader", d.audience],
+            ["Buyer decision", d.buyerDecision],
+            ["Interview objective", d.objective],
+            ["Business or pipeline goal", d.commercialGoal],
+          ].map(([label, value]) => (
+            <div className="sme-preview-detail" key={label}>
+              <span>{label}</span>
+              <strong>{valueOrDash(value)}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="sme-preview-section">
+          <h4>Pre-interview research and content gaps</h4>
+
+          {[
+            ["What we already know", d.known],
+            ["What still needs an answer", d.unknown],
+            ["Topics in scope", d.scopeIn],
+            ["Topics outside scope", d.scopeOut],
+            ["Existing materials to review", d.priorMaterials],
+            [
+              "Documents, examples or figures to request",
+              d.proofRequested,
+            ],
+          ].map(([label, value]) => (
+            <div className="sme-preview-detail" key={label}>
+              <span>{label}</span>
+              <strong>{valueOrDash(value)}</strong>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    {/* TAB 2 — ALL SELECTED INTERVIEW QUESTIONS */}
+
+    {preview === "agenda" && (
+      <>
+        <div className="sme-preview-section">
+          <h4>Interview overview</h4>
+
+          <div className="sme-preview-detail">
+            <span>Interview duration</span>
+            <strong>{d.duration} minutes</strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Active questions</span>
+            <strong>{agenda.length}</strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Minutes scheduled</span>
+            <strong>
+              {allocated} of {d.duration} minutes
+            </strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Interview objective</span>
+            <strong>{valueOrDash(d.objective)}</strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Research gaps</span>
+            <strong>{valueOrDash(d.unknown)}</strong>
+          </div>
+        </div>
+
+        <div className="sme-preview-section">
+          <h4>Selected questions and timing</h4>
+
+          {agenda.length ? (
+            agenda.map((q, i) => (
+              <div
+                key={q.id}
+                className="sme-preview-question"
+              >
+                <small>
+                  {clockFmt(q.start)}–{clockFmt(q.end)}
+                  {" · "}
+                  {q.category}
+                </small>
+
+                <strong>
+                  {i + 1}. {q.question}
+                </strong>
+
+                <p>
+                  <b>Follow-up:</b>{" "}
+                  {q.probe ||
+                    "Ask for a specific example and its source."}
+                </p>
+
+                <div className="sme-preview-question-meta">
+                  {q.allocated} minutes allocated
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>
+              No questions selected. Return to Step 2 to build
+              the interview agenda.
+            </p>
+          )}
+        </div>
+        <div className="sme-preview-section">
+          <h4>Optional opening script</h4>
+          <p className="sme-preview-script">
+            {d.playbook?.opening || "No opening script added."}
+          </p>
+        </div>
+      </>
+    )}
+
+    {/* TAB 3 — FINAL REVIEW AND EXPORT CONTENTS */}
+
+    {/* TAB 4 — FINAL REVIEW AND EXPORT CONTENTS */}
+
+    {preview === "handoff" && (
+      <>
+        <div className="sme-preview-section">
+          <h4>Final preparation review</h4>
+
+          {[
+            {
+              ok: Boolean(clean(d.objective)),
+              label: "Interview objective is defined",
+            },
+            {
+              ok: Boolean(
+                clean(d.audience) &&
+                clean(d.buyerDecision)
+              ),
+              label:
+                "Target reader and buying decision are recorded",
+            },
+            {
+              ok: Boolean(clean(d.unknown)),
+              label: "Research gaps are documented",
+            },
+            {
+              ok: agenda.length > 0,
+              label:
+                "At least one interview question is included",
+            },
+            {
+              ok:
+                agenda.length > 0 &&
+                allocated === d.duration,
+              label:
+                "Question timings fit the interview duration",
+            },
+          ].map((item, i) => (
+            <div
+              className="sme-preview-check"
+              key={i}
+            >
+              <span
+                className={
+                  item.ok ? "complete" : "incomplete"
+                }
+              >
+                {item.ok ? "✓" : "○"}
+              </span>
+
+              <p>{item.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="sme-preview-section">
+          <h4>What the interview pack includes</h4>
+
+          {[
+            "Content assignment, target reader and business objective",
+            "Existing research, information gaps and interview scope",
+            "Selected interview questions and timed agenda",
+            "Optional opening script",
+            "Evidence and materials to request",
+            "Blank notes worksheet for the interview",
+          ].map((item, i) => (
+            <div
+              className="sme-preview-check"
+              key={i}
+            >
+              <span className="complete">✓</span>
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="sme-preview-section">
+          <h4>Export options</h4>
+
+          <div className="sme-preview-detail">
+            <span>Copy interview pack</span>
+            <strong>
+              Copy the prepared interview information
+              and agenda.
+            </strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Download Excel</span>
+            <strong>
+              Edit the interview pack and complete the
+              notes worksheet.
+            </strong>
+          </div>
+
+          <div className="sme-preview-detail">
+            <span>Save as PDF</span>
+            <strong>
+              Share a fixed, branded copy of the
+              interview preparation pack.
+            </strong>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+
+  <div className="sme-preview-foot">
+    <span>Changes saved locally</span>
+
+    <button
+      type="button"
+      onClick={() => {
+        setStep(2);
+        setPreview("handoff");
+      }}
+    >
+      Review & export <Arrow />
+    </button>
+  </div>
+</aside>
+
+
+
+
+      </div>
+
+      <div className="sme-print">
+        <header className="sme-print-cover">
+          <div className="sme-print-brand">
+            GrowUp<span>.</span>
+          </div>
+          <div className="sme-print-eyebrow">
+            SME INTERVIEW PREPARATION PACK
+          </div>
+          <h1>{d.title || "Subject Matter Expert Interview"}</h1>
+          <p>
+            {d.company || "Your company"} · {d.format}
+          </p>
+          <div className="sme-print-meta">
+            <span>{d.duration} minutes</span>
+            <span>{d.expertName || "Expert not specified"}</span>
+            <span>
+              {d.interviewDate || "Date not specified"}
+            </span>
+          </div>
+        </header>
+
+        <section>
+          <h2>01 / Interview preparation</h2>
+          <PrintRow label="Target reader" value={d.audience} />
+          <PrintRow
+            label="Buyer decision"
+            value={d.buyerDecision}
+          />
+          <PrintRow
+            label="Interview objective"
+            value={d.objective}
+          />
+          <PrintRow
+            label="Commercial goal"
+            value={d.commercialGoal}
+          />
+          <PrintRow label="Known information" value={d.known} />
+          <PrintRow label="Research gaps" value={d.unknown} />
+          <PrintRow label="In scope" value={d.scopeIn} />
+          <PrintRow label="Out of scope" value={d.scopeOut} />
+          <PrintRow
+            label="Materials reviewed"
+            value={d.priorMaterials}
+          />
+          <PrintRow
+            label="Evidence requested"
+            value={d.proofRequested}
+          />
+
+        </section>
+
+        <section>
+          <h2>02 / Interview questions and timing</h2>
+          {agenda.map((q, i) => (
+            <div className="sme-print-card" key={q.id}>
+              <small>
+                {clockFmt(q.start)}–{clockFmt(q.end)} ·{" "}
+                {q.category}
+              </small>
+              <h3>
+                {i + 1}. {q.question}
+              </h3>
+              <p>
+                <b>Follow-up:</b>{" "}
+                {q.probe || "Ask for a specific example."}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        {clean(d.playbook?.opening) && (
+          <section>
+            <h2>03 / Optional opening script</h2>
+            <PrintRow label="Opening" value={d.playbook.opening} />
+          </section>
+        )}
+        <section>
+          <h2>04 / Blank interview notes</h2>
+          {agenda.map((q, i) => (
+            <div className="sme-print-card" key={q.id}>
+              <h3>
+                {i + 1}. {q.question}
+              </h3>
+              <p>
+                Key insight / example:
+                ________________________________________
+              </p>
+              <p>
+                Exact quote / timestamp:
+                ____________________________________
+              </p>
+              <p>
+                Source / follow-up owner:
+                ___________________________________
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <footer>
+          GrowUp · Interview preparation pack · Verify claims
+          and obtain permissions before publication.
+        </footer>
       </div>
     </div>
   );
 }
 
+const PrintRow = ({ label, value }) => (
+  <div className="sme-print-row">
+    <b>{label}</b>
+    <span>{valueOrDash(value)}</span>
+  </div>
+);
+
 const CSS = `
-.si-root {
-  --si-teal: #167273;
-  --si-dark: #011522;
-  --si-muted: #5c7074;
-  --si-line: #dbe7e4;
-  --si-pale: #eef4f3;
-  color: var(--si-dark);
-  font-family: Montserrat, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+.sme-root, .sme-root * { box-sizing: border-box; }
+.sme-root { --sme-teal:#167273; --sme-dark:#073b3b; --sme-line:#d6e5e1; --sme-muted:#57716e; font-family:'Montserrat',sans-serif; width:100%; max-width:1320px; margin:0 auto; padding:12px 0 48px; color:#011522; font-size:12px; line-height:1.6; }
+.sme-root button,.sme-root input,.sme-root select,.sme-root textarea { font:inherit; }
+.sme-root button { cursor:pointer; }
+.sme-root button:disabled { opacity:.42;cursor:not-allowed; }
+.sme-root :is(button,input,select,textarea):focus-visible { outline:3px solid #8ecfc4; outline-offset:2px; }
+.sme-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0 18px; }
+.sme-toolbar-label { font-size:11px;font-weight:850;letter-spacing:1.5px;color:#167273; }
+.sme-toolbar-actions { display:flex;flex-wrap:wrap;gap:8px; }
+.sme-light,.sme-primary { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;border-radius:9px;font-size:11px;font-weight:800;border:1px solid #d6e5e1;background:#fff;color:#073b3b; }
+.sme-primary { background:#167273;color:#fff;border-color:#167273; }
+.sme-steps { display:flex;gap:8px;overflow-x:auto;padding:0 0 16px;margin-bottom:24px;border-bottom:1px solid #d6e5e1; }
+.sme-step { display:flex;align-items:center;gap:8px;white-space:nowrap;padding:9px 12px;border:1px solid #d6e5e1;border-radius:9px;background:#fff;color:#073b3b;font-size:11px;font-weight:800; }
+.sme-step span { border:1px solid currentColor;border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:10px; }
+.sme-step.active { background:#073b3b;color:#fff;border-color:#073b3b; }
+.sme-layout { display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start; }
+.sme-editor,.sme-aside { background:#fff;border:1px solid #d6e5e1;border-radius:15px;overflow:hidden;min-width:0; }
+.sme-editor {
+  padding: 28px;
+  overflow: visible;
 }
-.si-root * { box-sizing: border-box }
-.si-root button,
-.si-root input,
-.si-root textarea,
-.si-root select { font: inherit }
-.si-root button {
+.sme-kicker { font-size:10px;text-transform:uppercase;font-weight:850;letter-spacing:1.6px;color:#167273;margin-bottom:9px; }
+.sme-step-intro h2 { font-size:24px;line-height:1.25;color:#073b3b;margin:0;letter-spacing:-.6px; }
+.sme-step-intro>p { color:#57716e;font-size:12px;line-height:1.75;margin:10px 0 24px; }
+.sme-section { border-top:1px solid #e5efec;padding-top:22px;margin-top:22px; }
+.sme-section h3 { color:#073b3b;font-size:15px;letter-spacing:-.2px;margin:0 0 5px;font-weight:800; }
+.sme-section-desc { font-size:11.5px;color:#57716e;margin:0 0 19px; }
+.sme-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px; }
+.sme-stack { display:grid;gap:12px;align-content:start; }
+.sme-field { display:flex;flex-direction:column;gap:6px;min-width:0;margin-bottom:13px; }
+.sme-field>span {
+  font-weight: 750;
+  color: #073b3b;
+  font-size: 11px;
+}
+
+.sme-field-label,
+.sme-manual-time-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sme-info-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: #167273;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
-  transition: background .16s, border-color .16s, transform .16s;
 }
-.si-root button:focus-visible,
-.si-root input:focus-visible,
-.si-root textarea:focus-visible,
-.si-root select:focus-visible {
-  outline: 3px solid #94cfcb;
-  outline-offset: 2px;
+
+.sme-info-tooltip:hover,
+.sme-info-tooltip:focus-visible {
+  color: #073b3b;
 }
-.si-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.37fr) minmax(320px, .83fr);
-  gap: 23px;
-  align-items: start;
-}
-.si-editor { min-width: 0 }
-.si-preview { min-width: 0 }
-.si-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0 20px;
-}
-.si-toolbar-label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  letter-spacing: 1.4px;
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--si-teal);
-}
-.si-toolbar-actions { display: flex; gap: 8px }
-.si-light,
-.si-ghost {
-  border: 1px solid var(--si-line);
-  background: #fff;
-  color: var(--si-dark);
-  border-radius: 9px;
-  padding: 9px 12px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.si-light:hover,
-.si-ghost:hover { background: var(--si-pale) }
-.si-ghost {
-  background: transparent;
-  border-color: transparent;
-  color: var(--si-muted);
-}
-.si-progress {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-  margin-bottom: 16px;
-}
-.si-step {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  text-align: left;
-  border: 1px solid var(--si-line);
-  background: #fff;
-  border-radius: 11px;
-  padding: 12px 8px;
+
+.sme-info-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+
+  /* Position beneath the icon, aligned to its left */
+  top: calc(100% + 9px);
+  bottom: auto;
+  left: 0;
+  right: auto;
+  transform: none;
+
+  width: 250px;
+  max-width: min(250px, 70vw);
+  box-sizing: border-box;
+
+  padding: 11px 13px;
+  background: #073b3b;
+  color: #ffffff;
+  border-radius: 8px;
+
+  font-family: "Montserrat", sans-serif;
   font-size: 11px;
-  color: #6d7f82;
-  min-width: 0;
-}
-.si-step b {
-  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
   white-space: normal;
-  font-weight: 700;
+  text-align: left;
+
+  box-shadow: 0 6px 20px rgba(1, 21, 34, 0.18);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1000;
 }
-.si-step > span {
-  flex: 0 0 23px;
-  height: 23px;
-  width: 23px;
-  border-radius: 7px;
-  background: #f0f4f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
+.sme-info-tooltip:hover::after,
+.sme-info-tooltip:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
 }
-.si-step.active {
-  border-color: #8bbbbb;
-  background: #edf6f4;
-  color: var(--si-teal);
-}
-.si-step.active > span,
-.si-step.done > span {
-  background: var(--si-teal);
-  color: #fff;
-}
-.si-panel {
-  background: #fff;
-  border: 1px solid var(--si-line);
-  border-radius: 16px;
-  padding: 25px;
-  margin-bottom: 17px;
-  box-shadow: 0 8px 28px rgba(2, 30, 35, .025);
-}
-.si-panel-head {
-  margin-bottom: 23px;
-  border-bottom: 1px solid #e9eeee;
-  padding-bottom: 19px;
-}
-.si-eyebrow {
-  font-size: 10px;
-  color: var(--si-teal);
-  font-weight: 850;
-  letter-spacing: 1.5px;
-  margin-bottom: 6px;
-}
-.si-panel h2 {
-  font-size: 22px;
-  letter-spacing: -.5px;
-  line-height: 1.2;
-  font-weight: 800;
-  margin: 0 0 8px;
-  color: var(--si-dark);
-}
-.si-panel-head p {
-  color: var(--si-muted);
-  max-width: 580px;
-  font-size: 13px;
-  margin: 0;
-  line-height: 1.65;
-}
-.si-field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-  margin-bottom: 16px;
-}
-.si-label {
-  font-size: 12px;
-  font-weight: 750;
-  color: #253c42;
-}
-.si-field input,
-.si-field textarea,
-.si-field select {
-  border: 1px solid #cfdddb;
-  color: var(--si-dark);
-  background: #fff;
-  width: 100%;
-  border-radius: 10px;
-  padding: 11px 12px;
-  line-height: 1.5;
-  min-height: 42px;
-  outline: none;
-  font-size: 13px;
-}
-.si-field textarea {
-  resize: vertical;
-  min-height: 70px;
-}
-.si-field input::placeholder,
-.si-field textarea::placeholder { color: #99a8aa }
-.si-field input:hover,
-.si-field textarea:hover,
-.si-field select:hover { border-color: #9ab9b5 }
-.si-field small {
-  color: #78888a;
-  line-height: 1.4;
-}
-.si-fields {
-  display: grid;
-  gap: 14px;
-}
-.si-fields.two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.si-duration { margin: 3px 0 22px }
-.si-duration > div {
-  display: flex;
-  gap: 8px;
-  margin: 9px 0;
-}
-.si-duration button {
-  padding: 9px 15px;
-  border: 1px solid var(--si-line);
-  border-radius: 9px;
-  background: #fff;
-  color: #475f62;
-  font-size: 12px;
-  font-weight: 700;
-}
-.si-duration button.selected {
-  border-color: var(--si-teal);
-  background: var(--si-pale);
-  color: var(--si-teal);
-}
-.si-duration p {
-  font-size: 11px;
-  color: var(--si-muted);
-  margin: 0;
-}
-.si-primary {
+
+/* Keep the manual timing tooltip inside its column */
+.sme-manual-time-label {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 9px;
-  background: var(--si-teal);
-  border: 1px solid var(--si-teal);
-  color: #fff;
-  border-radius: 10px;
-  padding: 12px 18px;
-  font-size: 12px;
-  font-weight: 800;
-}
-.si-primary:hover { background: #105c5d }
-.si-primary.si-wide {
-  width: 100%;
-  margin-top: 6px;
-}
-.si-footer-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 18px 0 25px;
-}
-.si-footer-nav > span {
-  color: var(--si-muted);
-  font-size: 11px;
-}
-.si-footer-nav button:disabled {
-  cursor: not-allowed;
-  opacity: .45;
-}
-.si-plan-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: var(--si-pale);
-  border-radius: 12px;
-  padding: 13px 15px;
-  margin: 0 0 17px;
-}
-.si-plan-summary > div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  color: var(--si-teal);
-}
-.si-plan-summary strong { font-size: 12px }
-.si-plan-summary span {
-  color: var(--si-muted);
-  font-size: 11px;
-}
-.si-plan-summary button { background: #fff }
-.si-warning {
-  border: 1px solid #efc89b;
-  border-radius: 10px;
-  background: #fff8ed;
-  color: #845d26;
-  padding: 11px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 0 0 12px;
-  font-size: 12px;
-}
-.si-question,
-.si-note,
-.si-evidence {
-  border: 1px solid var(--si-line);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  background: #fff;
-}
-.si-question.muted { opacity: .57 }
-.si-question-top,
-.si-note-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-.si-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 9px;
-  background: var(--si-pale);
-  color: var(--si-teal);
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 10px;
-  letter-spacing: .3px;
-}
-.si-inline {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-.si-mini-check {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--si-muted);
-}
-.si-mini-check input { accent-color: var(--si-teal) }
-.si-iconbtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background: #fff;
-  color: #8a5d5d;
-  border: 1px solid var(--si-line);
-  border-radius: 8px;
-}
-.si-iconbtn:hover {
-  background: #fff1f1;
-  border-color: #ebb;
-}
-.si-add {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: 1px dashed #a5c7c3;
-  border-radius: 10px;
-  background: #f7fbfa;
-  color: var(--si-teal);
-  font-weight: 800;
-  padding: 13px;
-  font-size: 12px;
-}
-.si-add:hover { background: var(--si-pale) }
-.si-note-head {
   justify-content: flex-start;
+  width: fit-content;
+  gap: 5px;
+}
+
+.sme-manual-time-label .sme-info-tooltip::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Prevent the tooltip from appearing in PDF exports */
+@media print {
+  .sme-info-tooltip::after {
+    display: none !important;
+  }
+}
+.sme-field input,.sme-field textarea,.sme-field select { display:block;width:100%;border:1px solid #bfd6d1;border-radius:8px;background:#fbfdfc;color:#011522;min-height:41px;padding:10px 11px;font-size:12px;resize:vertical; }
+.sme-field textarea { min-height:85px; }
+.sme-field small { font-size:10px;color:#57716e; }
+.sme-checklist { margin-bottom:20px; }
+.sme-checkline { display:flex;align-items:start;gap:11px;border-bottom:1px solid #eaf0ee;padding:12px 0;cursor:pointer; }
+.sme-checkline input { accent-color:#167273;margin-top:3px; }
+.sme-checkline > span {
+  flex: 1;
+}
+
+.sme-checkline.small > .sme-manual-time-label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: auto;
+  gap: 5px;
+}
+
+.sme-manual-time-label .sme-info-tooltip {
+  flex: 0 0 15px;
+}
+.sme-checkline strong { display:block;font-size:11px;color:#073b3b;font-weight:700; }
+.sme-checkline small { display:block;font-size:10px;color:#57716e;margin-top:4px; }
+.sme-checkline.small { border:0;padding:0 0 8px; }
+.sme-plan-top { display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:17px; }
+.sme-plan-top strong { display:block;color:#073b3b;font-size:12px; }
+.sme-plan-top span { display:block;color:#57716e;font-size:10px; }
+.sme-duration { padding:13px;background:#eef4f3;border-radius:9px;margin-bottom:16px; }
+.sme-duration>span { display:block;font-weight:800;color:#073b3b;margin-bottom:9px; }
+.sme-duration>div { display:flex;flex-wrap:wrap;gap:7px; }
+.sme-duration button { border:1px solid #c7dcd6;background:white;color:#073b3b;border-radius:7px;font-size:11px;padding:8px 12px;font-weight:750; }
+.sme-duration button.selected { background:#073b3b;border-color:#073b3b;color:white; }
+.sme-question,.sme-note,.sme-record { padding:18px 0;border-bottom:1px solid #e5efec; }
+.sme-question.disabled { opacity:.6; }
+.sme-item-head { display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:13px; }
+.sme-item-head strong { font-weight:800;font-size:12px;line-height:1.5;color:#073b3b; }
+.sme-actions { display:flex;gap:5px;align-items:center;flex-shrink:0; }
+.sme-actions label { font-size:10px;color:#57716e;white-space:nowrap; }
+.sme-actions input { accent-color:#167273; }
+.sme-actions button { width:25px;height:25px;border:1px solid #d6e5e1;border-radius:6px;background:#fff;color:#57716e; }
+.sme-add { width:100%;border:1px dashed #89beb6;background:#f1faf6;color:#167273;border-radius:9px;padding:11px;font-weight:800;font-size:11px;margin-top:15px; }
+.sme-probe { margin:0 0 15px;font-size:11px;color:#57716e; }
+
+.sme-playbook-agenda { display:grid;grid-template-columns:95px minmax(0,1fr);gap:14px;padding:13px 0;border-bottom:1px solid #e5efec;align-items:start; }
+.sme-playbook-agenda strong { display:block;font-size:12px;color:#073b3b;line-height:1.5; }
+.sme-playbook-agenda p { margin:5px 0 0;font-size:11px;color:#57716e; }
+.sme-script { background:#eef4f3;border-left:3px solid #167273;border-radius:0 8px 8px 0;padding:17px 18px;color:#073b3b;font-size:12px;line-height:1.8; }
+.sme-playbook-note { color:#57716e;font-size:11px;line-height:1.6;margin:12px 0 4px; }
+.sme-playbook-focus { border:1px solid #d6e5e1;border-radius:9px;padding:13px 15px;margin-bottom:10px;background:#fbfdfc; }
+.sme-playbook-focus strong,.sme-playbook-subheading { color:#073b3b;font-size:12px;font-weight:800; }
+.sme-playbook-focus p { color:#57716e;font-size:11px;margin:6px 0 0; }
+.sme-playbook-subheading { margin:22px 0 9px; }
+.sme-playbook-line { padding:11px 0;border-bottom:1px solid #e5efec;font-size:11px;color:#365452;line-height:1.6; }
+.sme-playbook-prompt { display:grid;grid-template-columns:145px minmax(0,1fr);gap:15px;padding:12px 0;border-bottom:1px solid #e5efec; }
+.sme-playbook-prompt span { color:#57716e;font-size:10px; }
+.sme-playbook-prompt strong { color:#073b3b;font-size:11px;font-weight:700; }
+@media(max-width:620px) { .sme-playbook-agenda,.sme-playbook-prompt { grid-template-columns:1fr;gap:5px; } }
+
+.sme-chip { color:#167273;background:#eef4f3;padding:5px 8px;border-radius:6px;font-size:10px;font-weight:750;white-space:nowrap; }
+.sme-linkbtn { color:#a34b42;border:0;background:transparent;font-size:10px;font-weight:700; }
+.sme-metrics { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px; }
+.sme-metrics>div { padding:14px;background:#eef4f3;border-radius:9px; }
+.sme-metrics b { display:block;font-size:20px;color:#073b3b;line-height:1.3; }
+.sme-metrics span { display:block;font-size:9px;color:#57716e;margin-top:3px; }
+.sme-warning { background:#fff7eb;color:#835b1b;border:1px solid #ecd7a4;border-radius:8px;padding:11px;font-size:11px; }
+.sme-export { display:flex;gap:8px;flex-wrap:wrap; }
+.sme-export button { background:#fff;color:#073b3b;border:1px solid #d6e5e1;border-radius:8px;padding:11px 13px;font-weight:800;font-size:11px; }
+.sme-export button.sme-primary { background:#167273;color:#fff;border-color:#167273; }
+.sme-disclaimer { color:#57716e;font-size:10px;margin:13px 0 0; }
+.sme-bottom-nav { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:28px;padding-top:18px;border-top:1px solid #d6e5e1; }
+.sme-bottom-nav span { font-size:10px;color:#57716e; }
+.sme-notice { margin-top:12px;padding:11px;border-radius:8px;color:#073b3b;background:#eef4f3;font-size:11px; }
+.sme-aside { position:sticky;top:16px; }
+.sme-preview-head { background:#073b3b;padding:20px;color:#fff; }
+.sme-preview-head small { font-size:9px;color:#a8d9cf;font-weight:800;letter-spacing:1.3px; }
+.sme-preview-head h3 { font-size:18px;line-height:1.3;margin:9px 0 5px;color:#fff;overflow-wrap:anywhere; }
+.sme-preview-head p { font-size:10px;margin:0;color:#d4e7e1; }
+.sme-preview-metrics { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px; }
+.sme-preview-metrics>div { background:#174b49;padding:10px;border-radius:7px; }
+.sme-preview-metrics b { display:block;font-size:15px;line-height:1.3; }
+.sme-preview-metrics span { display:block;color:#c1dfd8;font-size:9px;margin-top:3px; }
+.sme-preview-inner { padding:18px;max-height:680px;overflow:auto; }
+.sme-tabs { display:flex;gap:5px;padding-bottom:12px;border-bottom:1px solid #d6e5e1; }
+.sme-tabs button { background:#fff;color:#073b3b;border:1px solid #d6e5e1;border-radius:7px;padding:7px 10px;font-size:10px;font-weight:750; }
+.sme-tabs button.active { background:#073b3b;color:#fff;border-color:#073b3b; }
+.sme-preview-section { padding:14px 0;border-bottom:1px solid #e5efec; }
+.sme-preview-section h4 { font-size:11px;color:#073b3b;margin:0 0 7px; }
+.sme-preview-section>p { color:#57716e;font-size:10px;white-space:pre-wrap; }
+.sme-preview-question { padding:12px;background:#f4f8f6;border-radius:8px;margin:8px 0; }
+.sme-preview-question small { display:block;color:#167273;font-size:9px; }
+.sme-preview-question strong { display:block;color:#073b3b;font-size:10.5px;margin-top:4px; }
+.sme-preview-question p { margin:6px 0 0;color:#57716e;font-size:10px;white-space:pre-wrap; }
+.sme-preview-foot { display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #d6e5e1;gap:10px; }
+.sme-preview-foot span { color:#57716e;font-size:9px; }
+.sme-preview-foot button { color:#167273;background:transparent;border:0;font-weight:800;font-size:10px; }
+.sme-print { display:none; }
+@media(max-width:1080px) { .sme-layout { grid-template-columns:1fr; } .sme-aside { position:static; } .sme-preview-inner { max-height:440px; } }
+@media(max-width:620px) { .sme-editor { padding:17px; } .sme-grid { grid-template-columns:1fr;gap:0; } .sme-step-intro h2 { font-size:21px; } .sme-toolbar { align-items:flex-start;flex-direction:column; } .sme-steps { gap:6px; } .sme-step { padding:8px; } .sme-item-head { flex-wrap:wrap; } .sme-plan-top { align-items:flex-start;flex-direction:column; } .sme-metrics { gap:5px; } .sme-metrics>div { padding:9px; } .sme-metrics b { font-size:16px; } }
+@page { size:A4; margin:13mm 16mm 16mm; }
+@media print {
+  html,body { margin:0!important;padding:0!important;background:white!important; }
+  body * { visibility:hidden!important; }
+  .sme-root {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+  .sme-root > :not(.sme-print) { display:none!important; }
+  .sme-root .sme-print,.sme-root .sme-print * { visibility:visible!important; }
+  .sme-print { display:block!important;position:relative!important;width:100%;font-family:'Montserrat',Arial,sans-serif;color:#173431;font-size:9pt;line-height:1.55;print-color-adjust:exact;-webkit-print-color-adjust:exact; }
+  .sme-print-cover {
+  background: #073b3b !important;
+  color: white !important;
+  border-radius: 3mm;
+  padding: 12mm 13mm;
+  margin: 0 0 8mm 0 !important;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+  .sme-print-brand { font-size:20pt;font-weight:900;color:white; }.sme-print-brand span { color:#75d6c1; }
+  .sme-print-eyebrow { font-size:8pt;letter-spacing:2pt;color:#a6d9ca;margin-top:11mm;font-weight:800; }
+  .sme-print-cover h1 { color:white;font-size:22pt;line-height:1.25;margin:4mm 0; }
+  .sme-print-cover p { color:#d6ece7; }
+  .sme-print-meta { display:flex;flex-wrap:wrap;gap:7mm;border-top:1px solid #7aa69b;padding-top:5mm;margin-top:7mm; }
+  .sme-print section {
+  margin: 8mm 0;
+}
+
+.sme-print section:first-of-type {
+  margin-top: 0;
+}
+  .sme-print section h2 { font-size:13pt;color:#073b3b;border-bottom:1px solid #cddfdb;padding-bottom:2mm;break-after:avoid; }
+  .sme-print-row { display:grid;grid-template-columns:34% 66%;gap:2mm;padding:2mm 0;border-bottom:1px solid #e5efec;white-space:pre-wrap;overflow-wrap:anywhere; }
+  .sme-print-row b { color:#57716e; }
+  .sme-print-line { padding:2mm 0;border-bottom:1px solid #e5efec; }
+  .sme-print-card { break-inside:avoid;background:#eef4f3!important;border-left:3px solid #167273;padding:4mm 5mm;margin:3mm 0; }
+  .sme-print-card small { color:#167273; }.sme-print-card h3 { font-size:10pt;color:#073b3b;margin:1mm 0 2mm; }
+  .sme-print-card p { margin:1mm 0;white-space:pre-wrap;overflow-wrap:anywhere; }
+  .sme-print footer { font-size:7pt;color:#57716e;border-top:1px solid #d6e5e1;padding-top:3mm;margin-top:10mm; }
+}
+
+
+/* Expanded live interview preview */
+
+.sme-preview-detail {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e8f0ed;
   align-items: start;
 }
-.si-note-head strong {
-  font-size: 13px;
-  line-height: 1.5;
+
+.sme-preview-detail:last-child {
+  border-bottom: 0;
 }
-.si-progressline {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 18px;
-  color: var(--si-muted);
-  font-size: 11px;
-}
-.si-progressline > div {
-  height: 7px;
-  background: var(--si-pale);
-  border-radius: 9px;
-  flex: 1;
-  overflow: hidden;
-}
-.si-progressline i {
-  display: block;
-  height: 100%;
-  background: var(--si-teal);
-  border-radius: 9px;
-}
-.si-reviewgrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-  margin: 0 0 18px;
-}
-.si-reviewbox {
-  background: var(--si-pale);
-  border: 1px solid var(--si-line);
-  padding: 15px 10px;
-  border-radius: 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.si-reviewbox span,
-.si-reviewbox small {
+
+.sme-preview-detail > span {
+  color: #68817b;
   font-size: 10px;
-  color: var(--si-muted);
-}
-.si-reviewbox strong {
-  font-size: 25px;
-  color: var(--si-dark);
-  line-height: 1.25;
-}
-.si-checklist {
-  border: 1px solid var(--si-line);
-  border-radius: 11px;
-  margin: 0 0 22px;
-  overflow: hidden;
-}
-.si-checklist > div {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--si-line);
-  font-size: 12px;
-}
-.si-checklist > div:last-child { border-bottom: 0 }
-.si-checkmark {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 11px;
-  flex: none;
-}
-.si-checkmark.ok {
-  background: #e6f6ef;
-  color: #16815f;
-}
-.si-checkmark.pending {
-  background: #fff1df;
-  color: #a37233;
-}
-.si-export {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-.si-export button,
-.si-copy-prompt {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  color: var(--si-teal);
-  padding: 12px 10px;
-  border: 1px solid #bdd7d2;
-  border-radius: 9px;
-  font-size: 12px;
-  font-weight: 800;
-}
-.si-export button:hover,
-.si-copy-prompt:hover { background: var(--si-pale) }
-.si-copy-prompt {
-  width: 100%;
-  margin-top: 10px;
-  background: var(--si-pale);
-}
-.si-smallprint {
-  font-size: 11px;
-  color: var(--si-muted);
+  font-weight: 600;
   line-height: 1.6;
-  margin-top: 15px;
 }
-.si-preview-sticky {
-  position: sticky;
-  top: 20px;
-  border: 1px solid var(--si-line);
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 26, 31, .055);
-}
-.si-preview-head {
-  padding: 19px 19px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.si-preview-head h3 {
-  font-size: 17px;
-  margin: 0;
-  letter-spacing: -.3px;
-}
-.si-preview-badge {
-  padding: 5px 9px;
-  background: var(--si-pale);
-  border-radius: 20px;
-  color: var(--si-teal);
-  font-size: 10px;
-  font-weight: 800;
-}
-.si-preview-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin: 0 19px 16px;
-  padding: 4px;
-  background: #f0f5f4;
-  border-radius: 10px;
-  gap: 4px;
-}
-.si-preview-tabs button {
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  padding: 8px 3px;
-  font-size: 11px;
-  color: var(--si-muted);
-  font-weight: 800;
-}
-.si-preview-tabs button.active {
-  background: #fff;
-  box-shadow: 0 2px 7px rgba(0, 36, 40, .08);
-  color: var(--si-teal);
-}
-.si-paper {
-  margin: 0 19px 15px;
-  padding: 22px 20px;
-  max-height: 580px;
-  overflow: auto;
-  border: 1px solid #e2e9e8;
-  border-radius: 10px;
-  background: #fdfefe;
-  box-shadow: 0 3px 16px rgba(0, 0, 0, .025);
-}
-.si-paper-kicker {
-  color: var(--si-teal);
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  font-weight: 850;
-}
-.si-paper h4 {
-  font-size: 19px;
-  margin: 9px 0 5px;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-.si-paper-sub {
-  font-size: 11px;
-  color: var(--si-muted);
-  margin: 0 0 12px;
-}
-.si-paper-stat {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  color: var(--si-teal);
-  font-weight: 750;
-  font-size: 11px;
-  margin-bottom: 20px;
-}
-.si-paper-stat span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.si-paper-section {
-  border-top: 1px solid var(--si-line);
-  margin: 18px 0 9px;
-  padding-top: 15px;
-  letter-spacing: 1px;
-  color: var(--si-muted);
-  font-size: 9px;
-  font-weight: 850;
-}
-.si-paper-item {
-  display: grid;
-  grid-template-columns: 67px 1fr;
-  gap: 9px;
-  padding: 9px 0;
-  border-bottom: 1px solid #edf1f0;
-}
-.si-paper-item > span {
-  font-size: 9px;
-  color: var(--si-teal);
-  font-weight: 800;
-  padding-top: 3px;
-}
-.si-paper-item b { font-size: 11px }
-.si-paper-item p,
-.si-paper > p {
-  font-size: 11px;
-  line-height: 1.6;
-  margin: 3px 0;
-  color: #3c5357;
-  overflow-wrap: anywhere;
+
+.sme-preview-detail > strong {
+  color: #073b3b;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.7;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-.si-paper-item small {
-  font-size: 10px;
-  color: #76878a;
-  line-height: 1.45;
-  display: block;
+
+.sme-preview-script {
+  padding: 15px;
+  border-left: 3px solid #167273;
+  background: #eef4f3;
+  border-radius: 0 8px 8px 0;
+  color: #073b3b;
+  font-size: 11px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-.si-preview-bottom {
+
+.sme-preview-list-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 13px 19px;
-  border-top: 1px solid var(--si-line);
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e8f0ed;
 }
-.si-preview-bottom span {
-  font-size: 10px;
-  color: var(--si-muted);
-}
-.si-preview-bottom button {
-  border: 0;
-  background: transparent;
-  color: var(--si-teal);
-  display: flex;
-  align-items: center;
+
+.sme-preview-list-item > span {
+  color: #167273;
   font-size: 11px;
   font-weight: 800;
-  gap: 3px;
+  min-width: 17px;
 }
-.si-toast {
-  position: sticky;
-  bottom: 12px;
-  margin: 10px auto;
-  background: var(--si-dark);
-  color: #fff;
-  border-radius: 9px;
-  padding: 10px 14px;
-  text-align: center;
+
+.sme-preview-list-item p {
+  color: #173431;
+  font-size: 10.5px;
+  line-height: 1.75;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sme-preview-question-meta {
+  color: #68817b;
+  font-size: 9px;
+  margin-top: 9px;
+  font-weight: 650;
+}
+
+.sme-preview-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #e8f0ed;
+}
+
+.sme-preview-check span {
+  font-weight: 800;
   font-size: 12px;
-  max-width: max-content;
-  z-index: 5;
+  flex-shrink: 0;
 }
-.si-print-only { display: none }
-@media (max-width: 1080px) {
-  .si-layout { grid-template-columns: minmax(0, 1fr) }
-  .si-preview-sticky { position: static }
-  .si-paper { max-height: 420px }
+
+.sme-preview-check span.complete {
+  color: #167273;
 }
-@media (max-width: 640px) {
-  .si-panel { padding: 17px }
-  .si-panel h2 { font-size: 19px }
-  .si-fields.two,
-  .si-export { grid-template-columns: 1fr }
-  .si-progress { grid-template-columns: repeat(2, 1fr) }
-  .si-toolbar { flex-direction: column; align-items: stretch }
-  .si-toolbar-actions { justify-content: space-between }
-  .si-reviewgrid { grid-template-columns: repeat(3, 1fr) }
-  .si-reviewbox strong { font-size: 20px }
-  .si-plan-summary { align-items: start; flex-direction: column }
-  .si-note-head { flex-direction: column }
-  .si-paper { padding: 15px }
-  .si-paper-item { grid-template-columns: 55px 1fr }
+
+.sme-preview-check span.incomplete {
+  color: #a77c34;
 }
-@media print {
-  body * { visibility: hidden !important }
-  .si-root .si-print-only,
-  .si-root .si-print-only * { visibility: visible !important }
-  .si-root .si-print-only {
-    display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    color: #111;
+
+.sme-preview-check p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: #173431;
+}
+
+.sme-preview-section h4 {
+  color: #073b3b;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 560px) {
+  .sme-preview-detail {
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
-  .si-root .si-print-only pre {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font: 11pt/1.5 Georgia, serif;
+
+  .sme-tabs {
+    flex-wrap: wrap;
   }
-  .si-layout { display: none !important }
-  @page { size: A4; margin: 18mm }
 }
+
+
 `;

@@ -52,21 +52,21 @@ const TOOL_SEO = {
   },
 
   "content-brief-template": {
-    title: "Free Content Brief Template for B2B SaaS | GrowUp",
+    title: "Free Content Brief Template Builder for SaaS | GrowUp",
     description:
-      "Create detailed content briefs for freelance writers, agencies and internal teams. Include buyer context, product information and writing requirements.",
+      "Create detailed B2B SaaS content briefs in minutes. Our free content brief template covers buyer intent, SEO requirements, product information and article outlines.",
   },
 
   "sme-interview-kit": {
-    title: "Free SME Interview Template for Content Teams | GrowUp",
+    title: "Free SME Interview Prep Kit for B2B Content | GrowUp",
     description:
-      "Prepare subject-matter expert interviews with focused questions, capture product insights and organise answers into useful notes for content production.",
+      "Create a structured SME interview plan in minutes. Define what your article needs, prepare relevant questions and export an interview pack as PDF or Excel.",
   },
 
   "ai-assisted-writing-policy": {
-    title: "Free AI Writing Policy Template for Teams | GrowUp",
+    title: "AI Writing Policy Template for Marketing Teams | GrowUp",
     description:
-      "Create an AI writing policy for your marketing team, freelancers and agencies. Define permitted AI use, human review requirements and content restrictions.",
+      "Build an AI writing policy for your marketing team, freelancers and agencies. Set rules for AI tools, content creation, fact-checking and approvals.",
   },
 };
 
@@ -131,25 +131,25 @@ const TOOL_CTAS = {
 
   "content-brief-template": {
     label: "CONTENT WRITING SUPPORT",
-    title: "Got the briefs. Need the articles written?",
+    title: "End-to-end content production for B2B SaaS marketing teams",
     description:
-      "GrowUp researches, writes and optimises comparison pages, alternatives pages and product-led articles for B2B SaaS marketing teams.",
+      "From identifying content opportunities and preparing writer-ready briefs to producing and optimising articles, GrowUp manages the entire process with clear accountability to pipeline goals.",
     button: "Explore our content services",
   },
 
   "sme-interview-kit": {
     label: "EXPERT-LED CONTENT",
-    title: "Got the experts. Need someone to write?",
+    title: "Fully managed content writing for B2B SaaS teams",
     description:
-      "We interview your product experts, extract the details buyers care about and turn those conversations into publishable content.",
+      "From interviewing SMEs and developing detailed briefs to writing, reviewing and optimising articles, GrowUp manages delivery against your pipeline goals",
     button: "Explore our content services",
   },
 
   "ai-assisted-writing-policy": {
     label: "CONTENT QUALITY SUPPORT",
-    title: "Need content that meets your standards?",
+    title: "Responsible AI-assisted content production for B2B SaaS",
     description:
-      "GrowUp handles product research, factual checks and editorial reviews instead of handing your team AI-generated drafts to clean up.",
+      "GrowUp handles everything from content research and briefing to writing, fact-checking and optimisation, with every piece tied to pipeline goals.",
     button: "Explore our content services",
   },
 };
@@ -340,7 +340,7 @@ const pageFaqs = rawFaqs.map((faq) => ({
     </h2>
 
     <p>
-      Answers to common questions about using this tool.
+Everything you need to know, from getting started to making the most of this tool.
     </p>
   </div>
 
