@@ -40,8 +40,6 @@ const icons = [
 ];
 
 const hiringIcons = {
-  "agency-proposal-comparison": Columns3,
-  "content-agency-paid-trial-kit": ClipboardCheck,
   "seo-agency-brief-builder": FilePenLine,
 };
 

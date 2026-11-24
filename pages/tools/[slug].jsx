@@ -17,12 +17,17 @@ import LlmsTxtGenerator, {
 } from "../../components/tools/LlmsTxtGenerator";
 
 
-import AeoPromptGenerator, {
-  faqs as aeoPromptFaqs,
-} from "../../components/tools/AeoPromptGenerator";
+ 
+
 
 
 const TOOL_SEO = {
+  "llms-txt-generator": {
+    title: "Free llms.txt File Generator & Builder | GrowUp",
+    description:
+      "Build an llms.txt file for your website with our free generator. Organise important pages, import links, preview your file and download it without coding.",
+  },
+
 
 
 
@@ -136,7 +141,17 @@ const categoryPages = {
 const CONTENT_SERVICE_URL =
   "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
 
+
 const TOOL_CTAS = {
+  "llms-txt-generator": {
+    label: "B2B SAAS AI SEARCH SUPPORT",
+    title: "Want more buyers finding your SaaS through AI search?",
+    description:
+      "We help B2B SaaS companies appear in more relevant AI search results, reach buyers comparing software and generate more qualified sales opportunities.",
+    button: "Explore our AI search services",
+    url: "https://www.seo-growup.com/llm-seo-agency-for-b2b-saas-companies",
+  },
+
   "content-delivery-planner": {
     label: "CONTENT MARKETING SUPPORT",
     title: "Outsource content production with clear accountability.",
@@ -260,10 +275,6 @@ const TOOL_CTAS = {
 const toolComponents = {
   ...contentOpsComponents,
   ...hiringComponents,
-  "buyer-prompt-generator": {
-    Component: AeoPromptGenerator,
-    faqs: aeoPromptFaqs,
-  },
   "llms-txt-generator": {
     Component: LlmsTxtGenerator,
     faqs: llmsTxtFaqs,

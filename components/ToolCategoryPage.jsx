@@ -42,15 +42,16 @@ intro:
     label: "AI search",
     eyebrow: "AI SEARCH & DISCOVERABILITY",
 
-title: "AI search tools",
-directoryTitle: "Tools for AI Search Visibility.",
+title: "AI Search Tools",
+  metaTitle: "Free AI Search Visibility & Optimisation Tools | GrowUp",
+directoryTitle: "Free Tools to Make AI Search Easier.",
 directoryDescription:
-  "Prepare product information, build buyer prompts, and improve how your brand appears in AI search.",
+  "Explore free tools to simplify your everyday AI search tasks.",
 intro:
-  "Prepare your website for AI-assisted discovery, build buyer prompts, and give answer engines clearer product information.",
+  "Getting your website ready for AI search doesn’t have to be complicated. Our free tools help you handle the practical work more easily.",
 
     description:
-      "Free AI search tools for B2B SaaS. Generate buyer evaluation prompts and prepare useful AI-facing content resources.",
+      "Explore free AI search tools built for B2B SaaS marketers. Prepare your website for AI search and save time on everyday optimisation work.",
     detail:
       "Useful starting points for understanding how buyers discover software in AI search.",
     featured: "buyer-prompt-generator",
@@ -79,7 +80,7 @@ intro:
     label: "Agency hiring",
     eyebrow: "BRIEFS, PROPOSALS & SHORTLISTS",
 
-title: "Agency hiring tools",
+title: "Agency Hiring Tools",
 directoryTitle: "Make Better Agency Decisions.",
 directoryDescription:
   "Compare agency proposals, define project requirements, and assess potential partners before committing your budget.",
@@ -163,16 +164,35 @@ const CATEGORY_EXTRAS = {
       { q: "Who should use revenue planning calculators?", a: "Marketing leaders, founders and teams preparing SEO budgets, investment cases or performance targets can use them to make assumptions visible and easier to discuss." },
     ],
   },
-  "ai-search": {
-    ctaLabel: "AI SEARCH & CONTENT",
-    ctaTitle: "Make your product easier to evaluate.",
-    ctaCopy: "GrowUp develops buyer-focused content and product comparisons that help prospects understand what your software does and where it fits.",
-    ctaButton: "Explore our content services",
-    faqs: [
-      { q: "What are AI search tools used for?", a: "These tools help teams prepare structured information and buyer-oriented content for an environment where prospects use AI assistants as well as traditional search engines." },
-      { q: "Can a tool guarantee a ChatGPT recommendation?", a: "No. AI recommendations depend on the model, prompt and available sources. These tools support research and content preparation; they cannot guarantee inclusion or ranking." },
-      { q: "How should I measure AI search visibility?", a: "Track a consistent set of relevant buyer prompts, record sources and brand mentions, and compare observations over time. Use business outcomes alongside visibility measurements." },
-    ],
+"ai-search": {
+  ctaLabel: "B2B SAAS AI SEARCH SUPPORT",
+  ctaTitle: "Want More Buyers Finding Your SaaS Through AI Search?",
+  ctaCopy:
+    "We help B2B SaaS companies appear in more relevant AI results, reach buyers comparing software and generate more qualified leads.",
+  ctaButton: "Explore our AI search services",
+
+    
+faqs: [
+  {
+    q: "What are AI search tools, and what can I use them for?",
+    a: "AI search tools help you manage different parts of your AI search optimisation work, from checking how your brand appears in AI-generated answers to finding opportunities to improve your visibility. They can also help you save time on repetitive tasks and make your website easier for AI platforms to understand.",
+  },
+  {
+    q: "Are GrowUp's AI search tools completely free to use?",
+    a: "Yes. All the AI search tools in this directory are free to use. You don't need to pay for a subscription, create an account or hire GrowUp to access them. Just choose a tool, enter the required information and use the results.",
+  },
+  {
+    q: "Do I need technical knowledge to use these AI search tools?",
+    a: "No. Our tools are designed for marketers, founders and website owners, including people who don't know how to code. Each tool walks you through the information you need to provide. Some tasks, like publishing a generated file on your website, may require access to your website settings or help from a developer.",
+  },
+  {
+    q: "Can these free tools replace a full AI search visibility audit?",
+    a: "No. These tools help with individual tasks, but they don't analyse your overall AI search performance. A full audit looks at whether AI platforms mention your brand, which competitors they recommend, what sources they cite and where your website could improve. You'll need a broader review to understand those gaps.",
+  },
+],
+
+
+    
   },
 "technical-seo": {
   ctaLabel: "B2B SAAS SEO SUPPORT",
@@ -218,7 +238,13 @@ faqs: [
   },
 };
 
-const SERVICE_URL = "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
+
+const SERVICE_URL =
+  "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
+
+const AI_SEARCH_SERVICE_URL =
+  "https://www.seo-growup.com/llm-seo-agency-for-b2b-saas-companies";
+
 
 const SEO_SERVICE_URL =
   "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies";

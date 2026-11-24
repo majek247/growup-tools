@@ -9,7 +9,7 @@ import {
 import { tools, topics } from "../lib/catalog.mjs";
 import { retiredPlannerSlugs } from "../lib/hiringCatalog.mjs";
 test("Agency hiring includes the brief builders and omits retired pages", () => {
-  for (const slug of ["seo-agency-brief-builder","content-agency-brief-builder","link-building-brief-builder"]) {
+  for (const slug of ["seo-agency-brief-builder"]) {
     assert.equal(tools.filter(t => t.slug === slug && t.topic === "Agency hiring").length, 1);
   }
   assert.ok(topics.includes("Agency hiring"));

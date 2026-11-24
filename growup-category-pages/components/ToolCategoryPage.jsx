@@ -33,17 +33,6 @@ export const TOOL_CATEGORIES = [
     featured: "buyer-prompt-generator",
   },
   {
-    slug: "agency-hiring",
-    topic: "Agency hiring",
-    label: "Agency hiring",
-    eyebrow: "BRIEFS, PROPOSALS & SHORTLISTS",
-    title: "Agency hiring tools",
-    intro: "Write better agency briefs, compare proposals on the same terms, and run paid trials that actually help you choose.",
-    description: "Free agency hiring tools for B2B SaaS teams. Build SEO and content briefs, compare agency proposals, and assess paid trials.",
-    detail: "Make the shortlist decision with clearer scope and fewer surprises.",
-    featured: "agency-proposal-comparison",
-  },
-  {
     slug: "content-operations",
     topic: "Content Operations",
     label: "Content operations",
