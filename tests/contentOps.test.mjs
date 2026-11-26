@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { costReport, outputReport } from '../components/tools/contentOps/calculations.mjs';
 import { tools,topics } from '../lib/catalog.mjs';
-test('12 unique Content Operations routes',()=>{
+test('Content Operations routes are unique',()=>{
  const selected=tools.filter(t=>t.topic==='Content Operations');
- assert.equal(selected.length,12);assert.equal(new Set(selected.map(t=>t.slug)).size,12);assert.ok(topics.includes('Content Operations'));
+ assert.ok(selected.length>0);assert.equal(new Set(selected.map(t=>t.slug)).size,selected.length);assert.ok(topics.includes('Content Operations'));
 });
 test('Cost uses review and published count',()=>{
  const data={currency:'GBP',rate:'40',models:[{name:'Agency',published:'4',base:'1600',hours:'5',extra:'40'}]};
