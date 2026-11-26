@@ -3,7 +3,7 @@ import nextEnv from "@next/env";
 import { tools } from "../lib/catalog.mjs";
 nextEnv.loadEnvConfig(process.cwd());
 const { absolute } = await import("../lib/site.mjs");
-const paths = ["/tools/", ...tools.map((t) => "/tools/" + t.slug + "/")];
+const paths = ["/", ...tools.map((t) => "/" + t.slug + "/")];
 const xml = paths
   .map((path) => "<url><loc>" + absolute(path) + "</loc></url>")
   .join("\n");

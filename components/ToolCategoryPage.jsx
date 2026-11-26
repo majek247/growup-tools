@@ -309,14 +309,14 @@ const otherCategories = TOOL_CATEGORIES.filter(
     <Layout
       title={config.metaTitle || `${config.title} | GrowUp`}
       description={config.description}
-      path={`/tools/${category}/`}
+      path={`/${category}/`}
     >
       <div className="gtc-root">
         <section className="gtc-hero">
           <div className="wrap gtc-wrap">
 
       <nav className="gtc-crumbs" aria-label="Breadcrumb">
-  <Link href="/tools/">All Tools</Link>
+  <Link href="/">All Tools</Link>
   <span aria-hidden="true">/</span>
   <span>
     {config.label.replace(/\b\w/g, (char) => char.toUpperCase())}
@@ -427,7 +427,7 @@ const otherCategories = TOOL_CATEGORIES.filter(
                 return (
                   <Link
                     className="gtc-card"
-                    href={`/tools/${tool.slug}/`}
+                    href={`/${tool.slug}/`}
                     key={tool.slug}
                   >
                     <div className="gtc-card-top">

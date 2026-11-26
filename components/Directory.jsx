@@ -45,11 +45,11 @@ const hiringIcons = {
 
 // Each category now has a dedicated page. Add categories here if you create new pages.
 const CATEGORY_LINKS = [
-  { label: "Revenue planning", href: "/tools/revenue-planning/" },
-  { label: "AI search", href: "/tools/ai-search/" },
-  { label: "Technical SEO", href: "/tools/technical-seo/" },
-  { label: "Agency hiring", href: "/tools/agency-hiring/" },
-  { label: "Content Operations", href: "/tools/content-operations/" },
+  { label: "Revenue planning", href: "/revenue-planning/" },
+  { label: "AI search", href: "/ai-search/" },
+  { label: "Technical SEO", href: "/technical-seo/" },
+  { label: "Agency hiring", href: "/agency-hiring/" },
+  { label: "Content Operations", href: "/content-operations/" },
 ];
 
 export function ToolIcon({ slug, size = 22 }) {
@@ -63,7 +63,7 @@ export function ToolIcon({ slug, size = 22 }) {
 
 function Featured() {
   return (
-    <Link href="/tools/organic-revenue-calculator/" className="feature">
+    <Link href="/organic-revenue-calculator/" className="feature">
       <div className="featTop">
         <span className="eyebrow"><i /> Featured tool</span>
         <ArrowUpRight size={20} />
@@ -125,7 +125,7 @@ export default function Directory() {
     <Layout
       title="Free SEO & Content Tools for B2B SaaS | GrowUp"
       description="Explore free tools for B2B SaaS teams. Plan organic pipeline, compare agencies, brief writers and generate SEO files without signing up."
-      path="/tools/"
+      path="/"
     >
       <section className="hero">
         <div className="wrap heroGrid">
@@ -163,7 +163,7 @@ export default function Directory() {
         <div className="filterRow">
           <nav className="pills directoryCategoryLinks" aria-label="Browse tools by category">
             <Link
-              href="/tools/#directory"
+              href="/#directory"
               className={`topicLink ${!filters.topic ? "isActive" : ""}`}
               aria-current={!filters.topic ? "page" : undefined}
             >
@@ -198,7 +198,7 @@ export default function Directory() {
         <div className="cards">
           {matches.map((t) => (
             <Link
-              href={`/tools/${t.slug}/`}
+              href={`/${t.slug}/`}
               key={t.slug}
               className={`card color${topics.indexOf(t.topic)}`}
             >

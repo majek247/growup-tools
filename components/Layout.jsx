@@ -35,7 +35,7 @@ export default function Layout({ title, description, path, children }) {
   />
 </a>
           <span className="navDivider" />
-          <Link className="toolkit" href="/tools/">
+          <Link className="toolkit" href="/">
             <Layers3 size={16} /> Toolkit
           </Link>
           <a className="navCta" href="https://customseoplan.seo-growup.com/">
@@ -59,7 +59,7 @@ export default function Layout({ title, description, path, children }) {
       />
     </a>
 
-    <Link href="/tools/">All tools ↑</Link>
+    <Link href="/">All tools ↑</Link>
   </div>
 </footer>
 

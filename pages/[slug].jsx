@@ -1,20 +1,20 @@
-import { contentOpsComponents } from "../../components/tools/contentOps/registry";
+import { contentOpsComponents } from "../components/tools/contentOps/registry";
 
-import { hiringComponents } from "../../components/tools/hiring/registry";
-import { schemaComponents } from "../../components/tools/schemaRegistry";
+import { hiringComponents } from "../components/tools/hiring/registry";
+import { schemaComponents } from "../components/tools/schemaRegistry";
 import Link from "next/link";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
-import { tools } from "../../lib/catalog.mjs";
-import Layout from "../../components/Layout";
-import Workbench from "../../components/Workbench";
+import { tools } from "../lib/catalog.mjs";
+import Layout from "../components/Layout";
+import Workbench from "../components/Workbench";
 
 import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
-} from "../../components/tools/FaqSchemaGenerator";
+} from "../components/tools/FaqSchemaGenerator";
 
 import LlmsTxtGenerator, {
   faqs as llmsTxtFaqs,
-} from "../../components/tools/LlmsTxtGenerator";
+} from "../components/tools/LlmsTxtGenerator";
 
 
  
@@ -118,23 +118,23 @@ const TOOL_SEO = {
 const categoryPages = {
   "Revenue planning": {
     name: "Revenue Planning",
-    href: "/tools/revenue-planning/",
+    href: "/revenue-planning/",
   },
   "AI search": {
     name: "AI Search",
-    href: "/tools/ai-search/",
+    href: "/ai-search/",
   },
   "Technical SEO": {
     name: "Technical SEO",
-    href: "/tools/technical-seo/",
+    href: "/technical-seo/",
   },
   "Agency hiring": {
     name: "Agency Hiring",
-    href: "/tools/agency-hiring/",
+    href: "/agency-hiring/",
   },
   "Content Operations": {
     name: "Content Operations",
-    href: "/tools/content-operations/",
+    href: "/content-operations/",
   },
 };
 
@@ -361,7 +361,7 @@ const pageFaqs = rawFaqs.map((faq) => ({
     TOOL_SEO[tool.slug]?.description ||
     tool.description
   }
-  path={"/tools/" + tool.slug + "/"}
+  path={"/" + tool.slug + "/"}
 >
 
       <section className="detailHead">
@@ -371,7 +371,7 @@ const pageFaqs = rawFaqs.map((faq) => ({
   className="toolBreadcrumbs"
   aria-label="Breadcrumb"
 >
-  <Link href="/tools/">
+  <Link href="/">
     All Tools
   </Link>
 
