@@ -1,5 +1,8 @@
 name: Publish toolkit to GitHub Pages
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
   pages: write
