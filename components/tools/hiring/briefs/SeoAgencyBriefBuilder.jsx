@@ -16,7 +16,7 @@ const THEME = { ink: "#011522", dark: "#073b3b", teal: "#167273", pale: "#eef4f3
 const PROGRAMMES = ["Fully managed SEO", "Technical SEO recovery", "SEO strategy & advisory", "Content-led SEO growth"];
 const OWNERS = ["Agency", "Internal team", "Shared responsibility", "Not decided"];
 const STAGES = [
-  { label: "Business context", short: "Business", heading: "Start with the business, not the keyword list.", intro: "Give agencies the commercial context they need to recommend the right work—not a generic retainer." },
+  { label: "Business context", short: "Business", heading: "Define Your Business and Target Market.", intro: "Document the key aspects of your business that agencies should consider when developing their proposed SEO strategy and scope of work." },
   { label: "Commercial outcomes", short: "Outcomes", heading: "Define what better performance looks like.", intro: "Connect the programme to measurable demand, qualified opportunities and the systems used to verify results." },
   { label: "Scope & priorities", short: "Scope", heading: "Be precise about what must be delivered.", intro: "Identify priority problems and set a clear division of responsibility before agencies start pricing." },
   { label: "Delivery & governance", short: "Delivery", heading: "Make delivery and approvals predictable.", intro: "Specify available resources, sign-off owners, meeting cadence and what counts as completed work." },
