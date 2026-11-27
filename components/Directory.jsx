@@ -61,35 +61,24 @@ export function ToolIcon({ slug, size = 22 }) {
   return <Icon size={size} strokeWidth={1.8} aria-hidden />;
 }
 
-function Featured() {
-  return (
-    <Link href="/organic-revenue-calculator/" className="feature">
-      <div className="featTop">
-        <span className="eyebrow"><i /> Featured tool</span>
-        <ArrowUpRight size={20} />
-      </div>
-      <div className="featName">Organic revenue calculator</div>
-      <div className="featMeta">Example ARR target</div>
-      <strong className="featNum">£240,000</strong>
-      <div className="funnel" aria-hidden="true"><i /><i /><i /></div>
-      <div className="featMetrics">
-        <div><strong>8,000</strong><small>Organic visits</small></div>
-        <div><strong>40</strong><small>Opportunities</small></div>
-        <div><strong>10</strong><small>Deals</small></div>
-      </div>
-    </Link>
-  );
-}
+ 
 
 const initially = { q: "", topic: "", type: "" };
 
+
 export default function Directory() {
   const [filters, set] = useState(initially);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const TOOLS_PER_PAGE = 12;
+
 
   useEffect(() => {
     // Preserve older deep links such as /tools/?topic=AI+search.
     const load = () => {
-      const p = new URLSearchParams(window.location.search);
+  setCurrentPage(1);
+  const p = new URLSearchParams(window.location.search);
+
       set({
         q: p.get("q") || "",
         topic: topics.includes(p.get("topic")) ? p.get("topic") : "",
@@ -101,15 +90,23 @@ export default function Directory() {
     return () => window.removeEventListener("popstate", load);
   }, []);
 
-  function change(next) {
-    set(next);
-    const url = new URL(window.location.href);
-    for (const [key, value] of Object.entries(next)) {
-      if (value) url.searchParams.set(key, value);
-      else url.searchParams.delete(key);
-    }
-    window.history.replaceState(window.history.state, "", url);
+
+
+function change(next) {
+  set(next);
+  setCurrentPage(1);
+
+  const url = new URL(window.location.href);
+
+  for (const [key, value] of Object.entries(next)) {
+    if (value) url.searchParams.set(key, value);
+    else url.searchParams.delete(key);
   }
+
+  window.history.replaceState(window.history.state, "", url);
+}
+
+
 
   const matches = tools.filter(
     (t) =>
@@ -121,26 +118,80 @@ export default function Directory() {
         .includes(filters.q.trim().toLowerCase()),
   );
 
-  return (
-    <Layout
-      title="Free SEO & Content Tools for B2B SaaS | GrowUp"
-      description="Explore free tools for B2B SaaS teams. Plan organic pipeline, compare agencies, brief writers and generate SEO files without signing up."
-      path="/"
-    >
-      <section className="hero">
-        <div className="wrap heroGrid">
-          <div>
-            <div className="eyebrow"><i /> GrowUp toolkit</div>
-            <h1>Free SEO &amp;<br /><em>content tools.</em></h1>
-            <p>Plan organic revenue, compare agency proposals and prepare a paid content trial for your shortlist.</p>
-            <div className="heroActions">
-              <a href="#directory" className="button">Browse tools <span>↓</span></a>
-              <small><Check size={15} /> No sign-up</small>
-            </div>
-          </div>
-          <Featured />
-        </div>
-      </section>
+
+const totalPages = Math.ceil(matches.length / TOOLS_PER_PAGE);
+
+const startIndex = (currentPage - 1) * TOOLS_PER_PAGE;
+
+const paginatedTools = matches.slice(
+  startIndex,
+  startIndex + TOOLS_PER_PAGE
+);
+
+const firstVisible = matches.length ? startIndex + 1 : 0;
+
+const lastVisible = Math.min(
+  startIndex + TOOLS_PER_PAGE,
+  matches.length
+);
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages || page === currentPage) {
+    return;
+  }
+
+  setCurrentPage(page);
+
+  document.getElementById("directory")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
+
+
+
+return (
+  <Layout
+    title="Free SEO & Content Marketing Tools | GrowUp"
+    description="Explore free SEO and content marketing tools for B2B SaaS teams. Save time on everyday tasks, simplify workflows and make more informed marketing decisions."
+    path="/"
+  >
+
+
+
+<section className="homeHero">
+  <div className="wrap homeHeroInner">
+
+    <div className="homeHeroEyebrow">
+      <span className="homeHeroDot" />
+      GROWUP TOOLKIT
+    </div>
+
+    <h1>
+      
+Free Tools for 
+      <br />
+   Smarter Marketing.
+    </h1>
+
+    <div className="homeHeroDivider" />
+
+    <div className="homeHeroBottom">
+      <p>
+A collection of practical SEO and content tools to help B2B SaaS teams work more efficiently and make better commercial decisions.
+      </p>
+
+      <a href="#directory" className="homeHeroButton">
+        Explore tools
+        <ArrowRight size={20} />
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+
 
       <section id="directory" className="wrap directory">
         <div className="directoryTop">
@@ -196,7 +247,7 @@ export default function Directory() {
         </div>
 
         <div className="cards">
-          {matches.map((t) => (
+          {paginatedTools.map((t) => (
             <Link
               href={`/${t.slug}/`}
               key={t.slug}
@@ -211,19 +262,378 @@ export default function Directory() {
               <div className="cardBot"><span>{t.topic}</span><ArrowRight size={18} /></div>
             </Link>
           ))}
+
         </div>
+
+        {totalPages > 1 && (
+          <nav
+            className="toolPagination"
+            aria-label="Tool directory pagination"
+          >
+            <div className="toolPaginationInfo">
+              <strong>
+                Showing {firstVisible}–{lastVisible}
+              </strong>
+              <span>of {matches.length} tools</span>
+            </div>
+
+            <div className="toolPaginationControls">
+              <button
+                type="button"
+                className="toolPaginationArrow"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="Previous page"
+              >
+                <span aria-hidden="true">←</span>
+                Previous
+              </button>
+
+              <div className="toolPaginationNumbers">
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1
+                ).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    className={`toolPaginationNumber ${
+                      currentPage === page ? "active" : ""
+                    }`}
+                    onClick={() => goToPage(page)}
+                    aria-label={`Page ${page}`}
+                    aria-current={
+                      currentPage === page ? "page" : undefined
+                    }
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="toolPaginationArrow"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="Next page"
+              >
+                Next
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </nav>
+        )}
 
         {!matches.length && (
           <div className="empty">
+
             <h3>No matching tools</h3>
             <p>Try another search or clear your filters.</p>
           </div>
         )}
       </section>
 
-      <style jsx>{`
-        .directoryCategoryLinks {
-          display: flex;
+   
+<style jsx>{`
+
+  /* HOMEPAGE HERO */
+
+
+.homeHero {
+  position: relative;
+  overflow: hidden;
+  background: #082e31;
+  color: #ffffff;
+}
+
+
+  .homeHeroInner {
+    position: relative;
+    z-index: 1;
+    padding-top: 94px;
+    padding-bottom: 105px;
+  }
+
+  .homeHeroEyebrow {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 36px;
+    color: #a9e9dc;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+  }
+
+  .homeHeroDot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #86dcc7;
+  }
+
+  .homeHero h1 {
+    max-width: 1150px;
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(58px, 7.5vw, 108px);
+    line-height: 1.04;
+    letter-spacing: -0.065em;
+    font-weight: 800;
+  }
+
+  .homeHeroDivider {
+    width: 100%;
+    height: 1px;
+    margin: 49px 0 32px;
+    background: linear-gradient(
+      90deg,
+      rgba(205, 238, 232, 0.32),
+      rgba(205, 238, 232, 0.08)
+    );
+  }
+
+  .homeHeroBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 55px;
+  }
+
+  .homeHeroBottom p {
+    max-width: 810px;
+    margin: 0;
+    color: #d9ece7;
+    font-size: clamp(17px, 1.55vw, 21px);
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  .homeHeroButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 14px;
+    padding: 18px 27px;
+    border: 1px solid rgba(205, 238, 232, 0.35);
+    border-radius: 100px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .homeHeroButton:hover {
+    background: #eef4f3;
+    color: #073b3b;
+  }
+
+  .homeHeroNote {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 28px;
+    color: #b6dcd2;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 800px) {
+    .homeHeroInner {
+      padding-top: 72px;
+      padding-bottom: 78px;
+    }
+
+    .homeHero h1 {
+      font-size: clamp(50px, 9vw, 76px);
+    }
+
+    .homeHeroBottom {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 28px;
+    }
+
+    .homeHeroBottom p {
+      max-width: 100%;
+    }
+
+    .homeHeroDivider {
+      margin: 35px 0 26px;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .homeHeroInner {
+      padding-top: 58px;
+      padding-bottom: 65px;
+    }
+
+    .homeHeroEyebrow {
+      margin-bottom: 27px;
+    }
+
+    .homeHero h1 {
+      font-size: clamp(43px, 10vw, 58px);
+      letter-spacing: -0.055em;
+    }
+
+    .homeHeroBottom p {
+      font-size: 16px;
+    }
+
+    .homeHeroButton {
+      padding: 15px 23px;
+    }
+  }
+
+/* Premium tool directory pagination */
+
+.toolPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 38px;
+  padding: 25px 0 10px;
+  border-top: 1px solid #d6e5e1;
+}
+
+.toolPaginationInfo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #69817a;
+  font-size: 12px;
+}
+
+.toolPaginationInfo strong {
+  color: #073b3b;
+  font-weight: 800;
+}
+
+.toolPaginationControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolPaginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolPaginationNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d6e5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #496a63;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.toolPaginationNumber:hover:not(.active) {
+  background: #eef4f3;
+  border-color: #8bbfb2;
+  color: #073b3b;
+}
+
+.toolPaginationNumber.active {
+  background: #073b3b;
+  color: #ffffff;
+  border-color: #073b3b;
+  box-shadow: 0 3px 10px rgba(7, 59, 59, 0.12);
+}
+
+.toolPaginationArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid #d6e5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #073b3b;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.toolPaginationArrow span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.toolPaginationArrow:hover:not(:disabled) {
+  background: #eef4f3;
+  border-color: #8bbfb2;
+}
+
+.toolPaginationArrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.toolPagination button:focus-visible {
+  outline: 3px solid #86dcc7;
+  outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+  .toolPagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 28px;
+    padding-top: 22px;
+  }
+
+  .toolPaginationControls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 7px;
+  }
+
+  .toolPaginationArrow {
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .toolPaginationNumber {
+    width: 36px;
+    height: 38px;
+  }
+}
+
+.directoryCategoryLinks {
+  display: flex;
+
           flex-wrap: wrap;
           align-items: center;
           gap: 7px;
