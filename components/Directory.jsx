@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
+  ChevronDown,
   Search,
   SlidersHorizontal,
   ChartNoAxesColumnIncreasing,
@@ -44,13 +45,15 @@ const hiringIcons = {
 };
 
 // Each category now has a dedicated page. Add categories here if you create new pages.
+
 const CATEGORY_LINKS = [
-  { label: "Revenue planning", href: "/revenue-planning/" },
-  { label: "AI search", href: "/ai-search/" },
-  { label: "Technical SEO", href: "/technical-seo/" },
-  { label: "Agency hiring", href: "/agency-hiring/" },
+  { label: "Agency Hiring", href: "/agency-hiring/" },
+  { label: "AI Search", href: "/ai-search/" },
   { label: "Content Operations", href: "/content-operations/" },
+  { label: "Revenue Planning", href: "/revenue-planning/" },
+  { label: "Technical SEO", href: "/technical-seo/" },
 ];
+
 
 export function ToolIcon({ slug, size = 22 }) {
   const Icon =
@@ -64,6 +67,37 @@ export function ToolIcon({ slug, size = 22 }) {
  
 
 const initially = { q: "", topic: "", type: "" };
+const HOMEPAGE_FAQS = [
+  {
+    q: "Are all the SEO and content tools free to use?",
+    a: "Yes. GrowUp’s toolkit includes free SEO, content and marketing tools you can use without paying for a subscription. Choose a tool, enter the relevant information and use the available results. Some tools let you copy or download your work, depending on the type of output they generate.",
+  },
+  {
+    q: "Do I need to create an account to use these tools?",
+    a: "No. You don’t need to register, create an account or provide your email address to use the tools. Open the tool you need and complete the relevant fields. Available features and export options vary by tool, but you can get started without signing up.",
+  },
+  {
+    q: "Who are GrowUp’s free marketing tools designed for?",
+    a: "The tools are primarily designed for B2B SaaS founders, CMOs, in-house marketers and content teams. They’re useful for people managing SEO, content production, marketing budgets or external agencies. You don’t need to work with GrowUp to use them, and many are suitable for businesses outside SaaS.",
+  },
+  {
+    q: "How do I choose the right tool for what I’m working on?",
+    a: "Start with the task you need to complete. Browse the categories or use the search bar to find a relevant tool. Each listing explains what the tool does, so you can choose one that fits your requirements without going through the entire directory.",
+  },
+  {
+    q: "Can I use several tools together for the same project?",
+    a: "Yes. You can use different tools to support related marketing tasks. For example, you might calculate your content production costs, prepare a writing brief and document your brand guidelines for the same project. Each tool works independently, so you can use only the ones you need.",
+  },
+  {
+    q: "Can I download, copy or share the results with my team?",
+    a: "Many tools include options to copy or download their outputs, including documents, calculations and generated files. The available formats depend on the individual tool. Check its export options to see what you can save or share with colleagues, freelancers or agencies.",
+  },
+  {
+    q: "Do I need technical SEO or coding experience to use these tools?",
+    a: "No. Most tools are designed for marketers who don’t write code. You’ll typically enter information, select options and review the result. Some technical SEO tools generate code or files that need to be added to your website, which may require CMS access or assistance from a developer.",
+  },
+];
+
 
 
 export default function Directory() {
@@ -325,17 +359,101 @@ A collection of practical SEO and content tools to help B2B SaaS teams work more
           </nav>
         )}
 
+  
         {!matches.length && (
           <div className="empty">
-
             <h3>No matching tools</h3>
             <p>Try another search or clear your filters.</p>
           </div>
         )}
       </section>
 
-   
-<style jsx>{`
+      {/* HOMEPAGE SERVICE CTA AND FAQS */}
+      <div className="wrap homeExtras">
+
+        <section
+          className="homeService"
+          aria-labelledby="home-service-heading"
+        >
+          <div className="homeServiceCopy">
+            <div className="homeServiceKicker">
+              <span className="homeServiceDot" />
+              WORK WITH GROWUP
+            </div>
+
+            <h2 id="home-service-heading">
+Looking for an SEO agency that understands B2B SaaS?
+            </h2>
+
+            <p>
+  GrowUp takes responsibility for SEO strategy and delivery, working with your team to improve search performance and generate more qualified sales opportunities.
+            </p>
+          </div>
+
+          <a
+            className="homeServiceButton"
+            href="https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Explore our SEO services</span>
+            <span className="homeServiceArrow">
+              <ArrowUpRight size={19} strokeWidth={2} />
+            </span>
+          </a>
+        </section>
+
+        <section
+          className="homeFaq"
+          aria-labelledby="home-faq-heading"
+        >
+          <div className="homeFaqIntro">
+            <span className="homeFaqKicker">
+              HOW IT WORKS
+            </span>
+
+            <h2 id="home-faq-heading">
+              Frequently asked questions<span>.</span>
+            </h2>
+
+            <p>
+              Everything you need to know about using
+              GrowUp’s free marketing tools.
+            </p>
+          </div>
+
+          <div className="homeFaqItems">
+            {HOMEPAGE_FAQS.map((faq) => (
+              <details
+                className="homeFaqItem"
+                key={faq.q}
+                name="growup-home-faq"
+              >
+                <summary>
+                  <span>{faq.q}</span>
+                  <span
+                    className="homeFaqChevron"
+                    aria-hidden="true"
+                  >
+                    <ChevronDown
+                      size={19}
+                      strokeWidth={1.8}
+                    />
+                  </span>
+                </summary>
+
+                <div className="homeFaqAnswer">
+                  <p>{faq.a}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      <style jsx>{`
+
 
   /* HOMEPAGE HERO */
 
@@ -630,6 +748,300 @@ A collection of practical SEO and content tools to help B2B SaaS teams work more
     height: 38px;
   }
 }
+
+
+
+/* HOMEPAGE CTA + FAQ SECTIONS */
+
+.homeExtras {
+  padding-bottom: 85px;
+}
+
+/* GROWUP SERVICE CTA */
+
+.homeService {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 42px;
+  margin-top: 72px;
+  padding: clamp(30px, 4vw, 52px);
+  border: 1px solid rgba(134, 220, 199, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(
+    125deg,
+    #073432 0%,
+    #082929 62%,
+    #062021 100%
+  );
+  color: #f2fbf9;
+}
+
+.homeService::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 52%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    linear-gradient(
+      rgba(134, 220, 199, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(134, 220, 199, 0.07) 1px,
+      transparent 1px
+    );
+  background-size: 29px 29px;
+  mask-image: linear-gradient(90deg, transparent, black);
+}
+
+.homeServiceCopy {
+  flex: 1;
+  max-width: 700px;
+  min-width: 0;
+}
+
+.homeServiceKicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #a3e1d0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.homeServiceDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #86dcc7;
+}
+
+.homeService h2 {
+  max-width: 620px;
+  margin: 0 0 14px;
+  color: #f2fbf9;
+  font-size: clamp(27px, 3.2vw, 41px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+}
+
+.homeService p {
+  max-width: 700px;
+  margin: 0;
+  color: #c6dfd9;
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.65;
+}
+
+.homeServiceButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 7px 7px 7px 19px;
+  border-radius: 9px;
+  background: #f2fbf9;
+  color: #073432;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.homeServiceButton:hover {
+  background: #dff7ed;
+  transform: translateY(-2px);
+}
+
+.homeServiceButton:focus-visible {
+  outline: 3px solid #86dcc7;
+  outline-offset: 3px;
+}
+
+.homeServiceArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: #86dcc7;
+  color: #04201f;
+}
+
+/* HOMEPAGE FAQS */
+
+.homeFaq {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.75fr)
+    minmax(0, 1.25fr);
+  gap: clamp(24px, 5vw, 80px);
+  padding-top: 94px;
+}
+
+.homeFaqIntro {
+  align-self: start;
+}
+
+.homeFaqKicker {
+  color: #167273;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.homeFaq h2 {
+  max-width: 370px;
+  margin: 15px 0;
+  color: #063736;
+  font-size: clamp(31px, 3.8vw, 49px);
+  line-height: 1.08;
+  letter-spacing: -0.052em;
+  font-weight: 800;
+}
+
+.homeFaq h2 span {
+  color: #67c4ab;
+}
+
+.homeFaqIntro > p {
+  max-width: 330px;
+  margin: 0;
+  color: #57736e;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.homeFaqItems {
+  min-width: 0;
+  border-top: 1px solid #d5e4df;
+}
+
+.homeFaqItem {
+  border-bottom: 1px solid #d5e4df;
+}
+
+.homeFaqItem summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  padding: 24px 4px;
+  list-style: none;
+  cursor: pointer;
+  color: #063736;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.homeFaqItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.homeFaqItem summary::marker {
+  content: "";
+}
+
+.homeFaqChevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: #167273;
+  transition: transform 0.2s ease;
+}
+
+.homeFaqItem[open] .homeFaqChevron {
+  transform: rotate(180deg);
+}
+
+.homeFaqItem summary:hover {
+  color: #167273;
+}
+
+.homeFaqItem summary:focus-visible {
+  outline: 2px solid #167273;
+  outline-offset: -2px;
+}
+
+.homeFaqAnswer p {
+  max-width: 620px;
+  margin: 0;
+  padding: 0 32px 22px 4px;
+  color: #506b69;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* RESPONSIVE LAYOUT */
+
+@media (max-width: 800px) {
+  .homeService {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .homeFaq {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding-top: 65px;
+  }
+
+  .homeFaq h2 {
+    max-width: 550px;
+  }
+}
+
+@media (max-width: 540px) {
+  .homeExtras {
+    padding-bottom: 55px;
+  }
+
+  .homeService {
+    margin-top: 48px;
+    padding: 28px 22px;
+  }
+
+  .homeServiceButton {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .homeFaq {
+    padding-top: 55px;
+  }
+
+  .homeFaqItem summary {
+    padding: 20px 2px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeServiceButton,
+  .homeFaqChevron {
+    transition: none;
+  }
+}
+
+/* EXISTING DIRECTORY CATEGORY LINKS */
 
 .directoryCategoryLinks {
   display: flex;
