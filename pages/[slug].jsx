@@ -21,8 +21,16 @@ import LlmsTxtGenerator, {
 
 
 
+
 const TOOL_SEO = {
+  "seo-agency-brief-builder": {
+    title: "Free SEO Agency Brief Template for B2B SaaS | GrowUp",
+    description:
+      "Create a free B2B SaaS SEO agency brief covering business goals, budgets, responsibilities and proposal requirements.  ",
+  },
+
   "llms-txt-generator": {
+
     title: "Free llms.txt File Generator & Builder | GrowUp",
     description:
       "Build an llms.txt file for your website with our free generator. Organise important pages, import links, preview your file and download it without coding.",
@@ -142,8 +150,19 @@ const CONTENT_SERVICE_URL =
   "https://www.seo-growup.com/b2b-saas-content-marketing-agency";
 
 
+
 const TOOL_CTAS = {
+  "seo-agency-brief-builder": {
+    label: "B2B SAAS SEO SERVICES",
+    title: "Looking for an SEO agency for your B2B SaaS?",
+    description:
+      "Whether you’re shortlisting agencies or filling execution gaps in-house, GrowUp helps B2B SaaS teams generate qualified pipeline through SEO and AI search.",
+    button: "Explore our services",
+    url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies",
+  },
+
   "llms-txt-generator": {
+
     label: "B2B SAAS AI SEARCH SUPPORT",
     title: "Want more buyers finding your SaaS through AI search?",
     description:
