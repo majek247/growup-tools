@@ -80,16 +80,19 @@ intro:
     label: "Agency hiring",
     eyebrow: "BRIEFS, PROPOSALS & SHORTLISTS",
 
-title: "Agency Hiring Tools",
-directoryTitle: "Make Better Agency Decisions.",
+
+title: "SEO Agency Hiring Tools",
+metaTitle: "Free SEO Agency Hiring & Evaluation Tools | GrowUp",
+directoryTitle: "Make Better Agency Hiring Decisions.",
+
 directoryDescription:
-  "Compare agency proposals, define project requirements, and assess potential partners before committing your budget.",
+  "Use practical tools to assess SEO agencies, define expectations and manage external partners with greater confidence.",
 intro:
-  "Write better agency briefs, compare proposals on the same terms, and run paid trials that actually help you choose.",
+  "Simplify the work involved in hiring an SEO agency, from preparing requirements and shortlisting candidates to comparing costs and proposals.",
 
 
     description:
-      "Free agency hiring tools for B2B SaaS teams. Build SEO and content briefs, compare agency proposals, and assess paid trials.",
+      "Hiring an SEO agency for your B2B SaaS? Use these free tools to evaluate agencies, compare costs and make better decisions before signing a contract.",
     detail:
       "Make the shortlist decision with clearer scope and fewer surprises.",
     featured: "agency-proposal-comparison",
@@ -225,16 +228,40 @@ faqs: [
 
 
   },
-  "agency-hiring": {
-    ctaLabel: "WORK WITH GROWUP",
-    ctaTitle: "Want an agency that owns the content work?",
-    ctaCopy: "See how GrowUp approaches B2B SaaS content strategy, production and measurement before you make your next agency decision.",
-    ctaButton: "Explore our content services",
-    faqs: [
-      { q: "How can I compare SEO or content agency proposals fairly?", a: "Ask each agency to respond to the same brief. Compare scope, deliverables, team ownership, review time, reporting and commercial terms rather than headline price alone." },
-      { q: "What should an agency trial include?", a: "Set a defined deliverable, a shared briefing process, named reviewers, a budget and clear acceptance criteria. Evaluate both the output and how the agency works with your team." },
-      { q: "Can these tools choose an agency for me?", a: "No. They structure the information needed for a better decision. Check references, capabilities and fit directly with shortlisted agencies before committing." },
-    ],
+
+"agency-hiring": {
+  ctaLabel: "B2B SAAS SEO SERVICES",
+  ctaTitle: "Looking for an SEO agency for your B2B SaaS?",
+  ctaCopy: "Whether you’re shortlisting agencies or filling execution gaps in-house, GrowUp helps B2B SaaS teams generate qualified pipeline through SEO and AI search.",
+  ctaButton: "Explore our SEO services",
+
+
+
+faqs: [
+  {
+    q: "How do I know when it’s time to hire an SEO agency for my B2B SaaS?",
+    a: "Consider hiring an SEO agency when organic search is an important growth opportunity but your team lacks the time or expertise to pursue it properly. If technical issues remain unresolved, priority content isn’t getting published, or SEO keeps falling behind other marketing work, an agency can provide the additional capacity you need."
+  },
+  {
+    q: "What should I look for when hiring an SEO agency for my B2B SaaS company?",
+    a: "Look for an agency with experience marketing B2B SaaS products to buyers like yours. Ask how they approach keyword research, technical SEO, content production and performance reporting. Review relevant case studies, meet the people who’ll manage your account and check whether they can connect their work to qualified leads and pipeline."
+  },
+  {
+    q: "Should I hire a specialist B2B SaaS agency or a generalist SEO agency?",
+    a: "A specialist B2B SaaS SEO agency would be my first choice, mainly because you won’t have to spend as much time explaining your business model, sales process or what qualifies as a good lead. But specialisation alone isn't enough. I’d compare their actual client results, proposed approach and delivery team before choosing them over a generalist."
+  },
+  {
+    q: "When does it make sense to hire an agency instead of building an in-house team?",
+    a: "Hiring an SEO agency makes sense when you need strategy and execution but aren’t ready to recruit several specialists. An agency can provide technical SEO, content and reporting support without the hiring process or permanent salary commitments. Building in-house becomes more attractive when you have enough consistent work and budget to support dedicated roles."
+  },
+  {
+    q: "How long should I expect the agency selection and hiring process to take?",
+    a: "Allow roughly four to eight weeks to shortlist agencies, hold discovery calls, review proposals, check references and finalise a contract. The process may be quicker if your requirements and budget are already approved. Larger SaaS companies may need additional time for procurement, legal and security reviews, so account for those steps before setting a start date."
+  }
+],
+
+
+
   },
 };
 
@@ -493,7 +520,15 @@ const otherCategories = TOOL_CATEGORIES.filter(
                 </div>
 <a
   className="gtc-service-link"
-  href={category === "technical-seo" ? SEO_SERVICE_URL : SERVICE_URL}
+  
+href={
+  category === "technical-seo" || category === "agency-hiring"
+    ? SEO_SERVICE_URL
+    : category === "ai-search"
+      ? AI_SEARCH_SERVICE_URL
+      : SERVICE_URL
+}
+
   target="_blank"
   rel="noopener noreferrer"
   aria-label={`${extras.ctaButton} (opens in a new tab)`}
@@ -970,7 +1005,12 @@ const otherCategories = TOOL_CATEGORIES.filter(
           background-size: 29px 29px;
           mask-image: linear-gradient(90deg, transparent, black);
         }
-        .gtc-service-copy { max-width: 690px; }
+        
+.gtc-service-copy {
+  max-width: 700px;
+  min-width: 0;
+}
+
         .gtc-service-kicker {
           display: flex;
           align-items: center;
@@ -982,8 +1022,10 @@ const otherCategories = TOOL_CATEGORIES.filter(
           letter-spacing: .15em;
         }
 
+
 .gtc-service h2 {
   margin: 0 0 14px;
+  max-width: 620px;
   font-size: clamp(27px, 3.2vw, 41px);
   line-height: 1.12;
   letter-spacing: -.045em;
@@ -992,13 +1034,19 @@ const otherCategories = TOOL_CATEGORIES.filter(
   white-space: pre-line;
 }
 
-        .gtc-service p {
-          margin: 0;
-          max-width: 610px;
-          color: #c6dfd9;
-          font-size: clamp(14px, 1.2vw, 16px);
-          line-height: 1.65;
-        }
+
+    
+.gtc-service p {
+  margin: 0;
+  max-width: 780px;
+  color: #c6dfd9;
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.65;
+}
+
+
+
+
         .gtc-service-link {
           flex-shrink: 0;
           display: inline-flex;
