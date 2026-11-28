@@ -298,15 +298,30 @@
 
   visibility: hidden;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
+user-select: text;
+-webkit-user-select: text;
+cursor: text;
 
   box-shadow: 0 8px 24px #01152220;
   transition: opacity 150ms ease;
 }
 
+.tooltip::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  pointer-events: auto;
+}
+
 .infoWrap:hover .tooltip,
 .infoWrap:focus .tooltip,
-.infoWrap:focus-within .tooltip {
+.infoWrap:focus-within .tooltip,
+.tooltip:hover {
   visibility: visible;
   opacity: 1;
 }
@@ -346,19 +361,15 @@
   min-width: 0;
   padding: 26px;
 
-  background:
-    radial-gradient(
-      ellipse at 100% 0%,
-      rgba(22, 114, 115, 0.13),
-      transparent 55%
-    ),
-    #011522;
+background: linear-gradient(
+  180deg,
+  #0b3033 0%,
+  #042728 100%
+);
 
-  color: var(--preview-text);
-  border: 1px solid #16323d;
-  border-radius: 12px;
-}
-
+color: var(--preview-text);
+border: 1px solid #164143;
+border-radius: 12px;
 
 /* PREVIEW HEADER */
 
@@ -410,7 +421,7 @@
 /* METRICS CONTAINER */
 
 .metricsPanel {
-  background: #102e38;
+  background: rgba(255, 255, 255, 0.045);
 
   border: 1px solid var(--preview-line);
   border-radius: 8px;
@@ -430,11 +441,11 @@
 
   padding: 20px 18px;
 
-  background: linear-gradient(
-    115deg,
-    rgba(45, 122, 118, 0.15),
-    rgba(22, 114, 115, 0.02)
-  );
+background: linear-gradient(
+  115deg,
+  rgba(22, 114, 115, 0.20),
+  rgba(22, 114, 115, 0.04)
+);
 
   border-bottom: 1px solid var(--preview-line);
   border-radius: 8px 8px 0 0;
@@ -560,7 +571,7 @@
 
   transform: translate(-50%, -4px);
 
-  width: 310px;
+  width: 500px;
   max-width: calc(100vw - 48px);
 
   padding: 16px;
@@ -584,7 +595,10 @@
 
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
+  pointer-events: auto;
+user-select: text;
+-webkit-user-select: text;
+cursor: text;
 
   transition:
     opacity 150ms ease,
@@ -611,9 +625,21 @@
   transform: translate(-50%, 5px) rotate(45deg);
 }
 
+.metricTooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  pointer-events: auto;
+}
+
 .metricInfo:hover .metricTooltip,
 .metricInfo:focus .metricTooltip,
-.metricInfo:focus-within .metricTooltip {
+.metricInfo:focus-within .metricTooltip,
+.metricTooltip:hover {
   opacity: 1;
   visibility: visible;
 
@@ -698,9 +724,10 @@
 
   font-size: 11px;
   font-weight: 550;
-  line-height: 1.7;
+  line-height: 1.75;
   font-variant-numeric: tabular-nums;
 
+  white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
@@ -1113,102 +1140,6 @@
   font-size: 12px;
 }
 
-
-/* =====================================
-   METHODOLOGY
-===================================== */
-
-.methodAccordion {
-  margin-top: 20px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-
-.methodAccordion summary {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  list-style: none;
-  cursor: pointer;
-  padding: 19px 23px;
-}
-
-.methodAccordion summary::-webkit-details-marker {
-  display: none;
-}
-
-.methodIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #edf5f1;
-  color: var(--teal);
-  border-radius: 8px;
-  width: 37px;
-  height: 37px;
-  flex-shrink: 0;
-}
-
-.methodHeading {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-
-.methodHeading strong {
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.methodHeading small {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.methodChevron {
-  flex-shrink: 0;
-  color: var(--muted);
-  transition: transform 180ms ease;
-}
-
-.methodAccordion[open] .methodChevron {
-  transform: rotate(180deg);
-}
-
-.methodContent {
-  border-top: 1px solid var(--line);
-  padding: 22px 26px;
-  color: #536a65;
-  font-size: 12px;
-  line-height: 1.85;
-}
-
-.methodContent p {
-  margin: 0 0 16px;
-}
-
-.methodContent p:last-child {
-  margin-bottom: 0;
-}
-
-.methodContent ol {
-  padding-left: 20px;
-  margin: 0 0 18px;
-}
-
-.methodContent li {
-  padding-left: 5px;
-  margin-bottom: 11px;
-}
-
-.methodContent strong {
-  color: var(--ink);
-  font-weight: 700;
-}
 
 /* =====================================
    RESPONSIVE

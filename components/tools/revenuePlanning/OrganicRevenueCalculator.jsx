@@ -9,6 +9,32 @@ import {
 } from "lucide-react";
 import styles from "./OrganicRevenueCalculator.module.css";
 
+export const faqs = [
+  {
+    question: "How does the organic revenue calculator work?",
+    answer:
+      "The calculator works backwards from your new ARR target using your average annual contract value and funnel conversion rates. It calculates the number of customers, qualified opportunities and MQLs required, along with the total organic visits needed to generate them. Your current monthly traffic and planning period determine how much additional traffic growth is required.",
+  },
+  {
+    question:
+      "What is the difference between an SEO revenue calculator and an SEO forecasting tool?",
+    answer:
+      "An SEO revenue calculator works backwards from a commercial target to establish what your organic search programme needs to deliver. An SEO forecasting tool typically works in the opposite direction, using historical performance, search demand, ranking assumptions and projected traffic growth to estimate future results. The two can be used together: the revenue calculator establishes your acquisition requirements, while an SEO forecast helps assess whether those requirements are achievable.  ",
+  },
+  {
+    question:
+      "How can an organic revenue calculator help with annual marketing planning?",
+    answer:
+      "An organic revenue calculator helps you assess whether your annual SEO targets are realistic before committing to them. You can test different revenue targets, contract values and conversion rates to understand what your marketing team needs to deliver and whether additional budget or resources may be necessary.",
+  },
+  {
+    question:
+      "Can I use this SEO revenue calculator to build a business case for additional SEO investment?",
+    answer:
+      "Yes. You can use the calculator to demonstrate the potential commercial implications of maintaining your current organic search performance versus investing in traffic growth and conversion improvements. This gives your CFO a clearer basis for evaluating additional SEO expenditure.",
+  },
+];
+
 const EXAMPLE = {
   currency: "GBP",
   currentArr: "1000000",
@@ -563,7 +589,7 @@ export default function OrganicRevenueCalculator() {
           </div>
 
           <div className={styles.segmentTitle}>
-            Revenue goals
+            Revenue Goals
           </div>
 
           <div className={styles.fieldsGrid}>
@@ -573,7 +599,7 @@ export default function OrganicRevenueCalculator() {
               prefix={SYMBOLS[currency]}
               value={values.currentArr}
               onChange={(v) => setField("currentArr", v)}
-              hint="Your company's current annual recurring revenue. Currency selection does not convert existing values."
+              hint="Your company's annual recurring revenue today, excluding one-off fees and non-recurring income. Use your latest reported ARR figure."
             />
 
             <Field
@@ -581,7 +607,7 @@ export default function OrganicRevenueCalculator() {
               prefix={SYMBOLS[currency]}
               value={values.targetArr}
               onChange={(v) => setField("targetArr", v)}
-              hint="Your company's ARR goal at the end of the planning period."
+              hint="The total ARR your business wants to reach by the end of the planning period, including revenue from existing customers."
             />
 
             <Field
@@ -592,7 +618,7 @@ export default function OrganicRevenueCalculator() {
               max={36}
               value={values.months}
               onChange={(v) => setField("months", v)}
-              hint="The number of months available to achieve your revenue target, between 2 and 36."
+              hint="How long your business has to reach its ARR target. Choose a planning window of 2 to 36 months, based on your commercial goals."
             />
 
             <Field
@@ -601,7 +627,7 @@ export default function OrganicRevenueCalculator() {
               max={100}
               value={values.share}
               onChange={(v) => setField("share", v)}
-              hint="The percentage of additional ARR assigned to organic and AI search acquisition."
+              hint="How much of your planned ARR growth you expect organic and AI search to generate. For example, if marketing owns 60% of new ARR and organic accounts for half of that, enter 30%."
             />
 
           </div>
@@ -617,7 +643,7 @@ export default function OrganicRevenueCalculator() {
               prefix={SYMBOLS[currency]}
               value={values.acv}
               onChange={(v) => setField("acv", v)}
-              hint="Average annual recurring revenue per new customer. Do not use total multi-year contract value."
+              hint="The average annual recurring revenue a new customer brings in. For a three-year contract worth £60,000 in recurring revenue, enter £20,000."
             />
 
             <Field
@@ -626,7 +652,7 @@ export default function OrganicRevenueCalculator() {
               max={100}
               value={values.visitToMql}
               onChange={(v) => setField("visitToMql", v)}
-              hint="Percentage of organic visits that become marketing-qualified leads."
+              hint="How often organic and AI search visits turn into leads that meet your marketing qualification criteria. If 1,000 visits generate 12 MQLs, enter 1.2%."
             />
 
             <Field
@@ -635,7 +661,7 @@ export default function OrganicRevenueCalculator() {
               max={100}
               value={values.mqlToSql}
               onChange={(v) => setField("mqlToSql", v)}
-              hint="Percentage of marketing-qualified leads that become sales-qualified opportunities."
+              hint="The proportion of marketing-qualified leads that progress into qualified sales opportunities. If 100 MQLs generate 35 opportunities, enter 35%."
             />
 
             <Field
@@ -644,7 +670,7 @@ export default function OrganicRevenueCalculator() {
               max={100}
               value={values.sqlToCustomer}
               onChange={(v) => setField("sqlToCustomer", v)}
-              hint="Percentage of sales-qualified opportunities that close as new customers."
+              hint="Your sales win rate for qualified opportunities generated through organic and AI search. If 20 qualified opportunities result in five closed-won deals, enter 25%."
             />
 
             <div className={styles.fullField}>
@@ -652,7 +678,7 @@ export default function OrganicRevenueCalculator() {
                 label="Current monthly organic visits"
                 value={values.currentVisits}
                 onChange={(v) => setField("currentVisits", v)}
-                hint="Your current monthly sessions from organic and AI search. Use a recent three-month average where possible."
+                hint="Your current monthly traffic from organic and AI search, before any additional growth. Use an average of the last three months to account for seasonal changes and traffic fluctuations."
               />
             </div>
 
@@ -701,7 +727,7 @@ export default function OrganicRevenueCalculator() {
                 </strong>
 
                 {" "}from organic and AI search,
-                you'll need approximately{" "}
+                you’ll need approximately{" "}
 
                 <strong>
                   {whole(result.sqls)} qualified opportunities
@@ -752,25 +778,61 @@ export default function OrganicRevenueCalculator() {
                       month {result.v.months}
                     </span>
 
-            <MetricInfo
+
+<MetricInfo
   label="Final-month traffic target"
-  description="The monthly organic and AI search traffic you need by the end of your planning period, assuming traffic grows steadily from today's level."
-  formula={
-    result.alreadyOnTrack
-      ? "Maintain current monthly traffic"
-      : "Current monthly visits + [2 × (Total required visits − Current monthly visits × Months) ÷ (Months + 1)]"
-  }
+  description="The number of monthly visits organic and AI search need to generate by the end of your planning period to support your ARR target, assuming steady month-on-month growth in traffic volume."
+  formula="We work backwards from your required leads, account for the traffic you already generate, and calculate the monthly increase needed to close the gap."
   calculation={
     result.alreadyOnTrack
-      ? `${whole(result.v.currentVisits)} visits per month`
-      : `${whole(result.v.currentVisits)} + [2 × (${whole(result.requiredVisits)} − ${whole(result.v.currentVisits)} × ${result.v.months}) ÷ (${result.v.months} + 1)]`
+      ? [
+          "1. Total traffic required",
+          `${whole(result.mqls)} MQLs ÷ ${result.v.visitToMql}% conversion rate = ${whole(result.requiredVisits)} visits (rounded up)`,
+
+          "",
+
+          "2. Traffic from your existing baseline",
+          `${whole(result.v.currentVisits)} × ${result.v.months} months = ${whole(result.existingVisits)} visits`,
+
+          "",
+
+          "Your existing traffic covers the total requirement. No additional traffic growth is needed.",
+        ].join("\n")
+      : [
+          "1. Total traffic required",
+          `${whole(result.mqls)} MQLs ÷ ${result.v.visitToMql}% visit-to-MQL rate = ${whole(result.requiredVisits)} visits (rounded up)`,
+
+          "",
+
+          "2. Traffic from your existing baseline",
+          `${whole(result.v.currentVisits)} monthly visits × ${result.v.months} months = ${whole(result.existingVisits)} visits`,
+
+          "",
+
+          "3. Additional traffic required",
+          `${whole(result.requiredVisits)} − ${whole(result.existingVisits)} = ${whole(result.requiredVisits - result.existingVisits)} additional visits`,
+
+          "",
+
+          "4. Required monthly increase",
+          `Because traffic grows cumulatively, month 1 benefits from one increase, month 2 from two increases, and so on up to month ${result.v.months}.`,
+
+          "",
+
+          `Sum of monthly increases: 1 + 2 + ... + ${result.v.months} = ${result.v.months} × (${result.v.months} + 1) ÷ 2 = ${whole(result.v.months * (result.v.months + 1) / 2)}`,
+
+          "",
+
+          `${whole(result.requiredVisits - result.existingVisits)} ÷ ${whole(result.v.months * (result.v.months + 1) / 2)} ≈ ${decimal((result.requiredVisits - result.existingVisits) / (result.v.months * (result.v.months + 1) / 2))} additional visits per month`,
+
+          "",
+
+          "5. Final-month traffic target",
+          `${whole(result.v.currentVisits)} + (${decimal((result.requiredVisits - result.existingVisits) / (result.v.months * (result.v.months + 1) / 2))} × ${result.v.months})`,
+        ].join("\n")
   }
   answer={`${whole(result.endpoint)} visits/month`}
-  note={
-    result.alreadyOnTrack
-      ? "Your existing traffic volume is sufficient under the entered conversion assumptions."
-      : "Rounded up to the next whole visit. Traffic increases gradually rather than jumping to the final-month target immediately."
-  }
+   
 />
 
 
@@ -801,7 +863,7 @@ export default function OrganicRevenueCalculator() {
     currency,
     true
   )} in new MRR`}
-  hint="The additional annual recurring revenue that organic and AI search need to contribute towards your company's growth target."
+  hint="The additional annual recurring revenue that organic and AI search need to contribute towards your company’s growth target."
   formula="(Target ARR − Current ARR) × Organic contribution"
   calculation={`(${money(
     result.v.targetArr,
@@ -811,13 +873,13 @@ export default function OrganicRevenueCalculator() {
     currency
   )}) × ${result.v.share}%`}
   answer={money(result.organicArr, currency)}
-  note={`New MRR = ${money(
+   note={`An additional ${money(
     result.organicArr,
     currency
-  )} ÷ 12 = ${money(
+  )} in ARR is equivalent to ${money(
     result.organicArr / 12,
     currency
-  )}. ARR represents annualised recurring revenue, not cash collected.`}
+  )} in new MRR once the revenue target is reached, regardless of when customers are invoiced.`}
 />
 
             <PreviewMetric
@@ -946,13 +1008,11 @@ export default function OrganicRevenueCalculator() {
 
                 <div className={styles.previewCtaCopy}>
                   <strong>
-                    Need a plan to hit these numbers?
+                   What would it take to hit these targets?
                   </strong>
 
                   <p>
-                    We'll identify the content and search
-                    opportunities that can help you reach
-                    your pipeline target.
+         We’ll review your current search performance, identify gaps in buyer-facing content and build an SEO roadmap around your revenue goals.
                   </p>
                 </div>
 
@@ -962,7 +1022,7 @@ export default function OrganicRevenueCalculator() {
                   rel="noopener noreferrer"
                   className={styles.previewCtaButton}
                 >
-                  <span>Talk to us</span>
+                  <span>Discuss your targets</span>
 
                   <span className={styles.ctaArrow}>
                     <ArrowRight size={16} />
@@ -983,190 +1043,6 @@ export default function OrganicRevenueCalculator() {
         </section>
       </div>
 
-      {/* MONTHLY GROWTH CHART */}
-
-      <section
-        className={styles.projection}
-        aria-label="Monthly growth plan"
-      >
-        <div className={styles.projectionHead}>
-
-          <div>
-            <h3>Your monthly growth plan</h3>
-
-            <p>
-              See how organic traffic and new ARR could
-              build over the planning period.
-            </p>
-          </div>
-
-          <div
-            className={styles.chartTabs}
-            aria-label="Chart view"
-          >
-            <button
-              type="button"
-              aria-pressed={chartView === "traffic"}
-              onClick={() => setChartView("traffic")}
-            >
-              Organic traffic
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={chartView === "arr"}
-              onClick={() => setChartView("arr")}
-            >
-              New ARR
-            </button>
-          </div>
-
-        </div>
-
-        {isReady ? (
-          <>
-
-            <div className={styles.chartMetrics}>
-
-              <div>
-                <span>
-                  {chartView === "traffic"
-                    ? "Current monthly visits"
-                    : "New ARR target"}
-                </span>
-
-                <strong>
-                  {chartView === "traffic"
-                    ? whole(result.v.currentVisits)
-                    : money(result.organicArr, currency)}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  {chartView === "traffic"
-                    ? `Month ${result.v.months} target`
-                    : "Modelled new ARR"}
-                </span>
-
-                <strong>
-                  {chartView === "traffic"
-                    ? whole(result.endpoint)
-                    : money(result.expectedArr, currency)}
-                </strong>
-              </div>
-
-            </div>
-
-            <Chart
-              rows={result.monthly}
-              baseline={result.v.currentVisits}
-              view={chartView}
-              currency={currency}
-              arrTarget={result.organicArr}
-            />
-
-            <p className={styles.projectionFoot}>
-              Illustrative planning model, not a revenue forecast.
-            </p>
-
-          </>
-        ) : (
-          <div className={styles.chartEmpty}>
-            Enter your planning assumptions to see
-            your monthly growth plan.
-          </div>
-        )}
-
-      </section>
-
-      {/* COLLAPSIBLE METHODOLOGY */}
-
-      <details className={styles.methodAccordion}>
-
-        <summary>
-
-          <span className={styles.methodIcon}>
-            <Info size={19} />
-          </span>
-
-          <span className={styles.methodHeading}>
-
-            <strong>
-              How we calculate your revenue plan
-            </strong>
-
-            <small>
-              Calculation methodology and assumptions
-            </small>
-
-          </span>
-
-          <ChevronDown
-            size={18}
-            className={styles.methodChevron}
-          />
-
-        </summary>
-
-        <div className={styles.methodContent}>
-
-          <p>
-            The calculator works backwards from your
-            revenue target using your contract value
-            and sales funnel conversion rates.
-          </p>
-
-          <ol>
-            <li>
-              <strong>New organic ARR:</strong>{" "}
-              The difference between current and target
-              ARR, multiplied by the contribution assigned
-              to organic and AI search.
-            </li>
-
-            <li>
-              <strong>Customers and pipeline:</strong>{" "}
-              Divide the organic ARR target by annual
-              contract value and work backwards using
-              your sales win rate.
-            </li>
-
-            <li>
-              <strong>Leads and traffic:</strong>{" "}
-              Apply your MQL-to-SQL and visit-to-MQL
-              conversion rates to estimate acquisition
-              requirements.
-            </li>
-
-            <li>
-              <strong>Monthly growth:</strong>{" "}
-              Spread the required traffic across your
-              planning period using steady linear growth
-              from your current baseline.
-            </li>
-          </ol>
-
-          <p>
-            The model assumes stable conversion rates,
-            consistent annual contract values, no churn
-            or expansion, and no sales-cycle delay.
-            Acquisition targets are rounded up, so modelled
-            new ARR may exceed your target. If current
-            traffic is sufficient, the traffic plan remains flat.
-          </p>
-
-          <p>
-            ARR represents annualised recurring revenue,
-            not cash collected during the planning period.
-            Currency selection does not convert amounts.
-            Monthly figures in the CSV are expected values,
-            not guaranteed outcomes.
-          </p>
-
-        </div>
-
-      </details>
 
     </div>
   );

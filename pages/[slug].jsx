@@ -7,7 +7,9 @@ import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { tools } from "../lib/catalog.mjs";
 import Layout from "../components/Layout";
 import Workbench from "../components/Workbench";
-import OrganicRevenueCalculator from "../components/tools/revenuePlanning/OrganicRevenueCalculator";
+import OrganicRevenueCalculator, {
+  faqs as organicRevenueFaqs,
+} from "../components/tools/revenuePlanning/OrganicRevenueCalculator";
 
 import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
@@ -24,6 +26,12 @@ import LlmsTxtGenerator, {
 
 
 const TOOL_SEO = {
+  "organic-revenue-calculator": {
+    title: "Free SEO Revenue Calculator for B2B SaaS | GrowUp",
+    description:
+      "Calculate how much organic traffic, pipeline and revenue your SEO programme needs to generate using your ARR goals and sales funnel conversion rates.",
+  },
+
   "seo-agency-brief-builder": {
     title: "Free SEO Agency Brief Template for B2B SaaS | GrowUp",
     description:
@@ -153,6 +161,15 @@ const CONTENT_SERVICE_URL =
 
 
 const TOOL_CTAS = {
+  "organic-revenue-calculator": {
+    label: "B2B SAAS SEO & CONTENT SUPPORT",
+    title: "Build an Organic Search Programme Around Your Revenue Goals.",
+    description:
+      "From keyword prioritisation to content production and technical SEO, we help B2B SaaS companies generate qualified pipeline through organic and AI search.",
+    button: "Explore our SEO services",
+    url: "https://www.seo-growup.com/seo-consultancy-for-b2b-saas-companies",
+  },
+
   "seo-agency-brief-builder": {
     label: "B2B SAAS SEO SERVICES",
     title: "Looking for an SEO agency for your B2B SaaS?",
@@ -296,9 +313,10 @@ const toolComponents = {
   ...contentOpsComponents,
   ...hiringComponents,
 
-  "organic-revenue-calculator": {
-    Component: OrganicRevenueCalculator,
-  },
+"organic-revenue-calculator": {
+  Component: OrganicRevenueCalculator,
+  faqs: organicRevenueFaqs,
+},
   "llms-txt-generator": {
     Component: LlmsTxtGenerator,
     faqs: llmsTxtFaqs,
