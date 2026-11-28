@@ -349,7 +349,6 @@ cursor: text;
 /* =====================================
    REVENUE PREVIEW
 ===================================== */
-
 .resultsCard {
   --preview-text: #ffffff;
   --preview-muted: #afc7ca;
@@ -361,15 +360,16 @@ cursor: text;
   min-width: 0;
   padding: 26px;
 
-background: linear-gradient(
-  180deg,
-  #0b3033 0%,
-  #042728 100%
-);
+  background: linear-gradient(
+    180deg,
+    #0b3033 0%,
+    #042728 100%
+  );
 
-color: var(--preview-text);
-border: 1px solid #164143;
-border-radius: 12px;
+  color: var(--preview-text);
+  border: 1px solid #164143;
+  border-radius: 12px;
+}
 
 /* PREVIEW HEADER */
 
