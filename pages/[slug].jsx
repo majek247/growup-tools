@@ -7,6 +7,7 @@ import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { tools } from "../lib/catalog.mjs";
 import Layout from "../components/Layout";
 import Workbench from "../components/Workbench";
+import OrganicRevenueCalculator from "../components/tools/revenuePlanning/OrganicRevenueCalculator";
 
 import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
@@ -294,6 +295,10 @@ const TOOL_CTAS = {
 const toolComponents = {
   ...contentOpsComponents,
   ...hiringComponents,
+
+  "organic-revenue-calculator": {
+    Component: OrganicRevenueCalculator,
+  },
   "llms-txt-generator": {
     Component: LlmsTxtGenerator,
     faqs: llmsTxtFaqs,
