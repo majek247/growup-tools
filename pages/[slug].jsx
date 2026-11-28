@@ -11,6 +11,10 @@ import OrganicRevenueCalculator, {
   faqs as organicRevenueFaqs,
 } from "../components/tools/revenuePlanning/OrganicRevenueCalculator";
 
+import ContentRoiCalculator, {
+  faqs as contentRoiFaqs,
+} from "../components/tools/revenuePlanning/ContentRoiCalculator";
+
 import FaqSchemaGenerator, {
   faqs as faqSchemaFaqs,
 } from "../components/tools/FaqSchemaGenerator";
@@ -26,6 +30,12 @@ import LlmsTxtGenerator, {
 
 
 const TOOL_SEO = {
+  "content-roi-calculator": {
+    title: "Free Content Marketing ROI Calculator | GrowUp",
+    description:
+      "Calculate your content marketing ROI, net return and customer acquisition cost. Find out how many new customers you need to achieve your target ROI.",
+  },
+
   "organic-revenue-calculator": {
     title: "Free SEO Revenue Calculator for B2B SaaS | GrowUp",
     description:
@@ -161,6 +171,15 @@ const CONTENT_SERVICE_URL =
 
 
 const TOOL_CTAS = {
+  "content-roi-calculator": {
+    label: "B2B SAAS CONTENT MARKETING",
+    title: "Generate More Qualified Pipeline From Your Content Investment.",
+    description:
+      "From buyer research and content strategy to production and optimisation, we help B2B SaaS companies generate qualified sales opportunities and measure content's contribution to revenue.",
+    button: "Explore our content services",
+    url: "https://www.seo-growup.com/b2b-saas-content-marketing-agency",
+  },
+
   "organic-revenue-calculator": {
     label: "B2B SAAS SEO & CONTENT SUPPORT",
     title: "Build an Organic Search Programme Around Your Revenue Goals.",
@@ -317,6 +336,12 @@ const toolComponents = {
   Component: OrganicRevenueCalculator,
   faqs: organicRevenueFaqs,
 },
+
+"content-roi-calculator": {
+  Component: ContentRoiCalculator,
+  faqs: contentRoiFaqs,
+},
+
   "llms-txt-generator": {
     Component: LlmsTxtGenerator,
     faqs: llmsTxtFaqs,
